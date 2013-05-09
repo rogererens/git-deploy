@@ -141,6 +141,10 @@ class Sartoris(object):
     def __init__(self, *args, **kwargs):
         """ Initialize class instance """
         self.__class__.__instance = self
+
+        if not os.path.exists(self.DEPLOY_DIR):
+            os.mkdir(self.DEPLOY_DIR)
+
         self._configure()
         self._tag = None                    # Stores tag state
 
@@ -159,7 +163,7 @@ class Sartoris(object):
         proc = subprocess.Popen(['git', 'rev-parse', '--show-toplevel'],
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
-        self.config['top_dir'] = proc.communicate()[0]
+        self.config['top_dir'] = proc.communicate()[0].strip()
 
         if proc.returncode != 0:
             exit_code = 20

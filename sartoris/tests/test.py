@@ -16,21 +16,21 @@ from os import mkdir, chdir
 from shutil import rmtree
 
 
-def tester_deco(test_method):
+def setup_deco(test_method):
     """
     Performs setup and teardown calls for all tests to decouple the state if
     the repo from this testing module.
     """
-    def tester_wrap(self):
-        init_test_repo()
+    def setup_wrap(self):
+        init_tmp_repo()
         try:
             test_method(self)
         finally:
-            teardown_test_repo()
-    return tester_wrap
+            teardown_tmp_repo()
+    return setup_wrap
 
 
-def init_test_repo():
+def init_tmp_repo():
     """
     Create a test repo, change to directory
     """
@@ -39,7 +39,7 @@ def init_test_repo():
     chdir(config.TEST_REPO)
 
 
-def teardown_test_repo():
+def teardown_tmp_repo():
     """
     Remove the test repo
     """
@@ -85,7 +85,7 @@ class TestSartorisInit(unittest.TestCase):
 
 class TestSartorisFunctionality(unittest.TestCase):
 
-    @tester_deco
+    @setup_deco
     def test_abort(self):
         """
         abort - test to ensure that ``abort`` method functions
@@ -146,7 +146,7 @@ class TestSartorisFunctionality(unittest.TestCase):
         except SartorisError:
             assert False
 
-    @tester_deco
+    @setup_deco
     def test_show_tag(self):
         """
         start - test to ensure that start method functions
@@ -161,7 +161,7 @@ class TestSartorisFunctionality(unittest.TestCase):
         except SartorisError:
             assert False
 
-    @tester_deco
+    @setup_deco
     def test_start(self):
         """
         start - test to ensure that ``start`` method functions
@@ -173,7 +173,7 @@ class TestSartorisFunctionality(unittest.TestCase):
         except SartorisError:
             assert False
 
-    @tester_deco
+    @setup_deco
     def test_sync(self):
         """
         sync - test to ensure that ``sync`` method functions
@@ -188,7 +188,7 @@ class TestSartorisFunctionality(unittest.TestCase):
         except SartorisError:
             assert False
 
-    @tester_deco
+    @setup_deco
     def test_deploy_in_progress(self):
         """
         deploy_in_progress - test to ensure that when the ``start`` method
