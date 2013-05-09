@@ -23,8 +23,10 @@ def tester_deco(test_method):
     """
     def tester_wrap(self):
         init_test_repo()
-        test_method(self)
-        teardown_test_repo()
+        try:
+            test_method(self)
+        finally:
+            teardown_test_repo()
     return tester_wrap
 
 
