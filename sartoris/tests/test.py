@@ -9,6 +9,7 @@
 """
 
 import unittest
+from collections import namedtuple
 from sartoris.sartoris import Sartoris, SartorisError, exit_codes
 from sartoris import config
 from dulwich.repo import Repo
@@ -120,7 +121,7 @@ class TestSartorisFunctionality(unittest.TestCase):
         """
         sartoris_obj = Sartoris()
         try:
-            sartoris_obj.log_deploys(None)
+            sartoris_obj.log_deploys(namedtuple('o', 'count')(1))
         except SartorisError:
             assert False
 
