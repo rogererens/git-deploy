@@ -315,23 +315,29 @@ class Sartoris(object):
         """
 
         # Get the commit hash of the current tag
-        commit_sha = self._get_commit_sha_for_tag(self._tag)
+        try:
+            commit_sha = self._get_commit_sha_for_tag(self._tag)
+        except SartorisError:
+			# No current tag 
+			commit_sha = None
 
         # 1. hard reset the index to the desired tree
         # 2. move the branch pointer back to the previous HEAD
         # 3. commit revert
         # @TODO replace with dulwich
-        if subprocess.call("git reset --hard {0}".format(commit_sha).split()):
-            raise SartorisError(message=exit_codes[5], exit_code=5)
-        if subprocess.call("git reset --soft HEAD@{1}".split()):
-            raise SartorisError(message=exit_codes[5], exit_code=5)
-        if subprocess.call("git commit -m 'Revert to {0}'".format(commit_sha).
+
+        if commit_sha:
+            if subprocess.call("git reset --hard {0}".format(commit_sha).split()):
+                raise SartorisError(message=exit_codes[5], exit_code=5)
+            if subprocess.call("git reset --soft HEAD@{1}".split()):
+                raise SartorisError(message=exit_codes[5], exit_code=5)
+            if subprocess.call("git commit -m 'Revert to {0}'".format(commit_sha).
                            split()):
-            raise SartorisError(message=exit_codes[5], exit_code=5)
+                raise SartorisError(message=exit_codes[5], exit_code=5)
 
         # Remove lock file
         if os.listdir(self.DEPLOY_DIR).__contains__(self.LOCK_FILE_HANDLE):
-            os.remove(self.LOCK_FILE_HANDLE)
+            os.remove(self.DEPLOY_DIR + self.LOCK_FILE_HANDLE)
         else:
             raise SartorisError(message=exit_codes[4])
         return 0
