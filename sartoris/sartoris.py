@@ -263,17 +263,10 @@ class Sartoris(object):
         object_store.add_object(tree)
         object_store.add_object(commit)
         _repo.refs['refs/heads/' + master_branch] = commit.id
+        import pdb; pdb.set_trace()
 
         # Build the tag object and tag
-        tag = Tag()
-        tag.tagger = author
-        tag.message = message
-        tag.name = tag
-        tag.object = (Commit, commit.id)
-        tag.tag_time = commit.author_time
-        tag.tag_timezone = tz
-        object_store.add_object(tag)
-        _repo['refs/tags/' + tag] = tag.id
+        _repo['refs/tags/' + tag] = commit.id
 
     def start(self, args):
         """
@@ -303,7 +296,8 @@ class Sartoris(object):
 
         try:
             self._dulwich_tag(_tag, _author)
-        except Exception:
+        except Exception as e:
+            logging.error(str(e))
             raise SartorisError(message=exit_codes[12], exit_code=12)
 
         return 0
