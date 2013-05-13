@@ -263,7 +263,6 @@ class Sartoris(object):
         object_store.add_object(tree)
         object_store.add_object(commit)
         _repo.refs['refs/heads/' + master_branch] = commit.id
-        import pdb; pdb.set_trace()
 
         # Build the tag object and tag
         _repo['refs/tags/' + tag] = commit.id
@@ -312,8 +311,8 @@ class Sartoris(object):
         try:
             commit_sha = self._get_commit_sha_for_tag(self._tag)
         except SartorisError:
-			# No current tag 
-			commit_sha = None
+            # No current tag
+            commit_sha = None
 
         # 1. hard reset the index to the desired tree
         # 2. move the branch pointer back to the previous HEAD
@@ -321,12 +320,13 @@ class Sartoris(object):
         # @TODO replace with dulwich
 
         if commit_sha:
-            if subprocess.call("git reset --hard {0}".format(commit_sha).split()):
+            if subprocess.call("git reset --hard {0}".
+                               format(commit_sha).split()):
                 raise SartorisError(message=exit_codes[5], exit_code=5)
             if subprocess.call("git reset --soft HEAD@{1}".split()):
                 raise SartorisError(message=exit_codes[5], exit_code=5)
-            if subprocess.call("git commit -m 'Revert to {0}'".format(commit_sha).
-                           split()):
+            if subprocess.call("git commit -m 'Revert to {0}'".
+                               format(commit_sha).split()):
                 raise SartorisError(message=exit_codes[5], exit_code=5)
 
         # Remove lock file
