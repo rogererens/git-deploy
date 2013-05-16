@@ -23,6 +23,8 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.\
 import logging
 import argparse
 import os
+import stat
+import shutil
 import sys
 from re import search
 import subprocess
@@ -75,6 +77,19 @@ except AttributeError:
     class NullHandler(logging.Handler):
         def emit(self, record):
             pass
+
+
+def remove_readonly(fn, path, excinfo):
+    """
+    Modifies path to writable for recursive path removal.
+        e.g. shutil.rmtree(path, onerror=remove_readonly)
+    """
+    if fn is os.rmdir:
+        os.chmod(path, stat.S_IWRITE)
+        os.rmdir(path)
+    elif fn is os.remove:
+        os.chmod(path, stat.S_IWRITE)
+        os.remove(path)
 
 # Add a do-nothing NullHandler to the module logger to prevent "No handlers
 # could be found" errors. The calling code can still add other, more useful
@@ -390,7 +405,10 @@ class Sartoris(object):
                 exit_code = 40
                 log.error("{0}::{1}".format(__name__, exit_codes[exit_code]))
                 return exit_code
-        os.unlink('.git/deploy')
+
+        os.remove(self.DEPLOY_DIR + self.LOCK_FILE_HANDLE)
+        shutil.rmtree(self.DEPLOY_DIR, onerror=remove_readonly)
+
         return 0
 
     def resync(self, args):
