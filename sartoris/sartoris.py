@@ -28,7 +28,7 @@ from re import search
 import subprocess
 from dulwich.config import StackedConfig
 from dulwich.repo import Repo
-from dulwich.objects import Blob, Tree, Commit, parse_timezone, Tag
+from dulwich.objects import Blob, Tree, Commit, parse_timezone
 from datetime import datetime
 import json
 from time import time
@@ -120,6 +120,9 @@ def parseargs(argv):
     parser.add_argument("-v", "--verbose",
                         default=defaults["verbose"], action="count",
                         help="increase the logging verbosity")
+    parser.add_argument("-f", "--force",
+                        action="store_true",
+                        help="force the action, bypass sanity checks.")
 
     args = parser.parse_args()
     return args
@@ -352,7 +355,7 @@ class Sartoris(object):
         _tag = "{0}-sync-{1}".format(repo_name,
                                      datetime.now().strftime(
                                          self.DATE_TIME_TAG_FORMAT))
-        proc = subprocess.Popen(['/usr/bin/git', 'tag', '-a', _tag, 
+        proc = subprocess.Popen(['/usr/bin/git', 'tag', '-a', _tag,
                                  '-m', '"test sync"'])
         proc.communicate()
 
@@ -369,7 +372,7 @@ class Sartoris(object):
             exit_code = 32
             log.error("{0}::{1}".format(__name__, exit_codes[exit_code]))
             return exit_code
-        return self._sync(_tag, None)
+        return self._sync(_tag, args.force)
 
     def _sync(self, tag, force):
         repo_name = self.config['repo_name']
