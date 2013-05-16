@@ -170,7 +170,8 @@ class Sartoris(object):
             log.error("{0}::{1}".format(__name__, exit_codes[exit_code]))
             sys.exit(exit_code)
 
-        self.config['deploy_file'] = self.config['top_dir'] + '/.git'
+        self.config['deploy_file'] = self.config['top_dir'] + \
+            '/.git/.deploy'
 
         try:
             self.config['hook_dir'] = sc.get('deploy', 'hook-dir')
@@ -351,7 +352,8 @@ class Sartoris(object):
         _tag = "{0}-sync-{1}".format(repo_name,
                                      datetime.now().strftime(
                                          self.DATE_TIME_TAG_FORMAT))
-        proc = subprocess.Popen(['/usr/bin/git tag', '-a', _tag])
+        proc = subprocess.Popen(['/usr/bin/git', 'tag', '-a', _tag, 
+                                 '-m', '"test sync"'])
         proc.communicate()
 
         if proc.returncode != 0:
@@ -367,7 +369,7 @@ class Sartoris(object):
             exit_code = 32
             log.error("{0}::{1}".format(__name__, exit_codes[exit_code]))
             return exit_code
-        return self._sync()
+        return self._sync(_tag, None)
 
     def _sync(self, tag, force):
         repo_name = self.config['repo_name']
