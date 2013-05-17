@@ -572,7 +572,7 @@ def main(argv, out=None, err=None):
     log.addHandler(handler)
     log.setLevel(level)
 
-    log.debug("Ready to run")
+    log.debug("Sartoris is ready to run")
 
     # Inline call to functionality - if Sartoris does not possess this
     #  attribute flag with logger
