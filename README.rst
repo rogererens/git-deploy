@@ -19,3 +19,30 @@ This name was chosen because Ryan Faulkner is working on the project and we thou
 - Genre: Novel
 
 Source: http://en.wikipedia.org/wiki/Sartoris
+
+Usage
+-----
+
+First set the "hook-dir" and "tag-prefix" for the deploy section in your global .gitconfig:
+
+    git config --global deploy.hook-dir .git/deploy/hooks
+    git config --global deploy.tag-prefix {%project name%}
+
+Next create the sartoris configuration file by first copying ./sartoris/config.py.example to 
+./sartoris/config.py then setting the TEST_REPO and SARTORIS_HOME variables.  The TEST_REPO
+should be defined in your /tmp folder while SARTORIS_HOME should point to the your local
+Sartoris project home.
+
+To start a new deployment issue a 'start' command:
+
+    python {% SARTORIS_HOME %}/sartoris/sartoris.py start
+
+At this point you are free to make commits to the project and when ready for deployment issue 
+a 'sync' command:
+
+    python {% SARTORIS_HOME %}/sartoris/sartoris.py sync
+
+The process may be aborted at any point with an 'abort' command:
+
+    python {% SARTORIS_HOME %}/sartoris/sartoris.py abort
+
