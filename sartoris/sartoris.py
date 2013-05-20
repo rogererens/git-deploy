@@ -473,11 +473,11 @@ class Sartoris(object):
 
     def show_tag(self, args):
         """
-            * display current tagged release
+            * display latest deploy tag
         """
         # Get latest "sync" tag - sets self._tag
         self._get_latest_deploy_tag()
-        log.info(self._tag)
+        print self._tag
         return 0
 
     def log_deploys(self, args):
