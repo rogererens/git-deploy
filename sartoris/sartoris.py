@@ -124,7 +124,7 @@ def parseargs(argv):
     # Global options.
     parser.add_argument("method")
     parser.add_argument("-c", "--count",
-                        default=defaults["quiet"], type=int,
+                        default=1, type=int,
                         help="number of tags to log")
     parser.add_argument("-q", "--quiet",
                         default=defaults["quiet"], action="count",
