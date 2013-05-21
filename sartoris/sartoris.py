@@ -220,14 +220,14 @@ class Sartoris(object):
                 e.g. `git rev-list $TAG | head -n 1` """
         # @TODO replace with dulwich
 
-        cmd = "git rev-list {0} | head -n 1".format(tag)
+        cmd = "git rev-list {0}".format(tag)
         proc = subprocess.Popen(cmd.split(),
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
-        tag = proc.communicate()[0].strip()
+        result = proc.communicate()[0].split('\n')
 
-        if not proc.returncode:
-            return tag
+        if not proc.returncode and len(result) > 0:
+            return result[0].strip()
         else:
             raise SartorisError(message=exit_codes[8], exit_code=8)
 
@@ -537,13 +537,11 @@ class Sartoris(object):
                                 split(),
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
-        proc.communicate()
+        lines = proc.communicate()[0].split('\n')
 
         if not proc.returncode:
-            line = proc.stdout.readline()
-            while line:
+            for line in lines:
                 print line
-                line = proc.stdout.readline()
         else:
             raise SartorisError(message=exit_codes[6], exit_code=6)
         return 0
