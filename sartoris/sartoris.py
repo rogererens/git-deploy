@@ -494,13 +494,15 @@ class Sartoris(object):
         proc = subprocess.Popen("git tag".split(),
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
-
         # Pull last 'num_tags' sync tags
-        for tag in proc.communicate()[0].split('\n'):
+        # Reverse the tags since the later ones will appear further down
+        tags = proc.communicate()[0].split('\n')
+        tags.reverse()
+        for tag in tags:
             if not num_tags:
                 break
             if search(r'sync', tag):
-                log.info(tag)
+                print tag
                 num_tags -= 1
         return 0
 
