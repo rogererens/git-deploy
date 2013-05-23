@@ -465,11 +465,6 @@ class Sartoris(object):
         # @TODO determine what to pass as arg 2
         self._sync(self._tag, args.force)
 
-        # Remove lock file
-        if os.listdir(self.DEPLOY_DIR).__contains__(self.LOCK_FILE_HANDLE):
-            os.remove(self.LOCK_FILE_HANDLE)
-        else:
-            raise SartorisError(message=exit_codes[4])
         return 0
 
     def show_tag(self, args):
