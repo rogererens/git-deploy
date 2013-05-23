@@ -445,6 +445,7 @@ class Sartoris(object):
         if self._check_lock():
             raise SartorisError(message=exit_codes[2])
 
+        self._create_lock()
         repo_name = self.config['repo_name']
 
         # Get latest "sync" tag - sets self._tag
