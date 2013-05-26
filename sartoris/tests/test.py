@@ -143,7 +143,7 @@ class TestSartorisFunctionality(unittest.TestCase):
         """
         sartoris_obj = Sartoris()
         try:
-            sartoris_obj.revert(None)
+            sartoris_obj.revert(namedtuple('o', 'force')(False))
         except SartorisError:
             assert False
 
