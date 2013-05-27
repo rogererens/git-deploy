@@ -208,15 +208,3 @@ class TestSartorisFunctionality(unittest.TestCase):
                 assert False
             return
         assert False
-
-
-class TestMain(unittest.TestCase):
-    def test_main(self):
-        # self.assertEqual(expected, main(argv, out, err))
-        assert False  # TODO: implement your test here
-
-
-class TestCli(unittest.TestCase):
-    def test_cli(self):
-        # self.assertEqual(expected, cli())
-        assert False  # TODO: implement your test here
