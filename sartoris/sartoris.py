@@ -98,14 +98,12 @@ log = logging.getLogger(__name__)
 log.addHandler(NullHandler())
 
 
-def parseargs(argv):
+def parseargs():
     """Parse command line arguments.
 
     Returns *args*, the list of arguments left over after processing.
 
-    :param argv: a list of command line arguments, usually :data:`sys.argv`.
     """
-
     parser = argparse.ArgumentParser(
         description="This script performs ",
         epilog="",
@@ -556,7 +554,7 @@ def main(argv, out=None, err=None):
         out = sys.stdout
     if err is None:  # pragma: nocover
         err = sys.stderr
-    args = parseargs(argv)
+    args = parseargs()
     level = logging.WARNING - ((args.verbose - args.quiet) * 10)
     if args.silent:
         level = logging.CRITICAL + 1
