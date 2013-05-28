@@ -10,7 +10,7 @@
 
 import unittest
 from collections import namedtuple
-from sartoris.sartoris import Sartoris, SartorisError, exit_codes
+from sartoris.sartoris import Sartoris, SartorisError, exit_codes, parseargs
 from sartoris import config
 from dulwich.repo import Repo
 from os import mkdir, chdir
@@ -56,9 +56,11 @@ class TestNullHandler(unittest.TestCase):
 
 
 class TestParseargs(unittest.TestCase):
-    def test_parseargs(self):
-        # self.assertEqual(expected, parseargs(argv))
-        assert False  # TODO: implement your test here
+    def test_parseargs_present(self):
+        args = parseargs()
+        cond = 'force' in args and 'method' in args and 'count' in args and \
+               'quiet' in args and 'silent' in args and 'verbose' in args
+        assert cond
 
 
 class TestSartorisInit(unittest.TestCase):
