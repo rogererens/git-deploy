@@ -81,9 +81,10 @@ class TestSartorisInit(unittest.TestCase):
         s = Sartoris()
         assert 'deploy_file' in s.config
 
-    def test___new__(self):
-        # sartoris = Sartoris(*args, **kwargs)
-        assert False  # TODO: implement your test here
+    def test_singleton(self):
+        s1 = Sartoris()
+        s2 = Sartoris()
+        assert s1 == s2
 
 
 class TestSartorisFunctionality(unittest.TestCase):
