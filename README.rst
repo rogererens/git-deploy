@@ -26,6 +26,7 @@ Usage
 First set the "hook-dir" and "tag-prefix" for the deploy section in your global .gitconfig:
 
     git config --global deploy.hook-dir .git/deploy/hooks
+    
     git config --global deploy.tag-prefix {%project name%}
 
 Next create the sartoris configuration file by first copying ./sartoris/config.py.example to 
