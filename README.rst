@@ -25,7 +25,13 @@ Usage
 
 First set the "hook-dir" and "tag-prefix" for the deploy section in your global .gitconfig:
 
-    git config --global deploy.hook-dir .git/deploy/hooks
+	git config --global deploy.remote-target {%target host%} # e.g. my.remotehost.com:8080 a.k.a deploy host
+
+	git config --global deploy.remote-path {%remote deploy path%}
+
+	git config --global deploy.remote-user {%authorized user on deploy target%}
+	
+	git config --global deploy.hook-dir .git/deploy/hooks
     
     git config --global deploy.tag-prefix {%project name%}
 
