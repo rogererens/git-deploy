@@ -52,6 +52,9 @@ exit_codes = {
     22: 'Missing repo configuration item "tag-prefix". '
         'Please configure this using:'
         '\n\tgit config tag-prefix <repo>',
+    23: 'Missing system configuration item "path". Exiting.',
+    24: 'Missing system configuration item "user". Exiting.',
+    25: 'Missing system configuration item "target". Exiting.',
     30: 'No deploy started. Please run: git deploy start',
     31: 'Failed to write tag on sync. Exiting.',
     32: 'Failed to write the .deploy file. Exiting.',
@@ -189,6 +192,7 @@ class Sartoris(object):
         self.config['deploy_file'] = self.config['top_dir'] + \
             '/.git/.deploy'
 
+        # Get config for deploy.hook-dir
         try:
             self.config['hook_dir'] = sc.get('deploy', 'hook-dir')
         except KeyError:
@@ -196,12 +200,38 @@ class Sartoris(object):
             log.error("{0}::{1}".format(__name__, exit_codes[exit_code]))
             sys.exit(exit_code)
 
+        # Get config for deploy.hook-dir
+        try:
+            self.config['path'] = sc.get('deploy', 'path')
+        except KeyError:
+            exit_code = 23
+            log.error("{0}::{1}".format(__name__, exit_codes[exit_code]))
+            sys.exit(exit_code)
+
+        # Get config for deploy.hook-dir
+        try:
+            self.config['user'] = sc.get('deploy', 'user')
+        except KeyError:
+            exit_code = 24
+            log.error("{0}::{1}".format(__name__, exit_codes[exit_code]))
+            sys.exit(exit_code)
+
+        # Get config for deploy.hook-dir
+        try:
+            self.config['target'] = sc.get('deploy', 'target')
+        except KeyError:
+            exit_code = 25
+            log.error("{0}::{1}".format(__name__, exit_codes[exit_code]))
+            sys.exit(exit_code)
+
+        # Get config for repo name from deploy.tag-prefix
         try:
             self.config['repo_name'] = sc.get('deploy', 'tag-prefix')
         except KeyError:
             exit_code = 22
             log.error("{0}::{1}".format(__name__, exit_codes[exit_code]))
             sys.exit(exit_code)
+
         self.config['sync_dir'] = '{0}/sync'.format(self.config['hook_dir'])
 
     def _check_lock(self):
