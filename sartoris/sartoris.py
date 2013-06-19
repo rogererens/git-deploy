@@ -255,6 +255,7 @@ class Sartoris(object):
             self.DEPLOY_DIR))
 
     def _remove_lock(self):
+        """ Remove the lock file """
         os.system("ssh {0}@{1} rm {2}/{3}/{4}".format(
             self.config['user'],
             self.config['target'],
@@ -406,7 +407,7 @@ class Sartoris(object):
             * call a sync hook with the prefix (repo) and tag info
         """
         #TODO: do git calls in dulwich, rather than shelling out
-        if 'lock' not in os.listdir('.git/deploy'):
+        if not self._check_lock():
             exit_code = 30
             log.error("{0}::{1}".format(__name__, exit_codes[exit_code]))
             return exit_code
@@ -422,6 +423,7 @@ class Sartoris(object):
             exit_code = 31
             log.error("{0}::{1}".format(__name__, exit_codes[exit_code]))
             return exit_code
+
         # Write .deploy file
         try:
             deploy_file = open(self.config['deploy_file'], 'w')
@@ -431,11 +433,13 @@ class Sartoris(object):
             exit_code = 32
             log.error("{0}::{1}".format(__name__, exit_codes[exit_code]))
             return exit_code
+
         return self._sync(_tag, args.force)
 
     def _sync(self, tag, force):
         repo_name = self.config['repo_name']
         sync_script = '{0}/{1}.sync'.format(self.config["sync_dir"], repo_name)
+
         #TODO: use a pluggable sync system rather than shelling out
         if os.path.exists(sync_script):
             proc = subprocess.Popen([sync_script,
@@ -449,10 +453,7 @@ class Sartoris(object):
                 exit_code = 40
                 log.error("{0}::{1}".format(__name__, exit_codes[exit_code]))
                 return exit_code
-
-        os.remove(self.DEPLOY_DIR + self.LOCK_FILE_HANDLE)
-        shutil.rmtree(self.DEPLOY_DIR, onerror=remove_readonly)
-
+        self._remove_lock()
         return 0
 
     def resync(self, args):
