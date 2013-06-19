@@ -254,6 +254,14 @@ class Sartoris(object):
             self.config['path'],
             self.DEPLOY_DIR))
 
+    def _remove_lock(self):
+        os.system("ssh {0}@{1} rm {2}/{3}/{4}".format(
+            self.config['user'],
+            self.config['target'],
+            self.config['path'],
+            self.DEPLOY_DIR,
+            self.LOCK_FILE_HANDLE))
+
     def _get_commit_sha_for_tag(self, tag):
         """ Obtain the commit sha of an associated tag
                 e.g. `git rev-list $TAG | head -n 1` """
@@ -388,10 +396,7 @@ class Sartoris(object):
                 raise SartorisError(message=exit_codes[5], exit_code=5)
 
         # Remove lock file
-        if os.listdir(self.DEPLOY_DIR).__contains__(self.LOCK_FILE_HANDLE):
-            os.remove(self.DEPLOY_DIR + self.LOCK_FILE_HANDLE)
-        else:
-            raise SartorisError(message=exit_codes[4])
+        self._remove_lock()
         return 0
 
     def sync(self, args, no_deps=False, force=False):
