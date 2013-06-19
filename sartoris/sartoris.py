@@ -240,8 +240,19 @@ class Sartoris(object):
 
     def _create_lock(self):
         """ Create a lock file """
-        with open(self.DEPLOY_DIR + self.LOCK_FILE_HANDLE, 'wb'):
-            pass
+
+        log.info('{0}::SSH Lock create.'.format(__name__))
+        os.system("ssh {0}@{1} touch {2}".format(
+            self.config['user'],
+            self.config['target'],
+            self.LOCK_FILE_HANDLE))
+
+        log.info('{0}::SSH Lock place.'.format(__name__))
+        os.system("ssh {0}@{1} mv lock {2}/{3}".format(
+            self.config['user'],
+            self.config['target'],
+            self.config['path'],
+            self.DEPLOY_DIR))
 
     def _get_commit_sha_for_tag(self, tag):
         """ Obtain the commit sha of an associated tag
