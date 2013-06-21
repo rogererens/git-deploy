@@ -44,6 +44,7 @@ exit_codes = {
     6: 'Diff failed.  Exiting.',
     7: 'Missing tag(s).  Exiting.',
     8: 'Could not find last deploy tag.  Exiting.',
+    9: 'Could not get listing from deploy target.  Exiting.',
     10: 'Please specify number of deploy tags to emit with -c.  Exiting',
     11: 'Could not find any deploys.  Exiting',
     12: 'dulwich call failed. Exiting',
@@ -236,7 +237,23 @@ class Sartoris(object):
 
     def _check_lock(self):
         """ Returns boolean flag on lock file existence """
-        return os.path.exists(self.DEPLOY_DIR + self.LOCK_FILE_HANDLE)
+        cmd = "ssh {0}@{1} ls {2}/{3}".format(
+            self.config['user'],
+            self.config['target'],
+            self.config['path'],
+            self.LOCK_FILE_HANDLE)
+        proc = subprocess.Popen(cmd.split(),
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+        result = proc.communicate()[0].split('\n')
+
+        if not proc.returncode:
+            if result[0].strip() == self.LOCK_FILE_HANDLE:
+                return True
+            else:
+                return False
+        else:
+            raise SartorisError(message=exit_codes[9], exit_code=9)
 
     def _create_lock(self):
         """ Create a lock file """
