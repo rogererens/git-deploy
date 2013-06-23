@@ -247,13 +247,14 @@ class Sartoris(object):
                                 stderr=subprocess.PIPE)
         result = proc.communicate()[0].split('\n')
 
+        log.info('{0}:: Executing - {1}'.format(__name__, cmd))
         if not proc.returncode:
             if result[0].strip() == self.LOCK_FILE_HANDLE:
                 return True
             else:
                 return False
         else:
-            raise SartorisError(message=exit_codes[9], exit_code=9)
+            return False
 
     def _create_lock(self):
         """ Create a lock file """
