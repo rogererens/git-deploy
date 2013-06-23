@@ -274,12 +274,14 @@ class Sartoris(object):
 
     def _remove_lock(self):
         """ Remove the lock file """
-        os.system("ssh {0}@{1} rm {2}/{3}/{4}".format(
+        cmd = "ssh {0}@{1} rm {2}/{3}/{4}".format(
             self.config['user'],
             self.config['target'],
             self.config['path'],
             self.DEPLOY_DIR,
-            self.LOCK_FILE_HANDLE))
+            self.LOCK_FILE_HANDLE)
+        log.info('{0}:: Executing - {1}'.format(__name__, cmd))
+        os.system(cmd)
 
     def _get_commit_sha_for_tag(self, tag):
         """ Obtain the commit sha of an associated tag
