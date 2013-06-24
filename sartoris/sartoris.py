@@ -237,10 +237,11 @@ class Sartoris(object):
 
     def _check_lock(self):
         """ Returns boolean flag on lock file existence """
-        cmd = "ssh {0}@{1} ls {2}/{3}".format(
+        cmd = "ssh {0}@{1} ls {2}/{3}/{4}".format(
             self.config['user'],
             self.config['target'],
             self.config['path'],
+            self.DEPLOY_DIR,
             self.LOCK_FILE_HANDLE)
         proc = subprocess.Popen(cmd.split(),
                                 stdout=subprocess.PIPE,
@@ -260,17 +261,12 @@ class Sartoris(object):
         """ Create a lock file """
 
         log.info('{0}::SSH Lock create.'.format(__name__))
-        os.system("ssh {0}@{1} touch {2}".format(
-            self.config['user'],
-            self.config['target'],
-            self.LOCK_FILE_HANDLE))
-
-        log.info('{0}::SSH Lock place.'.format(__name__))
-        os.system("ssh {0}@{1} mv lock {2}/{3}".format(
+        os.system("ssh {0}@{1} touch {2}/{3}/{4}".format(
             self.config['user'],
             self.config['target'],
             self.config['path'],
-            self.DEPLOY_DIR))
+            self.DEPLOY_DIR,
+            self.LOCK_FILE_HANDLE))
 
     def _remove_lock(self):
         """ Remove the lock file """
@@ -462,6 +458,8 @@ class Sartoris(object):
 
         #TODO: use a pluggable sync system rather than shelling out
         if os.path.exists(sync_script):
+            log.info('{0}::Calling sync script at {1}'.format(__name__,
+                                                              sync_script))
             proc = subprocess.Popen([sync_script,
                                      '--repo="{0}"'.format(repo_name),
                                      '--tag="{0}"'.format(self._tag),
