@@ -24,7 +24,6 @@ import logging
 import argparse
 import os
 import stat
-import shutil
 import sys
 from re import search
 import subprocess
