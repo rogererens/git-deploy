@@ -208,7 +208,7 @@ class Sartoris(object):
             log.error("{0}::{1}".format(__name__, exit_codes[exit_code]))
             sys.exit(exit_code)
 
-        # Get config for deploy.hook-dir
+        # Get config for deploy.user
         try:
             self.config['user'] = sc.get('deploy', 'user')
         except KeyError:
@@ -216,7 +216,7 @@ class Sartoris(object):
             log.error("{0}::{1}".format(__name__, exit_codes[exit_code]))
             sys.exit(exit_code)
 
-        # Get config for deploy.hook-dir
+        # Get config for deploy.target
         try:
             self.config['target'] = sc.get('deploy', 'target')
         except KeyError:
