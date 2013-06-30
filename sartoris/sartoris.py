@@ -529,6 +529,19 @@ class Sartoris(object):
 
         return 0
 
+    def release():
+        """
+        * tag a release and push to remote
+        In this case you may want to perform the rollout yourself.
+        """
+        pass
+
+    def finish():
+        """
+        Call after rolling out on 'release'
+        """
+        pass
+
     def show_tag(self, args):
         """
             * display latest deploy tag
