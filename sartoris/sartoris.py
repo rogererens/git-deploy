@@ -470,8 +470,16 @@ class Sartoris(object):
                 exit_code = 40
                 log.error("{0}::{1}".format(__name__, exit_codes[exit_code]))
                 return exit_code
+        else:
+            # In absence of a sync script
+            # TODO - push local changes to repo and pull on remote
+            self._default_sync()
+
         self._remove_lock()
         return 0
+
+    def _default_sync(self):
+        pass
 
     def resync(self, args):
         """
