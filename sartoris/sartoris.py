@@ -479,7 +479,32 @@ class Sartoris(object):
         return 0
 
     def _default_sync(self):
-        pass
+
+        #
+        # git push origin master
+        log.info('{0}::Calling default sync - '
+                 'pushing changes ... '.format(__name__))
+        proc = subprocess.Popen(['git', 'push',
+                                 self.config['remote'],
+                                 self.config['branch']])
+        proc_out = proc.communicate()[0]
+        log.info(proc_out)
+
+        # ssh user@remote git pull origin master
+        log.info('{0}::Calling default sync - '
+                 'pulling to target'.format(__name__))
+        proc = subprocess.Popen(['ssh',
+                                 '{0}@{1}'.format(
+                                     self.config['user'],
+                                     self.config['target']
+                                 ),
+                                 'git', 'pull',
+                                 self.config['remote'],
+                                 self.config['branch']])
+        proc_out = proc.communicate()[0]
+        log.info(proc_out)
+
+        return
 
     def resync(self, args):
         """
