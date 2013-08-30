@@ -35,6 +35,10 @@ First set the "hook-dir" and "tag-prefix" for the deploy section in your global 
 
 	git config --global deploy.tag-prefix {%project name%}
 
+    git config --global deploy.remote {%remote name%}
+
+    git config --global deploy.branch {%deploy branch name%}
+
 Next create the sartoris configuration file by first copying ./sartoris/config.py.example to 
 ./sartoris/config.py then setting the TEST_REPO and SARTORIS_HOME variables.  The TEST_REPO
 should be defined in your /tmp folder while SARTORIS_HOME should point to the your local
