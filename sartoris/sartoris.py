@@ -259,12 +259,24 @@ class Sartoris(object):
             return False
 
     def _create_lock(self):
-        """ Create a lock file """
+        """
+        Create a lock file
 
+        Write the user name to the lock file in the dploy directory.
+        """
         log.info('{0}::SSH Lock create.'.format(__name__))
+
         os.system("ssh {0}@{1} touch {2}/{3}/{4}".format(
             self.config['user'],
             self.config['target'],
+            self.config['path'],
+            self.DEPLOY_DIR,
+            self.LOCK_FILE_HANDLE))
+
+        os.system("ssh {0}@{1} echo \"{2}\" >> {3}/{4}/{5}".format(
+            self.config['user'],
+            self.config['target'],
+            self.config['user'],
             self.config['path'],
             self.DEPLOY_DIR,
             self.LOCK_FILE_HANDLE))
