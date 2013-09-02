@@ -242,12 +242,14 @@ class Sartoris(object):
             self.config['path'],
             self.DEPLOY_DIR,
             self.LOCK_FILE_HANDLE)
+
+        log.debug('{0}:: Executing - {1}'.format(__name__, cmd))
         proc = subprocess.Popen(cmd.split(),
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
         result = proc.communicate()[0].split('\n')
+        log.debug('{0}:: Result of {1} - {2}'.format(__name__, cmd, result))
 
-        log.info('{0}:: Executing - {1}'.format(__name__, cmd))
         if not proc.returncode:
             if result[0].strip() == self.LOCK_FILE_HANDLE:
                 return True
