@@ -25,19 +25,19 @@ Usage
 
 First set the "hook-dir" and "tag-prefix" for the deploy section in your global .gitconfig:
 
-	git config --global deploy.target {%target host%} # e.g. my.remotehost.com:8080 a.k.a deploy host
+	git config deploy.target {%target host%} # e.g. my.remotehost.com:8080 a.k.a deploy host
 
-	git config --global deploy.path {%remote deploy path%}
+	git config deploy.path {%remote deploy path%}
 
-	git config --global deploy.user {%authorized user on deploy target%}
+	git config deploy.user {%authorized user on deploy target%}
 
-	git config --global deploy.hook-dir .git/deploy/hooks
+	git config deploy.hook-dir .git/deploy/hooks
 
-	git config --global deploy.tag-prefix {%project name%}
+	git config deploy.tag-prefix {%project name%}
 
-    git config --global deploy.remote {%remote name%}
+    git config deploy.remote {%remote name%}
 
-    git config --global deploy.branch {%deploy branch name%}
+    git config deploy.branch {%deploy branch name%}
 
 Next create the sartoris configuration file by first copying ./sartoris/config.py.example to 
 ./sartoris/config.py then setting the TEST_REPO and SARTORIS_HOME variables.  The TEST_REPO
