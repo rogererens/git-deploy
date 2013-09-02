@@ -234,6 +234,9 @@ class Sartoris(object):
 
         self.config['sync_dir'] = '{0}/sync'.format(self.config['hook_dir'])
 
+    def _get_current_lock_user(self):
+        return self.config['user']
+
     def _check_lock(self):
         """ Returns boolean flag on lock file existence """
         cmd = "ssh {0}@{1} ls {2}/{3}/{4}".format(
@@ -243,12 +246,17 @@ class Sartoris(object):
             self.DEPLOY_DIR,
             self.LOCK_FILE_HANDLE)
 
-        log.debug('{0}:: Executing - {1}'.format(__name__, cmd))
+        log.debug('{0} :: Executing - {1}'.format(__name__, cmd))
         proc = subprocess.Popen(cmd.split(),
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
         result = proc.communicate()[0].split('\n')
-        log.debug('{0}:: Result of {1} - {2}'.format(__name__, cmd, result))
+        log.debug('{0} :: Result of {1} - {2}'.format(__name__, cmd, result))
+
+        # lock file exists - check to ensure that the lock file user matches
+        if self._get_current_lock_user() != self.config['user']:
+            log.info('{0} :: Lock user doesn\'t match'.format(__name__))
+            return False
 
         if not proc.returncode:
             if result[0].strip() == self.LOCK_FILE_HANDLE:
