@@ -155,7 +155,8 @@ class Sartoris(object):
     # Name of lock file
     LOCK_FILE_HANDLE = 'lock'
 
-    __instance = None                           # class instance
+    # class instance
+    __instance = None
 
     def __init__(self, *args, **kwargs):
         """ Initialize class instance """
@@ -165,7 +166,10 @@ class Sartoris(object):
             os.mkdir(self.DEPLOY_DIR)
 
         self._configure()
-        self._tag = None                    # Stores tag state
+        log.info('{0} :: Config - {2}'.format(__name__, str(self.config)))
+
+        # Stores tag state
+        self._tag = None
 
     def __new__(cls, *args, **kwargs):
         """ This class is Singleton, return only one instance """
