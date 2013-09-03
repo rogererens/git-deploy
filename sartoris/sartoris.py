@@ -29,7 +29,7 @@ from re import search
 import subprocess
 from dulwich.config import StackedConfig
 from dulwich.repo import Repo
-from dulwich.objects import Blob, Tree, Commit, parse_timezone
+from dulwich.objects import Tag, Commit, parse_timezone
 from datetime import datetime
 import json
 from time import time
@@ -57,6 +57,8 @@ exit_codes = {
     25: 'Missing system configuration item "target". Exiting.',
     26: 'Missing system configuration item "remote". Exiting.',
     27: 'Missing system configuration item "branch". Exiting.',
+    28: 'Missing system configuration item "user.name". Exiting.',
+    29: 'Missing system configuration item "user.email". Exiting.',
     30: 'No deploy started. Please run: git deploy start',
     31: 'Failed to write tag on sync. Exiting.',
     32: 'Failed to write the .deploy file. Exiting.',
@@ -157,6 +159,9 @@ class Sartoris(object):
     # Name of lock file
     LOCK_FILE_HANDLE = 'lock'
 
+    # Default tag message
+    DEFAULT_TAG_MSG = 'Sartoris Tag.'
+
     # class instance
     __instance = None
 
@@ -241,7 +246,7 @@ class Sartoris(object):
             log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
             sys.exit(exit_code)
 
-        # Get config for deploy.target
+        # Get config for deploy.remote
         try:
             self.config['remote'] = sc.get('deploy', 'remote')
         except KeyError:
@@ -249,11 +254,27 @@ class Sartoris(object):
             log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
             sys.exit(exit_code)
 
-        # Get config for deploy.target
+        # Get config for deploy.branch
         try:
             self.config['branch'] = sc.get('deploy', 'branch')
         except KeyError:
             exit_code = 27
+            log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
+            sys.exit(exit_code)
+
+        # Get config for user.name
+        try:
+            self.config['user.name'] = sc.get('user', 'name')
+        except KeyError:
+            exit_code = 28
+            log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
+            sys.exit(exit_code)
+
+        # Get config for user.email
+        try:
+            self.config['user.email'] = sc.get('user', 'email')
+        except KeyError:
+            exit_code = 29
             log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
             sys.exit(exit_code)
 
@@ -371,42 +392,30 @@ class Sartoris(object):
             raise SartorisError(message=exit_codes[8], exit_code=8)
         return 0
 
-    def _dulwich_tag(self, tag, author, message=None):
-        """ Creates a tag in git via dulwich calls:
-
-                **tag** - string :: "<project>-[start|sync]-<timestamp>"
-                **author** - string :: "Your Name <your.email@example.com>"
+    def _dulwich_tag(self, tag, author, message=DEFAULT_TAG_MSG):
         """
-        if not message:
-            message = tag
+        Creates a tag in git via dulwich calls:
+
+        Parameters:
+            tag - string :: "<project>-[start|sync]-<timestamp>"
+            author - string :: "Your Name <your.email@example.com>"
+        """
 
         # Open the repo
         _repo = Repo(self.config['top_dir'])
-        master_branch = 'master'
 
-        # Build the commit object
-        blob = Blob.from_string("empty")
-        tree = Tree()
-        tree.add(tag, 0100644, blob.id)
+        # Create the tag object
+        tag_obj = Tag()
+        tag_obj.tagger = author
+        tag_obj.message = message
+        tag_obj.name = tag
+        tag_obj.object = (Commit, _repo.refs['HEAD'])
+        tag_obj.tag_time = int(time())
+        tag_obj.tag_timezone = parse_timezone('-0200')[0]
 
-        commit = Commit()
-        commit.tree = tree.id
-        commit.author = commit.committer = author
-        commit.commit_time = commit.author_time = int(time())
-        tz = parse_timezone('-0200')[0]
-        commit.commit_timezone = commit.author_timezone = tz
-        commit.encoding = "UTF-8"
-        commit.message = 'Tagging repo for deploy: ' + message
-
-        # Add objects to the repo store instance
-        object_store = _repo.object_store
-        object_store.add_object(blob)
-        object_store.add_object(tree)
-        object_store.add_object(commit)
-        _repo.refs['refs/heads/' + master_branch] = commit.id
-
-        # Build the tag object and tag
-        _repo['refs/tags/' + tag] = commit.id
+        # Add tag to the object store
+        _repo.object_store.add_object(tag_obj)
+        _repo['refs/tags/' + tag] = tag_obj.id
 
     def start(self, args):
         """
@@ -431,8 +440,8 @@ class Sartoris(object):
 
         # @TODO use dulwich config to set '_author'
         _tag = '{0}-start-{1}'.format(repo_name, timestamp)
-        _author = '{0} {1}'.format('author', 'author@domain.com')
-
+        _author = '{0} {1}'.format(self.config['user.name'],
+                                   self.config['user.email'])
         try:
             self._dulwich_tag(_tag, _author)
         except Exception as e:
