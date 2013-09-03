@@ -55,6 +55,8 @@ exit_codes = {
     23: 'Missing system configuration item "path". Exiting.',
     24: 'Missing system configuration item "user". Exiting.',
     25: 'Missing system configuration item "target". Exiting.',
+    26: 'Missing system configuration item "remote". Exiting.',
+    27: 'Missing system configuration item "branch". Exiting.',
     30: 'No deploy started. Please run: git deploy start',
     31: 'Failed to write tag on sync. Exiting.',
     32: 'Failed to write the .deploy file. Exiting.',
@@ -165,9 +167,6 @@ class Sartoris(object):
         if not os.path.exists(self.DEPLOY_DIR):
             os.mkdir(self.DEPLOY_DIR)
 
-        self._configure()
-        log.info('{0} :: Config - {1}'.format(__name__, str(self.config)))
-
         # Stores tag state
         self._tag = None
 
@@ -175,6 +174,12 @@ class Sartoris(object):
         """ This class is Singleton, return only one instance """
         if not cls.__instance:
             cls.__instance = super(Sartoris, cls).__new__(cls, *args, **kwargs)
+
+            # Call config
+            cls.__instance._configure()
+
+            log.info('{0} :: Config - {1}'.format(__name__,
+                     str(cls.__instance.config)))
         return cls.__instance
 
     def _configure(self):
@@ -190,7 +195,7 @@ class Sartoris(object):
 
         if proc.returncode != 0:
             exit_code = 20
-            log.error("{0}::{1}".format(__name__, exit_codes[exit_code]))
+            log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
             sys.exit(exit_code)
 
         self.config['deploy_file'] = self.config['top_dir'] + \
@@ -201,7 +206,7 @@ class Sartoris(object):
             self.config['hook_dir'] = sc.get('deploy', 'hook-dir')
         except KeyError:
             exit_code = 21
-            log.error("{0}::{1}".format(__name__, exit_codes[exit_code]))
+            log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
             sys.exit(exit_code)
 
         # Get config for deploy.hook-dir
@@ -209,7 +214,7 @@ class Sartoris(object):
             self.config['path'] = sc.get('deploy', 'path')
         except KeyError:
             exit_code = 23
-            log.error("{0}::{1}".format(__name__, exit_codes[exit_code]))
+            log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
             sys.exit(exit_code)
 
         # Get config for deploy.user
@@ -217,7 +222,7 @@ class Sartoris(object):
             self.config['user'] = sc.get('deploy', 'user')
         except KeyError:
             exit_code = 24
-            log.error("{0}::{1}".format(__name__, exit_codes[exit_code]))
+            log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
             sys.exit(exit_code)
 
         # Get config for deploy.target
@@ -225,7 +230,7 @@ class Sartoris(object):
             self.config['target'] = sc.get('deploy', 'target')
         except KeyError:
             exit_code = 25
-            log.error("{0}::{1}".format(__name__, exit_codes[exit_code]))
+            log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
             sys.exit(exit_code)
 
         # Get config for repo name from deploy.tag-prefix
@@ -233,7 +238,23 @@ class Sartoris(object):
             self.config['repo_name'] = sc.get('deploy', 'tag-prefix')
         except KeyError:
             exit_code = 22
-            log.error("{0}::{1}".format(__name__, exit_codes[exit_code]))
+            log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
+            sys.exit(exit_code)
+
+        # Get config for deploy.target
+        try:
+            self.config['remote'] = sc.get('deploy', 'remote')
+        except KeyError:
+            exit_code = 26
+            log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
+            sys.exit(exit_code)
+
+        # Get config for deploy.target
+        try:
+            self.config['branch'] = sc.get('deploy', 'branch')
+        except KeyError:
+            exit_code = 27
+            log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
             sys.exit(exit_code)
 
         self.config['sync_dir'] = '{0}/sync'.format(self.config['hook_dir'])
@@ -313,7 +334,7 @@ class Sartoris(object):
             self.config['path'],
             self.DEPLOY_DIR,
             self._get_lock_file_name())
-        log.info('{0}:: Executing - {1}'.format(__name__, cmd))
+        log.info('{0} :: Executing - {1}'.format(__name__, cmd))
         os.system(cmd)
 
     def _get_commit_sha_for_tag(self, tag):
@@ -404,7 +425,7 @@ class Sartoris(object):
 
         # Tag the repo at this point
         repo_name = self.config['repo_name']
-        log.debug(__name__ + '::Adding `start` tag for repo.')
+        log.debug(__name__ + ' :: Adding `start` tag for repo.')
 
         timestamp = datetime.now().strftime(self.DATE_TIME_TAG_FORMAT)
 
@@ -473,7 +494,7 @@ class Sartoris(object):
 
         if proc.returncode != 0:
             exit_code = 31
-            log.error("{0}::{1}".format(__name__, exit_codes[exit_code]))
+            log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
             return exit_code
 
         # Write .deploy file
@@ -483,7 +504,7 @@ class Sartoris(object):
             deploy_file.close()
         except OSError:
             exit_code = 32
-            log.error("{0}::{1}".format(__name__, exit_codes[exit_code]))
+            log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
             return exit_code
 
         return self._sync(_tag, args.force)
@@ -494,8 +515,8 @@ class Sartoris(object):
 
         #TODO: use a pluggable sync system rather than shelling out
         if os.path.exists(sync_script):
-            log.info('{0}::Calling sync script at {1}'.format(__name__,
-                                                              sync_script))
+            log.info('{0} :: Calling sync script at {1}'.format(__name__,
+                                                                sync_script))
             proc = subprocess.Popen([sync_script,
                                      '--repo="{0}"'.format(repo_name),
                                      '--tag="{0}"'.format(self._tag),
@@ -505,7 +526,7 @@ class Sartoris(object):
 
             if proc.returncode != 0:
                 exit_code = 40
-                log.error("{0}::{1}".format(__name__, exit_codes[exit_code]))
+                log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
                 return exit_code
         else:
             # In absence of a sync script
@@ -519,7 +540,7 @@ class Sartoris(object):
 
         #
         # git push origin master
-        log.info('{0}::Calling default sync - '
+        log.info('{0} :: Calling default sync - '
                  'pushing changes ... '.format(__name__))
         proc = subprocess.Popen(['git', 'push',
                                  self.config['remote'],
@@ -528,7 +549,7 @@ class Sartoris(object):
         log.info(proc_out)
 
         # ssh user@remote git pull origin master
-        log.info('{0}::Calling default sync - '
+        log.info('{0} :: Calling default sync - '
                  'pulling to target'.format(__name__))
         proc = subprocess.Popen(['ssh',
                                  '{0}@{1}'.format(
@@ -551,7 +572,7 @@ class Sartoris(object):
         """
         if self._check_lock():
             exit_code = 2
-            log.error(__name__ + '::' + exit_codes[exit_code])
+            log.error('{0} :: {1}'.format(__name__, exit_codes[exit_code]))
             return exit_code
         self._create_lock()
         repo_name = self.config['repo_name']
@@ -561,7 +582,7 @@ class Sartoris(object):
             deploy_info = json.loads(deploy_info)
         except OSError:
             exit_code = 50
-            log.error("{0}::{1}".format(__name__, exit_codes[exit_code]))
+            log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
             return exit_code
         return self._sync(repo_name, deploy_info["tag"])
 
@@ -591,7 +612,7 @@ class Sartoris(object):
             deploy_file.close()
         except OSError:
             exit_code = 32
-            log.error("{0}::{1}".format(__name__, exit_codes[exit_code]))
+            log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
             return exit_code
 
         # @TODO determine what to pass as arg 2
@@ -729,7 +750,7 @@ def main(argv, out=None, err=None):
             log.error(e.message)
             return e.exit_code
     else:
-        log.error(__name__ + '::No function called %(method)s.' % {
+        log.error(__name__ + ' :: No function called %(method)s.' % {
             'method': args.method})
 
 
