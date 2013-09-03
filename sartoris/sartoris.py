@@ -267,7 +267,15 @@ class Sartoris(object):
         log.debug('{0} :: Result of {1} - {2}'.format(__name__, cmd, result))
 
         if not proc.returncode:
-            file_handle = result[0].strip()
+
+            # Pull the lock file handle from
+            try:
+                file_handle = result[0].split('/')[-1].strip()
+            except (IndexError, ValueError):
+                log.debug('{0} :: Could not extract ' \
+                          'the lock file name.'.format(__name__))
+                return False
+
             if file_handle == self._get_lock_file_name():
                 return True
             else:
@@ -449,7 +457,7 @@ class Sartoris(object):
         #TODO: do git calls in dulwich, rather than shelling out
         if not self._check_lock():
             exit_code = 30
-            log.error("{0}::{1}".format(__name__, exit_codes[exit_code]))
+            log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
             return exit_code
         repo_name = self.config['repo_name']
         _tag = "{0}-sync-{1}".format(repo_name,
