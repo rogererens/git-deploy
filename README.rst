@@ -21,6 +21,13 @@ This name was chosen because Ryan Faulkner is working on the project and we thou
 Source: http://en.wikipedia.org/wiki/Sartoris
 
 
+Usage
+-----
+
+Basic usage involves cloning the remote working repo to the deploy target and all client nodes.  When
+a client is ready to deploy 'start' is invoked to obtain a lock on the remote and 'sync' is called to
+push changes to the target.  On completion th elock is removed.
+
 
 Configuration
 -------------
