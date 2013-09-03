@@ -166,7 +166,7 @@ class Sartoris(object):
             os.mkdir(self.DEPLOY_DIR)
 
         self._configure()
-        log.info('{0} :: Config - {2}'.format(__name__, str(self.config)))
+        log.info('{0} :: Config - {1}'.format(__name__, str(self.config)))
 
         # Stores tag state
         self._tag = None
@@ -276,7 +276,7 @@ class Sartoris(object):
             try:
                 file_handle = result[0].split('/')[-1].strip()
             except (IndexError, ValueError):
-                log.debug('{0} :: Could not extract ' \
+                log.debug('{0} :: Could not extract '
                           'the lock file name.'.format(__name__))
                 return False
 
