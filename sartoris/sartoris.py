@@ -257,7 +257,7 @@ class Sartoris(object):
             self.config['target'],
             self.config['path'],
             self.DEPLOY_DIR,
-            self.LOCK_FILE_HANDLE)
+            self._get_lock_file_name())
 
         log.debug('{0} :: Executing - {1}'.format(__name__, cmd))
         proc = subprocess.Popen(cmd.split(),
@@ -266,18 +266,17 @@ class Sartoris(object):
         result = proc.communicate()[0].split('\n')
         log.debug('{0} :: Result of {1} - {2}'.format(__name__, cmd, result))
 
-        # lock file exists - check to ensure that the lock file user matches
-        if self._get_current_lock_user() != self.config['user']:
-            log.info('{0} :: Lock user doesn\'t match'.format(__name__))
-            return False
-
         if not proc.returncode:
-            if result[0].strip() == self.LOCK_FILE_HANDLE:
+            file_handle = result[0].strip()
+            if file_handle == self._get_lock_file_name():
                 return True
             else:
                 return False
         else:
             return False
+
+    def _get_lock_file_name(self):
+        return self.LOCK_FILE_HANDLE + '-' + self.config['user']
 
     def _create_lock(self):
         """
@@ -285,22 +284,14 @@ class Sartoris(object):
 
         Write the user name to the lock file in the dploy directory.
         """
-        log.info('{0}::SSH Lock create.'.format(__name__))
+        log.info('{0} :: SSH Lock create.'.format(__name__))
 
         os.system("ssh {0}@{1} touch {2}/{3}/{4}".format(
             self.config['user'],
             self.config['target'],
             self.config['path'],
             self.DEPLOY_DIR,
-            self.LOCK_FILE_HANDLE))
-
-        os.system("ssh {0}@{1} echo \"{2}\" >> {3}/{4}/{5}".format(
-            self.config['user'],
-            self.config['target'],
-            self.config['user'],
-            self.config['path'],
-            self.DEPLOY_DIR,
-            self.LOCK_FILE_HANDLE))
+            self._get_lock_file_name()))
 
     def _remove_lock(self):
         """ Remove the lock file """
@@ -309,7 +300,7 @@ class Sartoris(object):
             self.config['target'],
             self.config['path'],
             self.DEPLOY_DIR,
-            self.LOCK_FILE_HANDLE)
+            self._get_lock_file_name())
         log.info('{0}:: Executing - {1}'.format(__name__, cmd))
         os.system(cmd)
 
@@ -397,7 +388,6 @@ class Sartoris(object):
         if self._check_lock():
             raise SartorisError(message=exit_codes[2])
 
-        log.debug(__name__ + '::Creating lock file.')
         self._create_lock()
 
         # Tag the repo at this point
