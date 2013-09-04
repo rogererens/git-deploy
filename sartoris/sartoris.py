@@ -382,23 +382,6 @@ class Sartoris(object):
 
         self._create_lock()
 
-        # Tag the repo at this point
-        repo_name = self.config['repo_name']
-        log.debug(__name__ + ' :: Adding `start` tag for repo.')
-
-        timestamp = datetime.now().strftime(self.DATE_TIME_TAG_FORMAT)
-
-        # @TODO use dulwich config to set '_author'
-        _tag = '{0}-start-{1}'.format(repo_name, timestamp)
-        _author = '{0} {1}'.format(self.config['user.name'],
-                                   self.config['user.email'])
-        try:
-            self._dulwich_tag(_tag, _author)
-        except Exception as e:
-            self._remove_lock()
-            logging.error(str(e))
-            raise SartorisError(message=exit_codes[12], exit_code=12)
-
         return 0
 
     def abort(self, args):
