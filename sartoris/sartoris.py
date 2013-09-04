@@ -462,7 +462,7 @@ class Sartoris(object):
                                                                 sync_script))
             proc = subprocess.Popen([sync_script,
                                      '--repo="{0}"'.format(repo_name),
-                                     '--tag="{0}"'.format(self._tag),
+                                     '--tag="{0}"'.format(tag),
                                      '--force="{0}"'.format(force)])
             proc_out = proc.communicate()[0]
             log.info(proc_out)
@@ -472,8 +472,19 @@ class Sartoris(object):
                 log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
                 return exit_code
         else:
-            # In absence of a sync script
-            # TODO - push local changes to repo and pull on remote
+            # In absence of a sync script -- Tag the repo
+            log.debug(__name__ + ' :: Calling default sync.')
+            timestamp = datetime.now().strftime(self.DATE_TIME_TAG_FORMAT)
+
+            _tag = '{0}-{1}'.format(self.config['user'], timestamp)
+            _author = '{0} <{1}>'.format(self.config['user.name'],
+                                         self.config['user.email'])
+            try:
+                self._dulwich_tag(_tag, _author)
+            except Exception as e:
+                logging.error(str(e))
+                raise SartorisError(message=exit_codes[12], exit_code=12)
+
             self._default_sync()
 
         self._remove_lock()
