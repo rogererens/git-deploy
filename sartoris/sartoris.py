@@ -46,7 +46,7 @@ exit_codes = {
     9: 'Could not get listing from deploy target.  Exiting.',
     10: 'Please specify number of deploy tags to emit with -c.  Exiting',
     11: 'Could not find any deploys.  Exiting',
-    12: 'dulwich call failed. Exiting',
+    12: 'Tagging failed. Exiting',
     20: 'Cannot find top level directory for the git repository. Exiting.',
     21: 'Missing system configuration item "hook-dir". Exiting.',
     22: 'Missing repo configuration item "tag-prefix". '
