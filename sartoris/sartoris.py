@@ -395,6 +395,7 @@ class Sartoris(object):
         try:
             self._dulwich_tag(_tag, _author)
         except Exception as e:
+            self._remove_lock()
             logging.error(str(e))
             raise SartorisError(message=exit_codes[12], exit_code=12)
 
