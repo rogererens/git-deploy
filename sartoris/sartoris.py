@@ -206,77 +206,27 @@ class Sartoris(object):
         self.config['deploy_file'] = self.config['top_dir'] + \
             '/.git/.deploy'
 
-        # Get config for deploy.hook-dir
-        try:
-            self.config['hook_dir'] = sc.get('deploy', 'hook-dir')
-        except KeyError:
-            exit_code = 21
-            log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
-            sys.exit(exit_code)
+        # Define the key names, git config names, and error codes
+        config_elements = {
+            'hook_dir': ('deploy', 'hook-dir', 21),
+            'path': ('deploy', 'path', 23),
+            'user': ('deploy', 'user', 24),
+            'target': ('deploy', 'target', 25),
+            'repo_name': ('deploy', 'tag-prefix', 22),
+            'remote': ('deploy', 'remote', 26),
+            'branch': ('deploy', 'branch', 27),
+            'user.name': ('user', 'name', 28),
+            'user.email': ('user', 'email', 29),
+        }
 
-        # Get config for deploy.hook-dir
-        try:
-            self.config['path'] = sc.get('deploy', 'path')
-        except KeyError:
-            exit_code = 23
-            log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
-            sys.exit(exit_code)
-
-        # Get config for deploy.user
-        try:
-            self.config['user'] = sc.get('deploy', 'user')
-        except KeyError:
-            exit_code = 24
-            log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
-            sys.exit(exit_code)
-
-        # Get config for deploy.target
-        try:
-            self.config['target'] = sc.get('deploy', 'target')
-        except KeyError:
-            exit_code = 25
-            log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
-            sys.exit(exit_code)
-
-        # Get config for repo name from deploy.tag-prefix
-        try:
-            self.config['repo_name'] = sc.get('deploy', 'tag-prefix')
-        except KeyError:
-            exit_code = 22
-            log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
-            sys.exit(exit_code)
-
-        # Get config for deploy.remote
-        try:
-            self.config['remote'] = sc.get('deploy', 'remote')
-        except KeyError:
-            exit_code = 26
-            log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
-            sys.exit(exit_code)
-
-        # Get config for deploy.branch
-        try:
-            self.config['branch'] = sc.get('deploy', 'branch')
-        except KeyError:
-            exit_code = 27
-            log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
-            sys.exit(exit_code)
-
-        # Get config for user.name
-        try:
-            self.config['user.name'] = sc.get('user', 'name')
-        except KeyError:
-            exit_code = 28
-            log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
-            sys.exit(exit_code)
-
-        # Get config for user.email
-        try:
-            self.config['user.email'] = sc.get('user', 'email')
-        except KeyError:
-            exit_code = 29
-            log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
-            sys.exit(exit_code)
+        # Assign the values of each git config element
+        for key, value in config_elements.iteritems():
+            try:
+                self.config[key] = sc.get(value[0], value[1])
+            except KeyError:
+                exit_code = value[2]
+                log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
+                sys.exit(exit_code)
 
         self.config['sync_dir'] = '{0}/sync'.format(self.config['hook_dir'])
 
