@@ -1,0 +1,3 @@
+#!/bin/bash
+cd $GIT_DEPLOY_HOME
+git pull origin master
