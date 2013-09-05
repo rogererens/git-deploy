@@ -493,26 +493,31 @@ class Sartoris(object):
     def _default_sync(self):
 
         #
-        # git push origin master
+        # Call deploy hook on client
+        #
+        #   {% PATH %}/.git/deploy/hooks/default-client-push origin master
+        #
         log.info('{0} :: Calling default sync - '
                  'pushing changes ... '.format(__name__))
-        proc = subprocess.Popen(['git', 'push',
-                                 self.config['remote'],
-                                 self.config['branch']])
+
+        proc = subprocess.Popen(['{0}{1}default-client-push'.format(
+            self.config['client-path'], self.config['hook-dir']
+        ), self.config['remote'], self.config['branch']])
         proc_out = proc.communicate()[0]
         log.info(proc_out)
 
-        # ssh user@remote git pull origin master
+        # TODO - push tags
+
+        #
+        # Call deploy hook on remote
+        #
+        #   {% PATH %}/.git/deploy/hooks/default-client-pull origin master
+        #
         log.info('{0} :: Calling default sync - '
                  'pulling to target'.format(__name__))
-        proc = subprocess.Popen(['ssh',
-                                 '{0}@{1}'.format(
-                                     self.config['user'],
-                                     self.config['target']
-                                 ),
-                                 'git', 'pull',
-                                 self.config['remote'],
-                                 self.config['branch']])
+        proc = subprocess.Popen(['{0}{1}default-client-pull'.format(
+            self.config['path'], self.config['hook-dir']
+        ), self.config['remote'], self.config['branch']])
         proc_out = proc.communicate()[0]
         log.info(proc_out)
 
