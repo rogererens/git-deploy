@@ -34,7 +34,6 @@ Configuration
 
 First set the "hook-dir" and "tag-prefix" and other dependencies for the deploy section in your global .gitconfig:
 
-```
     git config --global deploy.target {%target host%} # e.g. my.remotehost.com:8080 a.k.a deploy host
 
     git config --global deploy.path {%remote deploy path%}
@@ -48,7 +47,8 @@ First set the "hook-dir" and "tag-prefix" and other dependencies for the deploy 
     git config --global deploy.remote {%remote name%}
 
     git config --global deploy.branch {%deploy branch name%}
-```
+
+    git config --global deploy.client-path {%client path%}
 
 Also ensure that the global git params user.name and user.email are defined.
 
