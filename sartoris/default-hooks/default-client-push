@@ -1,4 +1,0 @@
-#!/bin/bash
-cd $GIT_DEPLOY_HOME
-/usr/bin/git push origin master
-/usr/bin/git push --tags
