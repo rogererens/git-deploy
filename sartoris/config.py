@@ -31,6 +31,7 @@ exit_codes = {
     10: 'Please specify number of deploy tags to emit with -c.  Exiting',
     11: 'Could not find any deploys.  Exiting',
     12: 'Tagging failed. Exiting',
+    19: 'Missing system configuration item "deploy.client-path". Exiting.',
     20: 'Cannot find top level directory for the git repository. Exiting.',
     21: 'Missing system configuration item "hook-dir". Exiting.',
     22: 'Missing repo configuration item "tag-prefix". '
@@ -115,6 +116,7 @@ def configure():
         'repo_name': ('deploy', 'tag-prefix', 22),
         'remote': ('deploy', 'remote', 26),
         'branch': ('deploy', 'branch', 27),
+        'client_path': ('deploy', 'client-path', 19),
         'user.name': ('user', 'name', 28),
         'user.email': ('user', 'email', 29),
     }
