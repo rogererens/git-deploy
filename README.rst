@@ -44,13 +44,6 @@ First set the "hook-dir" and "tag-prefix" and other dependencies for the deploy 
 
 Also ensure that the global git params user.name and user.email are defined.
 
-Next you need to create the project config.  Issue the following command:
-
-    $ cp {% SARTORIS HOME %}/sartoris/config.py.example {% SARTORIS HOME %}/sartoris/config.py
-
-The public config should contain all that you need.  If the process does increase in complexity an
-initialization script will take its place but for the moment a manual copy should work fine.
-
 
 Usage
 -----
