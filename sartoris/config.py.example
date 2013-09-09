@@ -1,3 +1,8 @@
+"""
 
-TEST_REPO = '/tmp/sartoris_test'
-SARTORIS_HOME = '/usr/local/projects/Sartoris/'
+Sartoris config file.
+
+"""
+
+# git command
+GIT_CALL = '/usr/bin/git'
