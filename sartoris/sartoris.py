@@ -500,7 +500,7 @@ class Sartoris(object):
         log.info('{0} :: Calling default sync - '
                  'pushing changes ... '.format(__name__))
 
-        proc = subprocess.Popen(['{0}{1}default-client-push'.format(
+        proc = subprocess.Popen(['{0}{1}default-client-push.py'.format(
             self.config['client-path'], self.config['hook-dir']
         ), self.config['remote'], self.config['branch']])
         proc_out = proc.communicate()[0]
@@ -515,7 +515,7 @@ class Sartoris(object):
         #
         log.info('{0} :: Calling default sync - '
                  'pulling to target'.format(__name__))
-        proc = subprocess.Popen(['{0}{1}default-client-pull'.format(
+        proc = subprocess.Popen(['{0}{1}default-client-pull.py'.format(
             self.config['path'], self.config['hook-dir']
         ), self.config['remote'], self.config['branch']])
         proc_out = proc.communicate()[0]
