@@ -21,14 +21,6 @@ This name was chosen because Ryan Faulkner is working on the project and we thou
 Source: http://en.wikipedia.org/wiki/Sartoris
 
 
-Usage
------
-
-Basic usage involves cloning the remote working repo to the deploy target and all client nodes.  When
-a client is ready to deploy 'start' is invoked to obtain a lock on the remote and 'sync' is called to
-push changes to the target.  On completion th elock is removed.
-
-
 Configuration
 -------------
 
@@ -52,6 +44,22 @@ First set the "hook-dir" and "tag-prefix" and other dependencies for the deploy 
 
 Also ensure that the global git params user.name and user.email are defined.
 
+Next you need to create the project config.  Issue the following command:
+
+    $ cp {% SARTORIS HOME %}/sartoris/config.py.example {% SARTORIS HOME %}/sartoris/config.py
+
+The public config should contain all that you need.  If the process does increase in complexity an
+initialization script will take its place but for the moment a manual copy should work fine.
+
+
+Usage
+-----
+
+Basic usage involves cloning the remote working repo to the deploy target and all client nodes.  When
+a client is ready to deploy 'start' is invoked to obtain a lock on the remote and 'sync' is called to
+push changes to the target.  On completion th lock is removed.
+
+
 To start a new deployment issue a 'start' command:
 
     $ python {% SARTORIS_HOME %}/sartoris/sartoris.py start
@@ -63,5 +71,5 @@ a 'sync' command:
 
 The process may be aborted at any point with an 'abort' command:
 
-    python {% SARTORIS_HOME %}/sartoris/sartoris.py abort
+    $ python {% SARTORIS_HOME %}/sartoris/sartoris.py abort
 
