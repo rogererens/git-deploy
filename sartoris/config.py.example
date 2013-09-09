@@ -1,8 +1,0 @@
-"""
-
-Sartoris config file.
-
-"""
-
-# git command
-GIT_CALL = '/usr/bin/git'
