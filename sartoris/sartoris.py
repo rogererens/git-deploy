@@ -400,7 +400,7 @@ class Sartoris(object):
             try:
                 self._dulwich_tag(_tag, _author)
             except Exception as e:
-                logging.error(str(e))
+                log.error(str(e))
                 raise SartorisError(message=exit_codes[12], exit_code=12)
 
             self._default_sync()
@@ -417,29 +417,37 @@ class Sartoris(object):
         #
         log.info('{0} :: Calling default sync - '
                  'pushing changes ... '.format(__name__))
-
         proc = subprocess.Popen(['{0}{1}default-client-push.py'.format(
-            self.config['client-path'], self.config['hook-dir']
-        ), self.config['remote'], self.config['branch']])
-        proc_out = proc.communicate()[0]
-        log.info(proc_out)
-
-        # TODO - push tags
+            self.config['client_path'],
+            self.config['hook_dir']),
+            self.config['remote'],
+            self.config['branch']],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE)
+        log.info('PUSH -> ' + '; '.join(
+            filter(lambda x: x, proc.communicate())))
 
         #
         # Call deploy hook on remote
         #
-        #   {% PATH %}/.git/deploy/hooks/default-client-pull origin master
+        #   ssh user@target {% PATH %}/.git/deploy/hooks/default-client-pull \
+        #       origin master
         #
         log.info('{0} :: Calling default sync - '
                  'pulling to target'.format(__name__))
-        proc = subprocess.Popen(['{0}{1}default-client-pull.py'.format(
-            self.config['path'], self.config['hook-dir']
-        ), self.config['remote'], self.config['branch']])
-        proc_out = proc.communicate()[0]
-        log.info(proc_out)
-
-        return
+        proc = subprocess.Popen(['ssh',
+                                 '{0}@{1}'.format(
+                                     self.config['user'],
+                                     self.config['target']),
+                                 '{0}{1}default-client-pull.py'.format(
+                                     self.config['path'],
+                                     self.config['hook_dir']),
+                                 self.config['remote'],
+                                 self.config['branch']],
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+        log.info('PULL -> ' + '; '.join(
+            filter(lambda x: x, proc.communicate())))
 
     def resync(self, args):
         """
