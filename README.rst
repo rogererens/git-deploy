@@ -21,26 +21,39 @@ This name was chosen because Ryan Faulkner is working on the project and we thou
 Source: http://en.wikipedia.org/wiki/Sartoris
 
 
-Configuration
--------------
+Client Configuration
+--------------------
 
-First set the "hook-dir" and "tag-prefix" and other dependencies for the deploy section in your global .gitconfig:
+The client is any working machine from which deployments may be initiated.  To configure a client,
+begin by cloning the repository to your client environment:
 
-    git config --global deploy.target {%target host%} # e.g. my.remotehost.com:8080 a.k.a deploy host
+    $ git clone https://github.com/wikimedia/sartoris.git sartoris
 
-    git config --global deploy.path {%remote deploy path%}
+Next, navigate to the root folder and install the package.
 
-    git config --global deploy.user {%authorized user on deploy target%}
+    $ sudo pip install -e .
 
-    git config --global deploy.hook-dir .git/deploy/hooks
+Next, copy the /usr/bin
 
-    git config --global deploy.tag-prefix {%project name%}
+    $ sudo cp sartoris/git-deploy /usr/bin/
 
-    git config --global deploy.remote {%remote name%}
+Finally, set the "hook-dir" and "tag-prefix" and other dependencies for the deploy section in your global .gitconfig:
 
-    git config --global deploy.branch {%deploy branch name%}
+    $ git config --global deploy.target {%target host%} # e.g. my.remotehost.com:8080 a.k.a deploy host
 
-    git config --global deploy.client-path {%client path%}
+    $ git config --global deploy.path {%remote deploy path%}
+
+    $ git config --global deploy.user {%authorized user on deploy target%}
+
+    $ git config --global deploy.hook-dir .git/deploy/hooks
+
+    $ git config --global deploy.tag-prefix {%project name%}
+
+    $ git config --global deploy.remote {%remote name%}
+
+    $ git config --global deploy.branch {%deploy branch name%}
+
+    $ git config --global deploy.client-path {%client path%}
 
 Also ensure that the global git params user.name and user.email are defined.
 
@@ -52,17 +65,16 @@ Basic usage involves cloning the remote working repo to the deploy target and al
 a client is ready to deploy 'start' is invoked to obtain a lock on the remote and 'sync' is called to
 push changes to the target.  On completion th lock is removed.
 
-
 To start a new deployment issue a 'start' command:
 
-    $ python {% SARTORIS_HOME %}/sartoris/sartoris.py start
+    $ git deploy start [opts]
 
 At this point you are free to make commits to the project and when ready for deployment issue 
 a 'sync' command:
 
-    $ python {% SARTORIS_HOME %}/sartoris/sartoris.py sync
+    $ git deploy sync [opts]
 
 The process may be aborted at any point with an 'abort' command:
 
-    $ python {% SARTORIS_HOME %}/sartoris/sartoris.py abort
+    $ git deploy abort [opts]
 
