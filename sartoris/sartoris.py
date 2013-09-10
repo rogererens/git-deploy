@@ -1,34 +1,18 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
+"""
+This module defines the entities utilized to operate the git-deploy system
+defined by the Sartoris project.
 """
 
-`This`_ is a tool to manage using git as a deployment management tool
+__authors__ = {
+    'Ryan Faulkner': 'bobs.ur.uncle@gmail.com',
+    'Patrick Reilly': 'patrick.reilly@gmail.com',
+    'Ryan Lane': 'rlane@wikimedia.org',
+}
+__date__ = '2013-09-08'
+__license__ = 'GPL v2.0 (or later)'
 
-.. _This: https://gerrit.wikimedia.org/r/gitweb?p=sartoris.git
-
-"""
-
-__license__ = """\
-Copyright (c) 2012-2013 Wikimedia Foundation <info@wikimedia.org>
-
-Permission to use, copy, modify, and distribute this software for any
-purpose with or without fee is hereby granted, provided that the above
-copyright notice and this permission notice appear in all copies.
-
-THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
-ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.\
-"""
-
-import argparse
 import os
 import stat
-import sys
 from re import search
 import subprocess
 from dulwich.repo import Repo
@@ -36,7 +20,7 @@ from dulwich.objects import Tag, Commit, parse_timezone
 from datetime import datetime
 import json
 from time import time
-from config import set_log, log, configure, exit_codes
+from config import log, configure, exit_codes
 
 
 class SartorisError(Exception):
@@ -61,49 +45,6 @@ def remove_readonly(fn, path, excinfo):
     elif fn is os.remove:
         os.chmod(path, stat.S_IWRITE)
         os.remove(path)
-
-
-def parseargs():
-    """Parse command line arguments.
-
-    Returns *args*, the list of arguments left over after processing.
-
-    """
-    parser = argparse.ArgumentParser(
-        description="This script performs ",
-        epilog="",
-        conflict_handler="resolve",
-        usage="sartoris [-q --quiet] [-s --silent] [-v --verbose] [method]"
-    )
-
-    parser.allow_interspersed_args = False
-
-    defaults = {
-        "quiet": 0,
-        "silent": False,
-        "verbose": 0,
-    }
-
-    # Global options.
-    parser.add_argument("method")
-    parser.add_argument("-c", "--count",
-                        default=1, type=int,
-                        help="number of tags to log")
-    parser.add_argument("-q", "--quiet",
-                        default=defaults["quiet"], action="count",
-                        help="decrease the logging verbosity")
-    parser.add_argument("-s", "--silent",
-                        default=defaults["silent"], action="store_true",
-                        help="silence the logger")
-    parser.add_argument("-v", "--verbose",
-                        default=defaults["verbose"], action="count",
-                        help="increase the logging verbosity")
-    parser.add_argument("-f", "--force",
-                        action="store_true",
-                        help="force the action, bypass sanity checks.")
-
-    args = parser.parse_args()
-    return args
 
 
 class Sartoris(object):
@@ -592,46 +533,3 @@ class Sartoris(object):
         else:
             raise SartorisError(message=exit_codes[6], exit_code=6)
         return 0
-
-
-def main(out=None, err=None):
-    """Main entry point.
-
-    Returns a value that can be understood by :func:`sys.exit`.
-
-    :param argv: a list of command line arguments, usually :data:`sys.argv`.
-    :param out: stream to write messages; :data:`sys.stdout` if None.
-    :param err: stream to write error messages; :data:`sys.stderr` if None.
-    """
-    if out is None:  # pragma: nocover
-        out = sys.stdout
-    if err is None:  # pragma: nocover
-        err = sys.stderr
-    args = parseargs()
-    set_log(args, out, err)
-
-    log.debug("Sartoris is ready to run")
-
-    # Inline call to functionality - if Sartoris does not possess this
-    #  attribute flag with logger
-    if not args.method:
-        print args.help
-        return 3
-
-    if hasattr(Sartoris(), args.method) and callable(getattr(Sartoris(),
-                                                     args.method)):
-        try:
-            getattr(Sartoris(), args.method)(args)
-        except SartorisError as e:
-            log.error(e.message)
-            return e.exit_code
-    else:
-        log.error(__name__ + ' :: No function called %(method)s.' % {
-            'method': args.method})
-
-
-def cli():
-    sys.exit(main())
-
-if __name__ == "__main__":  # pragma: nocover
-    cli()
