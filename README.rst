@@ -63,14 +63,15 @@ Usage
 
 Basic usage involves cloning the remote working repo to the deploy target and all client nodes.  When
 a client is ready to deploy 'start' is invoked to obtain a lock on the remote and 'sync' is called to
-push changes to the target.  On completion th lock is removed.
+push changes to the target.  On completion the lock is removed.
 
-To start a new deployment issue a 'start' command:
+To start a new deployment, navigate to the working repo, issue a 'start' command:
 
     $ git deploy start [opts]
 
 At this point you are free to make commits to the project and when ready for deployment issue 
-a 'sync' command:
+a 'sync' command - or simply 'sync' if you're work is already complete but, be sure to rebase
+your local clone:
 
     $ git deploy sync [opts]
 
@@ -78,3 +79,10 @@ The process may be aborted at any point with an 'abort' command:
 
     $ git deploy abort [opts]
 
+
+Deploy Hooks
+------------
+
+In the working path of your local clone deploy hooks may be added to '.git/deploy/hooks'.  You are
+free to write your own hooks however, simple default hooks have been provided in 'sartoris/default-hooks',
+these can be copied to the hook folder in each client and target.
