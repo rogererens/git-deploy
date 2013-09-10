@@ -8,6 +8,7 @@ __authors__ = {
     'Ryan Lane': 'rlane@wikimedia.org',
 }
 __date__ = '2013-09-08'
+__license__ = 'GPL v2.0 (or later)'
 
 from dulwich.config import StackedConfig
 import subprocess
