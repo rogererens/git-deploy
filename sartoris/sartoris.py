@@ -594,7 +594,7 @@ class Sartoris(object):
         return 0
 
 
-def main(argv, out=None, err=None):
+def main(out=None, err=None):
     """Main entry point.
 
     Returns a value that can be understood by :func:`sys.exit`.
@@ -631,7 +631,7 @@ def main(argv, out=None, err=None):
 
 
 def cli():
-    sys.exit(main(sys.argv))
+    sys.exit(main())
 
 if __name__ == "__main__":  # pragma: nocover
     cli()
