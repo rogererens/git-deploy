@@ -427,6 +427,39 @@ class Sartoris(object):
         t.close()
         sock.close()
 
+    @staticmethod
+    def ssh_command(cmd, host, port, user, password, nbytes=1000):
+
+        # Initialize connection
+        client = paramiko.Transport((host, port))
+        client.connect(username=user, password=password)
+
+        # Prepare stream lists, open session, exec command
+        stdout_data = []
+        stderr_data = []
+        session = client.open_channel(kind='session')
+        session.exec_command(cmd)
+
+        # Read output
+        while True:
+            if session.recv_ready():
+                stdout_data.append(session.recv(nbytes))
+            if session.recv_stderr_ready():
+                stderr_data.append(session.recv_stderr(nbytes))
+            if session.exit_status_ready():
+                break
+
+        # Get exit status and close sessions
+        exit_status = session.recv_exit_status()
+        session.close()
+        client.close()
+
+        return {
+            'exit_status': exit_status,
+            'stdout': ''.join(stdout_data),
+            'stderr': ''.join(stderr_data),
+        }
+
     def resync(self, args):
         """
             * write a lock file
