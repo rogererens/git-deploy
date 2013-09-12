@@ -13,13 +13,17 @@ __license__ = 'GPL v2.0 (or later)'
 
 import os
 import stat
+import paramiko
+import socket
 from re import search
 import subprocess
-from dulwich.repo import Repo
-from dulwich.objects import Tag, Commit, parse_timezone
-from datetime import datetime
 import json
 from time import time
+from datetime import datetime
+
+from dulwich.repo import Repo
+from dulwich.objects import Tag, Commit, parse_timezone
+
 from config import log, configure, exit_codes
 
 
@@ -389,6 +393,39 @@ class Sartoris(object):
                                 stderr=subprocess.PIPE)
         log.info('PULL -> ' + '; '.join(
             filter(lambda x: x, proc.communicate())))
+
+    @staticmethod
+    def scp_file(source, target, user, password, host):
+        """
+        SCP files via paramiko.
+        """
+
+        # Socket connection to remote host
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.connect((host, 22))
+
+        # Build a SSH transport
+        t = paramiko.Transport(sock)
+        t.start_client()
+        t.auth_password(user, password)
+
+        # Start a scp channel
+        scp_channel = t.open_session()
+
+        f = file(source, 'rb')
+        scp_channel.exec_command('scp -v -t %s\n'
+                                 % '/'.join(target.split('/')[:-1]))
+        scp_channel.send('C%s %d %s\n'
+                         % (oct(os.stat(source).st_mode)[-4:],
+                         os.stat(source)[6],
+                         target.split('/')[-1]))
+        scp_channel.sendall(f.read())
+
+        # Cleanup
+        f.close()
+        scp_channel.close()
+        t.close()
+        sock.close()
 
     def resync(self, args):
         """
