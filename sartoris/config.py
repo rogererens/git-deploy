@@ -15,6 +15,20 @@ import subprocess
 import sys
 import logging
 
+# TODO - PULL config_local.py creds from ini file
+#
+# import io
+# import ConfigParser
+#
+# # Process INI
+# if not 'INI_CONF' in dir():
+#     with file('sartoris.ini', 'r') as f:
+#         config_handle = f.read()
+#     config = ConfigParser.RawConfigParser(allow_no_value=True)
+#     INI_CONF = config.readfp(io.BytesIO(config_handle))
+#
+# INI_FILE = 'sartoris.ini'
+
 # Native git call
 GIT_CALL = '/usr/bin/git'
 

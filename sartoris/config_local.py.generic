@@ -1,0 +1,6 @@
+"""
+Local settings go in here
+"""
+
+# Path to private key
+PKEY = '/path/to/private/key/file'
