@@ -25,6 +25,7 @@ from dulwich.repo import Repo
 from dulwich.objects import Tag, Commit, parse_timezone
 
 from config import log, configure, exit_codes
+from config_local import PKEY
 
 
 class SartorisError(Exception):
@@ -395,19 +396,21 @@ class Sartoris(object):
             filter(lambda x: x, proc.communicate())))
 
     @staticmethod
-    def scp_file(source, target, user, password, host):
+    def scp_file(source, target, user, password, host, port=22):
         """
         SCP files via paramiko.
         """
 
         # Socket connection to remote host
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.connect((host, 22))
+        sock.connect((host, port))
 
         # Build a SSH transport
         t = paramiko.Transport(sock)
         t.start_client()
-        t.auth_password(user, password)
+
+        rsa_key = paramiko.RSAKey.from_private_key_file(PKEY)
+        t.auth_publickey(user, rsa_key)
 
         # Start a scp channel
         scp_channel = t.open_session()
@@ -428,15 +431,18 @@ class Sartoris(object):
         sock.close()
 
     @staticmethod
-    def ssh_command(cmd, host, port, user, password, nbytes=1000):
+    def ssh_command(cmd, host, user, port=22, nbytes=4096):
 
         # Initialize connection
         client = paramiko.Transport((host, port))
-        client.connect(username=user, password=password)
+
+        rsa_key = paramiko.RSAKey.from_private_key_file(PKEY)
+        client.connect(username=user, pkey=rsa_key)
 
         # Prepare stream lists, open session, exec command
         stdout_data = []
         stderr_data = []
+
         session = client.open_channel(kind='session')
         session.exec_command(cmd)
 
