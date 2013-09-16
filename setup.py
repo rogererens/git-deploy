@@ -17,7 +17,10 @@ meta = dict(
     url='https://github.com/wikimedia/sartoris',
     packages=['sartoris'],
     entry_points={'console_scripts': ['sartoris = sartoris:cli']},
-    install_requires=['dulwich'],
+    install_requires=[
+        'dulwich',
+        'paramiko >= 1.11.0',
+    ],
     keywords=['git', 'deploy', 'scripts', 'cli'],
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
