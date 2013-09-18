@@ -24,7 +24,8 @@ from datetime import datetime
 from dulwich.repo import Repo
 from dulwich.objects import Tag, Commit, parse_timezone
 
-from config import log, configure, exit_codes
+from config import log, configure, exit_codes, DEFAULT_CLIENT_HOOK, \
+    DEFAULT_TARGET_HOOK
 from config_local import PKEY
 
 
@@ -347,9 +348,10 @@ class Sartoris(object):
         #
         log.info('{0} :: Calling default sync - '
                  'pushing changes ... '.format(__name__))
-        proc = subprocess.Popen(['{0}{1}default-client-push.py'.format(
+        proc = subprocess.Popen(['{0}{1}{2}'.format(
             self.config['client_path'],
-            self.config['hook_dir']),
+            self.config['hook_dir'],
+            DEFAULT_CLIENT_HOOK),
             self.config['remote'],
             self.config['branch']],
             stdout=subprocess.PIPE,
@@ -369,9 +371,11 @@ class Sartoris(object):
                                  '{0}@{1}'.format(
                                      self.config['user'],
                                      self.config['target']),
-                                 '{0}{1}default-client-pull.py'.format(
+                                 '{0}{1}{2}'.format(
                                      self.config['path'],
-                                     self.config['hook_dir']),
+                                     self.config['hook_dir'],
+                                     DEFAULT_TARGET_HOOK
+                                 ),
                                  self.config['remote'],
                                  self.config['branch']],
                                 stdout=subprocess.PIPE,
