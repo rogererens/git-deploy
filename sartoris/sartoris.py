@@ -384,7 +384,7 @@ class Sartoris(object):
             filter(lambda x: x, proc.communicate())))
 
     @staticmethod
-    def scp_file(source, target, user, password, host, port=22):
+    def scp_file(source, target, user, host, port=22):
         """
         SCP files via paramiko.
         """
@@ -418,40 +418,24 @@ class Sartoris(object):
         t.close()
         sock.close()
 
-    @staticmethod
-    def ssh_command(cmd, host, user, port=22, nbytes=4096):
+    def ssh_command_target(self, cmd):
+        """
+        Talk to the target via SSHClient
+        """
 
-        # Initialize connection
-        client = paramiko.Transport((host, port))
-
-        rsa_key = paramiko.RSAKey.from_private_key_file(PKEY)
-        client.connect(username=user, pkey=rsa_key)
-
-        # Prepare stream lists, open session, exec command
-        stdout_data = []
-        stderr_data = []
-
-        session = client.open_channel(kind='session')
-        session.exec_command(cmd)
-
-        # Read output
-        while True:
-            if session.recv_ready():
-                stdout_data.append(session.recv(nbytes))
-            if session.recv_stderr_ready():
-                stderr_data.append(session.recv_stderr(nbytes))
-            if session.exit_status_ready():
-                break
-
-        # Get exit status and close sessions
-        exit_status = session.recv_exit_status()
-        session.close()
-        client.close()
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(
+            self.config['user.name'],
+            username=self.config['target'],
+            key_filename=PKEY)
+        stdin, stdout, stderr = ssh.exec_command(cmd)
+        ssh.close()
 
         return {
-            'exit_status': exit_status,
-            'stdout': ''.join(stdout_data),
-            'stderr': ''.join(stderr_data),
+            'stdin': stdin,
+            'stdout': '\n'.join(stdout.readlines()),
+            'stderr': '\n'.join(stderr.readlines()),
         }
 
     def resync(self, args):
