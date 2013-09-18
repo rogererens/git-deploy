@@ -97,34 +97,24 @@ class Sartoris(object):
 
     def _check_lock(self):
         """ Returns boolean flag on lock file existence """
-        cmd = "ssh {0}@{1} ls {2}/{3}/{4}".format(
-            self.config['user'],
-            self.config['target'],
+        cmd = "ls {0}{1}{2}".format(
             self.config['path'],
             self.DEPLOY_DIR,
             self._get_lock_file_name())
 
-        log.debug('{0} :: Executing - {1}'.format(__name__, cmd))
-        proc = subprocess.Popen(cmd.split(),
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
-        result = proc.communicate()[0].split('\n')
-        log.debug('{0} :: Result of {1} - {2}'.format(__name__, cmd, result))
+        log.debug('{0} :: Executing - "{1}"'.format(__name__, cmd))
+        ret = self.ssh_command_target(cmd)
 
-        if not proc.returncode:
+        # Pull the lock file handle from
+        try:
+            file_handle = ret['stdout'][0].split('/')[-1].strip()
+        except (IndexError, ValueError):
+            log.debug('{0} :: Could not extract '
+                      'the lock file name.'.format(__name__))
+            return False
 
-            # Pull the lock file handle from
-            try:
-                file_handle = result[0].split('/')[-1].strip()
-            except (IndexError, ValueError):
-                log.debug('{0} :: Could not extract '
-                          'the lock file name.'.format(__name__))
-                return False
-
-            if file_handle == self._get_lock_file_name():
-                return True
-            else:
-                return False
+        if file_handle == self._get_lock_file_name():
+            return True
         else:
             return False
 
@@ -426,16 +416,19 @@ class Sartoris(object):
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(
-            self.config['user.name'],
-            username=self.config['target'],
+            self.config['target'],
+            username=self.config['user.name'],
             key_filename=PKEY)
         stdin, stdout, stderr = ssh.exec_command(cmd)
+
+        stdout = [line.strip() for line in stdout.readlines()]
+        stderr = [line.strip() for line in stderr.readlines()]
+
         ssh.close()
 
         return {
-            'stdin': stdin,
-            'stdout': '\n'.join(stdout.readlines()),
-            'stderr': '\n'.join(stderr.readlines()),
+            'stdout': stdout,
+            'stderr': stderr,
         }
 
     def resync(self, args):
