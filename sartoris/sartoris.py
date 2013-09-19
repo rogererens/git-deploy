@@ -202,6 +202,10 @@ class Sartoris(object):
         _repo.object_store.add_object(tag_obj)
         _repo['refs/tags/' + tag] = tag_obj.id
 
+    def _make_tag(self):
+        timestamp = datetime.now().strftime(self.DATE_TIME_TAG_FORMAT)
+        return '{0}-{1}'.format(self.config['user'], timestamp)
+
     def start(self, args):
         """
             * write a lock file
@@ -263,31 +267,23 @@ class Sartoris(object):
             log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
             return exit_code
         repo_name = self.config['repo_name']
-        _tag = "{0}-sync-{1}".format(repo_name,
-                                     datetime.now().strftime(
-                                         self.DATE_TIME_TAG_FORMAT))
-        proc = subprocess.Popen(['/usr/bin/git', 'tag', '-a', _tag,
-                                 '-m', '"test sync"'])
-        proc.communicate()
 
-        if proc.returncode != 0:
-            exit_code = 31
-            log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
-            return exit_code
+        tag = self._make_tag()
 
         # Write .deploy file
         try:
             deploy_file = open(self.config['deploy_file'], 'w')
-            deploy_file.write(json.dumps({'repo': repo_name, 'tag': _tag}))
+            deploy_file.write(json.dumps({'repo': repo_name, 'tag': tag}))
             deploy_file.close()
         except OSError:
             exit_code = 32
             log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
             return exit_code
 
-        return self._sync(_tag, args.force)
+        return self._sync(args.force)
 
     def _sync(self, tag, force):
+
         repo_name = self.config['repo_name']
         sync_script = '{0}/{1}.sync'.format(self.config["sync_dir"], repo_name)
 
@@ -309,13 +305,11 @@ class Sartoris(object):
         else:
             # In absence of a sync script -- Tag the repo
             log.debug(__name__ + ' :: Calling default sync.')
-            timestamp = datetime.now().strftime(self.DATE_TIME_TAG_FORMAT)
 
-            _tag = '{0}-{1}'.format(self.config['user'], timestamp)
             _author = '{0} <{1}>'.format(self.config['user.name'],
                                          self.config['user.email'])
             try:
-                self._dulwich_tag(_tag, _author)
+                self._dulwich_tag(tag, _author)
             except Exception as e:
                 log.error(str(e))
                 raise SartorisError(message=exit_codes[12], exit_code=12)
@@ -472,7 +466,7 @@ class Sartoris(object):
             return exit_code
 
         # @TODO determine what to pass as arg 2
-        self._sync(self._tag, args.force)
+        self._sync(args.force)
 
         return 0
 
