@@ -414,28 +414,6 @@ class Sartoris(object):
             'stderr': stderr,
         }
 
-    def resync(self, args):
-        """
-            * write a lock file
-            * call sync hook with the prefix (repo) and tag info
-            * remove lock file
-        """
-        if self._check_lock():
-            exit_code = 2
-            log.error('{0} :: {1}'.format(__name__, exit_codes[exit_code]))
-            return exit_code
-        self._create_lock()
-        repo_name = self.config['repo_name']
-        try:
-            deploy_file = open(self.config['deploy_file'], 'r')
-            deploy_info = deploy_file.read()
-            deploy_info = json.loads(deploy_info)
-        except OSError:
-            exit_code = 50
-            log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
-            return exit_code
-        return self._sync(repo_name, deploy_info["tag"])
-
     def revert(self, args):
         """
             * write a lock file
