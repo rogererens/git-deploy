@@ -137,14 +137,11 @@ class Sartoris(object):
 
     def _remove_lock(self):
         """ Remove the lock file """
-        cmd = "ssh {0}@{1} rm {2}/{3}/{4}".format(
-            self.config['user'],
-            self.config['target'],
+        cmd = "rm {0}{1}{2}".format(
             self.config['path'],
             self.DEPLOY_DIR,
             self._get_lock_file_name())
-        log.info('{0} :: Executing - {1}'.format(__name__, cmd))
-        os.system(cmd)
+        self.ssh_command_target(cmd)
 
     def _get_commit_sha_for_tag(self, tag):
         """ Obtain the commit sha of an associated tag
@@ -356,21 +353,14 @@ class Sartoris(object):
         #
         log.info('{0} :: Calling default sync - '
                  'pulling to target'.format(__name__))
-        proc = subprocess.Popen(['ssh',
-                                 '{0}@{1}'.format(
-                                     self.config['user'],
-                                     self.config['target']),
-                                 '{0}{1}{2}'.format(
-                                     self.config['path'],
-                                     self.config['hook_dir'],
-                                     DEFAULT_TARGET_HOOK
-                                 ),
-                                 self.config['remote'],
-                                 self.config['branch']],
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
+        cmd = '{0}{1}{2} {3} {4}'.format(self.config['path'],
+                                         self.config['hook_dir'],
+                                         DEFAULT_TARGET_HOOK,
+                                         self.config['remote'],
+                                         self.config['branch'])
+        ret = self.ssh_command_target(cmd)
         log.info('PULL -> ' + '; '.join(
-            filter(lambda x: x, proc.communicate())))
+            filter(lambda x: x, ret['stdout'])))
 
     @staticmethod
     def scp_file(source, target, user, host, port=22):

@@ -45,7 +45,7 @@ Finally, set the "hook-dir" and "tag-prefix" and other dependencies for the depl
 
     $ git config --global deploy.user {%authorized user on deploy target%}
 
-    $ git config --global deploy.hook-dir .git/deploy/hooks
+    $ git config --global deploy.hook-dir .git/deploy/hooks/
 
     $ git config --global deploy.tag-prefix {%project name%}
 
