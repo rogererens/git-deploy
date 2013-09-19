@@ -129,12 +129,11 @@ class Sartoris(object):
         """
         log.info('{0} :: SSH Lock create.'.format(__name__))
 
-        os.system("ssh {0}@{1} touch {2}/{3}/{4}".format(
-            self.config['user'],
-            self.config['target'],
+        cmd = "touch {0}{1}{2}".format(
             self.config['path'],
             self.DEPLOY_DIR,
-            self._get_lock_file_name()))
+            self._get_lock_file_name())
+        self.ssh_command_target(cmd)
 
     def _remove_lock(self):
         """ Remove the lock file """
