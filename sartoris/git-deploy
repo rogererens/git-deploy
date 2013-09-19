@@ -15,7 +15,7 @@ import sys
 import argparse
 
 from sartoris.sartoris import SartorisError, Sartoris
-from sartoris.config import set_log, log
+from sartoris.config import set_log, log, exit_codes
 
 
 def parseargs():
@@ -28,7 +28,8 @@ def parseargs():
         description="This script performs ",
         epilog="",
         conflict_handler="resolve",
-        usage="sartoris [-q --quiet] [-s --silent] [-v --verbose] [method]"
+        usage="sartoris [-q --quiet] [-s --silent] [-v --verbose] [method]\n"
+              "method=[start|sync|abort|revert|diff|show_tag|log_deploys]"
     )
 
     parser.allow_interspersed_args = False
@@ -82,10 +83,16 @@ def main(out=None, err=None):
     # Inline call to functionality - if Sartoris does not possess this
     #  attribute flag with logger
     if not args.method:
-        log.error(args.help)
-        return 3
+        log.error(exit_codes[3])
+        print args.help
+        return
 
     method_exists = hasattr(Sartoris(), args.method)
+
+    if not hasattr(Sartoris(), args.method):
+        log.error(exit_codes[60])
+        return
+
     method_callable = callable(getattr(Sartoris(), args.method))
     if method_exists and method_callable:
         try:

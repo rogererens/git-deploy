@@ -68,6 +68,7 @@ exit_codes = {
     32: 'Failed to write the .deploy file. Exiting.',
     40: 'Failed to run sync script. Exiting.',
     50: 'Failed to read the .deploy file. Exiting.',
+    60: 'Invalid git deploy action. Exiting.',
 }
 
 
