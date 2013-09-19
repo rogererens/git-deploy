@@ -356,22 +356,21 @@ class Sartoris(object):
         log.info('PULL -> ' + '; '.join(
             filter(lambda x: x, ret['stdout'])))
 
-    @staticmethod
-    def scp_file(source, target, user, host, port=22):
+    def scp_file(self, source, target, port=22):
         """
         SCP files via paramiko.
         """
 
         # Socket connection to remote host
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.connect((host, port))
+        sock.connect((self.config['target'], port))
 
         # Build a SSH transport
         t = paramiko.Transport(sock)
         t.start_client()
 
         rsa_key = paramiko.RSAKey.from_private_key_file(PKEY)
-        t.auth_publickey(user, rsa_key)
+        t.auth_publickey(self.config['user.name'], rsa_key)
 
         # Start a scp channel
         scp_channel = t.open_session()
