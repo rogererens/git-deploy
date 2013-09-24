@@ -42,7 +42,10 @@ def main():
     for section in config.sections():
         for name, value in config.items(section):
             # TODO - process config  ... git config, cp git-deploy
-            pass
+            if section == 'deploy':
+                git_config_global_set(section, name, value)
+
+            # TODO - process config  ... cp git-deploy
 
 
 def cli():
