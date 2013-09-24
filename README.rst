@@ -33,27 +33,28 @@ Next, navigate to the root folder and install the package.
 
     $ sudo pip install -e .
 
-Next, copy the /usr/bin
+Next, execute the initialization script, this will prepare the git config and copy the git deploy script.  Make sure that
+the relevant values are set in sartoris.ini for your client/server-target beforehand (see below).
 
-    $ sudo cp sartoris/git-deploy /usr/bin/
+    $ sudo ./scripts/init.py
 
-Finally, set the "hook-dir" and "tag-prefix" and other dependencies for the deploy section in your global .gitconfig:
+The .ini file defines the dependencies for the deploy section in your global .gitconfig:
 
-    $ git config --global deploy.target {%target host%} # e.g. my.remotehost.com:8080 a.k.a deploy host
+    deploy.target {%target host%} # e.g. my.remotehost.com:8080 a.k.a deploy host
 
-    $ git config --global deploy.path {%remote deploy path%}
+    deploy.path {%remote deploy path%}
 
-    $ git config --global deploy.user {%authorized user on deploy target%}
+    deploy.user {%authorized user on deploy target%}
 
-    $ git config --global deploy.hook-dir .git/deploy/hooks/
+    deploy.hook-dir .git/deploy/hooks/
 
-    $ git config --global deploy.tag-prefix {%project name%}
+    deploy.tag-prefix {%project name%}
 
-    $ git config --global deploy.remote {%remote name%}
+    deploy.remote {%remote name%}
 
-    $ git config --global deploy.branch {%deploy branch name%}
+    deploy.branch {%deploy branch name%}
 
-    $ git config --global deploy.client-path {%client path%}
+    deploy.client-path {%client path%}
 
 Also ensure that the global git params user.name and user.email are defined.
 

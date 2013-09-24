@@ -10,6 +10,7 @@ import io
 import logging
 import ConfigParser
 import subprocess
+import shutil
 
 from sartoris.config_local import PROJECT_HOME
 
@@ -43,11 +44,13 @@ def main():
     # Set the ini conf
     for section in config.sections():
         for name, value in config.items(section):
-            # TODO - process config  ... git config, cp git-deploy
+            # git config
             if section == 'deploy':
                 git_config_global_set(section, name, value)
 
-            # TODO - process config  ... cp git-deploy
+            # cp git-deploy
+            if section == 'system' and name == 'run_root':
+                shutil.copy(PROJECT_HOME + 'sartoris/git-deploy', value)
 
 
 def cli():
