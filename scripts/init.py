@@ -11,7 +11,9 @@ import logging
 import ConfigParser
 import subprocess
 
-INI_FILE = '/your/project/home/scripts/sartoris.ini'
+from sartoris.config_local import PROJECT_HOME
+
+INI_FILE = PROJECT_HOME + 'scripts/sartoris.ini'
 
 log_format = "%(asctime)s %(levelname)-8s %(message)s"
 handler = logging.StreamHandler(sys.stderr)
