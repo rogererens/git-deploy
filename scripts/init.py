@@ -9,8 +9,7 @@ import sys
 import io
 import logging
 import ConfigParser
-
-from sartoris.config import log
+import subprocess
 
 INI_FILE = '/your/project/home/scripts/sartoris.ini'
 
@@ -18,6 +17,14 @@ log_format = "%(asctime)s %(levelname)-8s %(message)s"
 handler = logging.StreamHandler(sys.stderr)
 handler.setFormatter(logging.Formatter(fmt=log_format,
                      datefmt='%b-%d %H:%M:%S'))
+
+
+def git_config_global_set(section, prop, value):
+    proc = subprocess.Popen("git config --global {0}.{1} {2}".format(
+        section, prop, value
+    ).split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    proc.communicate()
+
 
 def main():
 

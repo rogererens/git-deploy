@@ -380,8 +380,8 @@ class Sartoris(object):
                                  % '/'.join(target.split('/')[:-1]))
         scp_channel.send('C%s %d %s\n'
                          % (oct(os.stat(source).st_mode)[-4:],
-                         os.stat(source)[6],
-                         target.split('/')[-1]))
+                            os.stat(source)[6],
+                            target.split('/')[-1]))
         scp_channel.sendall(f.read())
 
         # Cleanup
