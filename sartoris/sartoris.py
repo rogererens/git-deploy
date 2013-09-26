@@ -211,11 +211,8 @@ class Sartoris(object):
             * write a lock file
             * add a start tag
         """
-        # @TODO use dulwich package implement git functionality rather
-        #       than shell commands - http://www.samba.org/~jelmer/dulwich/
 
         # Create lock file - check if it already exists
-        # @TODO catch exceptions for any os callable attributes
         if self._check_lock():
             raise SartorisError(message=exit_codes[2])
 
@@ -421,7 +418,6 @@ class Sartoris(object):
             * remove lock file
         """
         # Create lock file - check if it already exists
-        # @TODO catch exceptions for any os callable attributes
         if self._check_lock():
             raise SartorisError(message=exit_codes[2])
 
@@ -442,8 +438,7 @@ class Sartoris(object):
             log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
             return exit_code
 
-        # @TODO determine what to pass as arg 2
-        self._sync(args.force)
+        self._sync(self._tag, args.force)
 
         return 0
 
