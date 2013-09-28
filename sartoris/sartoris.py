@@ -413,26 +413,46 @@ class Sartoris(object):
     def revert(self, args):
         """
             * write a lock file
-            * write previous deploy info into .deploy
             * call sync hook with the prefix (repo) and tag info
-            * remove lock file
         """
 
         #TODO: do git calls in dulwich, rather than shelling out
         if not self._check_lock():
             raise SartorisError(message=exit_codes[30])
 
-        tag = self._make_tag()
+        revert_tag = self._make_tag()
 
-        # Perform revert
+        # Extract tag on which to revert
         if hasattr(args, 'tag'):
-            # revert to tag
-            pass
+            tag = args.tag
         else:
             # revert to last tag
-            pass
+            raise NotImplementedError()
 
-        self._sync(tag, args.force)
+        reset_cmd = 'git reset {0}'.format(tag)
+        add_cmd = 'git add *'
+        commit_cmd = 'git commit -m "revert to \'{0}\'"'.format(tag)
+
+        # Reset the HEAD
+        proc = subprocess.Popen(reset_cmd.split(),
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+        proc.communicate()
+
+        # Add changes to staging
+        proc = subprocess.Popen(add_cmd.split(),
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+        proc.communicate()
+
+        # Commit
+        proc = subprocess.Popen(commit_cmd.split(),
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+        proc.communicate()
+
+        # Sync to reset HEAD
+        self._sync(revert_tag, args.force)
 
         return 0
 
