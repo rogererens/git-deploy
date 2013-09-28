@@ -70,6 +70,9 @@ class Sartoris(object):
     # Default tag message
     DEFAULT_TAG_MSG = 'Sartoris Tag.'
 
+    # Default tag message
+    DEFAULT_COMMIT_MSG = 'Sartoris Commit .'
+
     # class instance
     __instance = None
 
@@ -205,6 +208,31 @@ class Sartoris(object):
         _repo.object_store.add_object(tag_obj)
         _repo['refs/tags/' + tag] = tag_obj.id
 
+    def _dulwich_commit(self, tag, author, message=DEFAULT_COMMIT_MSG):
+        """
+        Creates a tag in git via dulwich calls:
+
+        Parameters:
+            tag - string :: "<project>-[start|sync]-<timestamp>"
+            author - string :: "Your Name <your.email@example.com>"
+        """
+
+        # Open the repo
+        _repo = Repo(self.config['top_dir'])
+
+        # Create the tag object
+        tag_obj = Tag()
+        tag_obj.tagger = author
+        tag_obj.message = message
+        tag_obj.name = tag
+        tag_obj.object = (Commit, _repo.refs['HEAD'])
+        tag_obj.tag_time = int(time())
+        tag_obj.tag_timezone = parse_timezone('-0200')[0]
+
+        # Add tag to the object store
+        _repo.object_store.add_object(tag_obj)
+        _repo['refs/tags/' + tag] = tag_obj.id
+
     def _make_tag(self):
         timestamp = datetime.now().strftime(self.DATE_TIME_TAG_FORMAT)
         return '{0}-{1}'.format(self.config['user'], timestamp)
@@ -255,30 +283,16 @@ class Sartoris(object):
         self._remove_lock()
         return 0
 
-    def sync(self, args, no_deps=False, force=False):
+    def sync(self, args):
         """
             * add a sync tag
             * write a .deploy file with the tag information
             * call a sync hook with the prefix (repo) and tag info
         """
-        #TODO: do git calls in dulwich, rather than shelling out
         if not self._check_lock():
-            exit_code = 30
-            log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
-            return exit_code
-        repo_name = self.config['repo_name']
+            raise SartorisError(message=exit_codes[30], exit_code=30)
 
         tag = self._make_tag()
-
-        # Write .deploy file
-        try:
-            deploy_file = open(self.config['deploy_file'], 'w')
-            deploy_file.write(json.dumps({'repo': repo_name, 'tag': tag}))
-            deploy_file.close()
-        except OSError:
-            exit_code = 32
-            log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
-            return exit_code
 
         return self._sync(tag, args.force)
 
@@ -287,7 +301,6 @@ class Sartoris(object):
         repo_name = self.config['repo_name']
         sync_script = '{0}/{1}.sync'.format(self.config["sync_dir"], repo_name)
 
-        #TODO: use a pluggable sync system rather than shelling out
         if os.path.exists(sync_script):
             log.info('{0} :: Calling sync script at {1}'.format(__name__,
                                                                 sync_script))
