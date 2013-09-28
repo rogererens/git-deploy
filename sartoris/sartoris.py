@@ -277,7 +277,7 @@ class Sartoris(object):
             log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
             return exit_code
 
-        return self._sync(args.force)
+        return self._sync(tag, args.force)
 
     def _sync(self, tag, force):
 
@@ -431,17 +431,6 @@ class Sartoris(object):
         else:
             # revert to last tag
             pass
-
-#        # Write .deploy file
-#        try:
-#            deploy_file = open(self.config['deploy_file'], 'w')
-#            deploy_file.write(json.dumps({'repo': repo_name,
-#                                          'tag': self._tag}))
-#            deploy_file.close()
-#        except OSError:
-#            exit_code = 32
-#            log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
-#            return exit_code
 
         self._sync(tag, args.force)
 
