@@ -55,6 +55,9 @@ def remove_readonly(fn, path, excinfo):
 
 class Sartoris(object):
 
+    # Pattern for git-deploy tags
+    TAG_PATTERN = r'[a-zA-Z]*-[0-9]{8}-[0-9]{6}'
+
     # Module level attribute for tagging datetime format
     DATE_TIME_TAG_FORMAT = '%Y%m%d-%H%M%S'
 
@@ -413,22 +416,31 @@ class Sartoris(object):
     def revert(self, args):
         """
             * write a lock file
+            * reset to last or specified tag
             * call sync hook with the prefix (repo) and tag info
         """
 
-        #TODO: do git calls in dulwich, rather than shelling out
         if not self._check_lock():
             raise SartorisError(message=exit_codes[30])
 
         revert_tag = self._make_tag()
 
         # Extract tag on which to revert
+        tag = ''
         if hasattr(args, 'tag'):
             tag = args.tag
         else:
             # revert to last tag
-            raise NotImplementedError()
+            for item in os.walk(self.config['top_dir'] + '/.git/refs/tags/'):
+                if search(r'/.git/refs/tags/', item[0]):
+                    tag = item[2][-1]
+                    break
 
+        # Ensure tag to revert to was set
+        if tag == '':
+            raise SartorisError(message=exit_codes[13], exit_code=13)
+
+        # TODO - use dulwich
         reset_cmd = 'git reset {0}'.format(tag)
         add_cmd = 'git add *'
         commit_cmd = 'git commit -m "revert to \'{0}\'"'.format(tag)

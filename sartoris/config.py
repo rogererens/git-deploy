@@ -36,6 +36,7 @@ exit_codes = {
     10: 'Please specify number of deploy tags to emit with -c.  Exiting',
     11: 'Could not find any deploys.  Exiting',
     12: 'Tagging failed. Exiting',
+    13: 'Revert tag not found. Exiting',
     19: 'Missing system configuration item "deploy.client-path". Exiting.',
     20: 'Cannot find top level directory for the git repository. Exiting.',
     21: 'Missing system configuration item "hook-dir". Exiting.',

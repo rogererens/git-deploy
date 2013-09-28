@@ -57,6 +57,9 @@ def parseargs():
     parser.add_argument("-f", "--force",
                         action="store_true",
                         help="force the action, bypass sanity checks.")
+    parser.add_argument("-t", "--tag",
+                        default='', type =str,
+                        help="Specify the tag for the revert action.")
 
     args = parser.parse_args()
     return args
