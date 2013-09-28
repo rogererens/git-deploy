@@ -207,6 +207,17 @@ class Sartoris(object):
         _repo.object_store.add_object(tag_obj)
         _repo['refs/tags/' + tag] = tag_obj.id
 
+    def _dulwich_reset_to_tag(self, tag):
+        """
+        Resets the HEAD to the commit
+        """
+        _repo = Repo(self.config['top_dir'])
+
+        try:
+            _repo.refs['HEAD'] = _repo['refs/tags/' + tag].id
+        except AttributeError:
+            raise SartorisError(message=exit_codes[7], exit_code=7)
+
     def _dulwich_stage(self, file):
         """
         Stage modified files in the repo
