@@ -17,7 +17,6 @@ import paramiko
 import socket
 from re import search
 import subprocess
-import json
 from time import time
 from datetime import datetime
 
@@ -71,7 +70,7 @@ class Sartoris(object):
     DEFAULT_TAG_MSG = 'Sartoris Tag.'
 
     # Default tag message
-    DEFAULT_COMMIT_MSG = 'Sartoris Commit .'
+    DEFAULT_COMMIT_MSG = 'Sartoris Commit'
 
     # class instance
     __instance = None
@@ -208,30 +207,22 @@ class Sartoris(object):
         _repo.object_store.add_object(tag_obj)
         _repo['refs/tags/' + tag] = tag_obj.id
 
-    def _dulwich_commit(self, tag, author, message=DEFAULT_COMMIT_MSG):
+    def _dulwich_stage(self, file):
         """
-        Creates a tag in git via dulwich calls:
-
-        Parameters:
-            tag - string :: "<project>-[start|sync]-<timestamp>"
-            author - string :: "Your Name <your.email@example.com>"
+        Stage modified files in the repo
         """
-
-        # Open the repo
         _repo = Repo(self.config['top_dir'])
+        _repo.stage([file])
 
-        # Create the tag object
-        tag_obj = Tag()
-        tag_obj.tagger = author
-        tag_obj.message = message
-        tag_obj.name = tag
-        tag_obj.object = (Commit, _repo.refs['HEAD'])
-        tag_obj.tag_time = int(time())
-        tag_obj.tag_timezone = parse_timezone('-0200')[0]
+    def _dulwich_commit(self, author, message=DEFAULT_COMMIT_MSG):
+        """
+        Commit staged files in the repo
+        """
+        _repo = Repo(self.config['top_dir'])
+        commit_id = _repo.do_commit(message, committer=author)
 
-        # Add tag to the object store
-        _repo.object_store.add_object(tag_obj)
-        _repo['refs/tags/' + tag] = tag_obj.id
+        if not _repo.head() == commit_id:
+            raise SartorisError(message=exit_codes[14], exit_code=14)
 
     def _make_tag(self):
         timestamp = datetime.now().strftime(self.DATE_TIME_TAG_FORMAT)
