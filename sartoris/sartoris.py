@@ -417,28 +417,33 @@ class Sartoris(object):
             * call sync hook with the prefix (repo) and tag info
             * remove lock file
         """
-        # Create lock file - check if it already exists
-        if self._check_lock():
-            raise SartorisError(message=exit_codes[2])
 
-        self._create_lock()
-        repo_name = self.config['repo_name']
+        #TODO: do git calls in dulwich, rather than shelling out
+        if not self._check_lock():
+            raise SartorisError(message=exit_codes[30])
 
-        # Get latest "sync" tag - sets self._tag
-        self._get_latest_deploy_tag()
+        tag = self._make_tag()
 
-        # Write .deploy file
-        try:
-            deploy_file = open(self.config['deploy_file'], 'w')
-            deploy_file.write(json.dumps({'repo': repo_name,
-                                          'tag': self._tag}))
-            deploy_file.close()
-        except OSError:
-            exit_code = 32
-            log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
-            return exit_code
+        # Perform revert
+        if hasattr(args, 'tag'):
+            # revert to tag
+            pass
+        else:
+            # revert to last tag
+            pass
 
-        self._sync(self._tag, args.force)
+#        # Write .deploy file
+#        try:
+#            deploy_file = open(self.config['deploy_file'], 'w')
+#            deploy_file.write(json.dumps({'repo': repo_name,
+#                                          'tag': self._tag}))
+#            deploy_file.close()
+#        except OSError:
+#            exit_code = 32
+#            log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
+#            return exit_code
+
+        self._sync(tag, args.force)
 
         return 0
 
