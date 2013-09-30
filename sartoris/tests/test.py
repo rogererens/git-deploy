@@ -11,7 +11,7 @@
 import unittest
 from collections import namedtuple
 from sartoris.sartoris import Sartoris, SartorisError, exit_codes, parseargs
-from sartoris import config
+from sartoris import config_local
 from dulwich.repo import Repo
 from os import mkdir, chdir
 from shutil import rmtree
@@ -35,17 +35,17 @@ def init_tmp_repo():
     """
     Create a test repo, change to directory
     """
-    mkdir(config.TEST_REPO)
-    Repo.init(config.TEST_REPO)
-    chdir(config.TEST_REPO)
+    mkdir(config_local.TEST_REPO)
+    Repo.init(config_local.TEST_REPO)
+    chdir(config_local.TEST_REPO)
 
 
 def teardown_tmp_repo():
     """
     Remove the test repo
     """
-    chdir(config.SARTORIS_HOME)
-    rmtree(config.TEST_REPO)
+    chdir(config_local.PROJECT_HOME)
+    rmtree(config_local.TEST_REPO)
 
 
 class TestNullHandler(unittest.TestCase):

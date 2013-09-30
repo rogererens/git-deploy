@@ -2,6 +2,9 @@
 Local settings go in here
 """
 
+# REPO for Sartoris tests
+TEST_REPO = '/path/to/test_repo/home/'
+
 # Path to private key
 PKEY = '/path/to/private/key/file'
 
