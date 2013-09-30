@@ -211,3 +211,56 @@ class TestSartorisFunctionality(unittest.TestCase):
                 assert False
             return
         assert False
+
+
+class TestSartorisDulwichDeps(unittest.TestCase):
+    """
+    Class to test Sartoris dulwich dependencies.  Utilize test repos
+    """
+
+    @setup_deco
+    def test_dulwich_tag(self):
+        """
+        Tests method Sartoris::_dulwich_tag
+        """
+
+        #   1. Call _dulwich_tag
+        #   2. Check _repo['refs/tags/' + tag] to verify tag exists
+
+        assert False
+
+    @setup_deco
+    def test_dulwich_reset_to_tag(self):
+        """
+        Tests method Sartoris::_dulwich_reset_to_tag
+        """
+
+        #   1. Create two dummy tags and commits
+        #   2. Call _dulwich_reset_to_tag
+        #   3. Ensure _repo['HEAD'] matches _repo['refs/tags/' + tag]
+
+        assert False
+
+    @setup_deco
+    def test_dulwich_stage(self):
+        """
+        Tests method Sartoris::_dulwich_stage
+        """
+
+        #   1. Create a dummy file - use object store
+        #   2. Call _dulwich_stage
+        #   3. Use dulwich.diff_tree.tree_changes to ensure changes are staged
+
+        assert False
+
+    @setup_deco
+    def test_dulwich_commit(self):
+        """
+        Tests method Sartoris::_dulwich_commit
+        """
+
+        #   1. Follow steps in test_dulwich_stage
+        #   2. Perform commit
+        #   3. Ensure that _repo['HEAD'] matches the commit.id
+
+        assert False
