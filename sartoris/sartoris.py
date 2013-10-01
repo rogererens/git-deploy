@@ -455,28 +455,16 @@ class Sartoris(object):
         if tag == '':
             raise SartorisError(message=exit_codes[13], exit_code=13)
 
-        # TODO - use dulwich
-        reset_cmd = 'git reset {0}'.format(tag)
-        add_cmd = 'git add *'
-        commit_cmd = 'git commit -m "revert to \'{0}\'"'.format(tag)
-
         # Reset the HEAD
-        proc = subprocess.Popen(reset_cmd.split(),
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
-        proc.communicate()
+        self._dulwich_reset_to_tag(tag)
 
         # Add changes to staging
-        proc = subprocess.Popen(add_cmd.split(),
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
-        proc.communicate()
+        self._dulwich_stage('*')
 
         # Commit
-        proc = subprocess.Popen(commit_cmd.split(),
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
-        proc.communicate()
+        author = '{0} <{1}>'.format(self.config['user.name'],
+                                    self.config['user.email'])
+        self._dulwich_commit(author)
 
         # Sync to reset HEAD
         self._sync(revert_tag, args.force)
