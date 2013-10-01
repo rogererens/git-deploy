@@ -239,6 +239,10 @@ class Sartoris(object):
         timestamp = datetime.now().strftime(self.DATE_TIME_TAG_FORMAT)
         return '{0}-{1}'.format(self.config['user'], timestamp)
 
+    def _make_author(self):
+        return '{0} <{1}>'.format(self.config['user.name'],
+                                  self.config['user.email'])
+
     def start(self, args):
         """
             * write a lock file
@@ -321,10 +325,8 @@ class Sartoris(object):
             # In absence of a sync script -- Tag the repo
             log.debug(__name__ + ' :: Calling default sync.')
 
-            _author = '{0} <{1}>'.format(self.config['user.name'],
-                                         self.config['user.email'])
             try:
-                self._dulwich_tag(tag, _author)
+                self._dulwich_tag(tag, self._make_author())
             except Exception as e:
                 log.error(str(e))
                 raise SartorisError(message=exit_codes[12], exit_code=12)
@@ -462,9 +464,7 @@ class Sartoris(object):
         self._dulwich_stage('*')
 
         # Commit
-        author = '{0} <{1}>'.format(self.config['user.name'],
-                                    self.config['user.email'])
-        self._dulwich_commit(author)
+        self._dulwich_commit(self._make_author())
 
         # Sync to reset HEAD
         self._sync(revert_tag, args.force)
