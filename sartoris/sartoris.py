@@ -25,7 +25,7 @@ from dulwich.objects import Tag, Commit, parse_timezone
 
 from config import log, configure, exit_codes, DEFAULT_CLIENT_HOOK, \
     DEFAULT_TARGET_HOOK
-from config_local import PKEY
+from config_local import PKEY, PROJECT_HOME
 
 
 class SartorisError(Exception):
@@ -226,8 +226,10 @@ class Sartoris(object):
 
         # Iterate through files, those modified will be staged
         for elem in os.walk(self.config['top_dir']):
-            if not search(r'\./\.git', elem[0]):
-                files = [elem[2] + '/' + file for file in elem[2]]
+            if not search(r'\.git', elem[0]):
+                files = [(elem[0] + '/' + file).split(PROJECT_HOME)[-1]
+                         for file in elem[2]]
+                log.info(__name__ + ' :: Staging - {0}'.format(files))
                 _repo.stage(files)
 
     def _dulwich_commit(self, author, message=DEFAULT_COMMIT_MSG):
