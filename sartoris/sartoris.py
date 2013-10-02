@@ -218,12 +218,17 @@ class Sartoris(object):
         except AttributeError:
             raise SartorisError(message=exit_codes[7], exit_code=7)
 
-    def _dulwich_stage(self, file):
+    def _dulwich_stage_all(self):
         """
         Stage modified files in the repo
         """
         _repo = Repo(self.config['top_dir'])
-        _repo.stage([file])
+
+        # Iterate through files, those modified will be staged
+        for elem in os.walk(self.config['top_dir']):
+            if not search(r'\./\.git', elem[0]):
+                files = [elem[2] + '/' + file for file in elem[2]]
+                _repo.stage(files)
 
     def _dulwich_commit(self, author, message=DEFAULT_COMMIT_MSG):
         """
@@ -461,7 +466,7 @@ class Sartoris(object):
         self._dulwich_reset_to_tag(tag)
 
         # Add changes to staging
-        self._dulwich_stage('*')
+        self._dulwich_stage_all()
 
         # Commit
         self._dulwich_commit(self._make_author())

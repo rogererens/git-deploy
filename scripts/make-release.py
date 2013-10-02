@@ -27,7 +27,7 @@ def parse_changelog():
                 continue
             length = len(match.group(1))
             version = match.group(1).strip()
-            if lineiter.next().count('-') != len(match.group(0)):
+            if lineiter.next().count('-') != length:
                 continue
             while 1:
                 change_info = lineiter.next().strip()
