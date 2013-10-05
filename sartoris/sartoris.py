@@ -22,6 +22,7 @@ from datetime import datetime
 
 from dulwich.repo import Repo
 from dulwich.objects import Tag, Commit, parse_timezone
+from dulwich.diff_tree import tree_changes
 
 from config import log, configure, exit_codes, DEFAULT_CLIENT_HOOK, \
     DEFAULT_TARGET_HOOK
@@ -214,7 +215,7 @@ class Sartoris(object):
         _repo = Repo(self.config['top_dir'])
 
         try:
-            _repo.refs['HEAD'] = _repo['refs/tags/' + tag].id
+            _repo.refs['HEAD'] = self._get_commit_sha_for_tag(tag)
         except AttributeError:
             raise SartorisError(message=exit_codes[7], exit_code=7)
 
@@ -242,6 +243,15 @@ class Sartoris(object):
         if not _repo.head() == commit_id:
             raise SartorisError(message=exit_codes[14], exit_code=14)
 
+    def _dulwich_status(self):
+        """
+        Return the git status
+        """
+        _repo = Repo(self.config['top_dir'])
+        index = _repo.open_index()
+        return list(tree_changes(_repo, index.commit(_repo.object_store),
+                                 _repo['HEAD'].tree))
+
     def _make_tag(self):
         timestamp = datetime.now().strftime(self.DATE_TIME_TAG_FORMAT)
         return '{0}-{1}'.format(self.config['user'], timestamp)
@@ -249,6 +259,19 @@ class Sartoris(object):
     def _make_author(self):
         return '{0} <{1}>'.format(self.config['user.name'],
                                   self.config['user.email'])
+
+    def _git_commit_list(self):
+        """
+        Generate an in-order list of commits
+        """
+        cmd = 'git log --pretty=oneline'
+        proc = subprocess.Popen(cmd.split(),
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+        commits = [i.split()[0] for i in proc.communicate()[0][:-1].split('\n')]
+        commits.reverse()
+
+        return commits
 
     def start(self, args):
         """
