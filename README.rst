@@ -80,6 +80,11 @@ The process may be aborted at any point with an 'abort' command:
 
     $ git deploy abort [opts]
 
+You can rollback to a tag with the revert call:
+
+    $ git deploy revert [-t <tag_name>] [opts]
+
+If no tag is supplied the rollback uses the most recent tag.
 
 Deploy Hooks
 ------------
