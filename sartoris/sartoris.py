@@ -208,14 +208,19 @@ class Sartoris(object):
         _repo.object_store.add_object(tag_obj)
         _repo['refs/tags/' + tag] = tag_obj.id
 
-    def _dulwich_reset_to_tag(self, tag):
+    def _dulwich_reset_to_tag(self, tag=None):
         """
         Resets the HEAD to the commit
         """
         _repo = Repo(self.config['top_dir'])
 
+        if not tag:
+            sha = _repo.head()
+        else:
+            sha = self._get_commit_sha_for_tag(tag)
+
         try:
-            _repo.refs['HEAD'] = self._get_commit_sha_for_tag(tag)
+            _repo.refs['HEAD'] = sha
         except AttributeError:
             raise SartorisError(message=exit_codes[7], exit_code=7)
 
@@ -514,13 +519,18 @@ class Sartoris(object):
         #   3. commit
         #
         tag_commit_sha = self._get_commit_sha_for_tag(tag)
+        commit_sha = None
         for commit_sha in self._git_commit_list():
             if commit_sha == tag_commit_sha:
                 break
             self._git_revert(commit_sha)
-        self._dulwich_commit(self._make_author(),
-                             message='Rollback to {0}.'.format(tag))
 
+        # Ensure the commit tag was matched
+        if commit_sha != tag_commit_sha or not commit_sha:
+            self._dulwich_reset_to_tag()
+            raise SartorisError(message=exit_codes[35], exit_code=35)
+        self._dulwich_commit(self._make_author(),
+                             message='Rollback to {0}.'.format(revert_tag))
         return 0
 
     def release(self):
