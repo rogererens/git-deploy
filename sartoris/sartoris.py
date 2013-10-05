@@ -268,10 +268,29 @@ class Sartoris(object):
         proc = subprocess.Popen(cmd.split(),
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
-        commits = [i.split()[0] for i in proc.communicate()[0][:-1].split('\n')]
+        proc_out = proc.communicate()
+
+        if proc.returncode != 0:
+            raise SartorisError(message=exit_codes[34], exit_code=34)
+
+        commits = [i.split()[0] for i in proc_out[0][:-1].split('\n')]
         commits.reverse()
 
         return commits
+
+    def _git_revert(self, commit_sha):
+        """
+        Perform a no-commit revert
+        """
+        cmd = 'git revert --no-commit {0}'.format(commit_sha)
+        proc = subprocess.Popen(cmd.split(),
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+
+        proc.communicate()
+
+        if proc.returncode != 0:
+            raise SartorisError(message=exit_codes[33], exit_code=33)
 
     def start(self, args):
         """
@@ -487,17 +506,20 @@ class Sartoris(object):
         if tag == '':
             raise SartorisError(message=exit_codes[13], exit_code=13)
 
-        # Reset the HEAD
-        self._dulwich_reset_to_tag(tag)
-
-        # Add changes to staging
-        self._dulwich_stage_all()
-
-        # Commit
-        self._dulwich_commit(self._make_author())
-
-        # Sync to reset HEAD
-        self._sync(revert_tag, args.force)
+        #
+        # Rollback to tag:
+        #
+        #   1. get a commit list
+        #   2. perform no-commit reverts
+        #   3. commit
+        #
+        tag_commit_sha = self._get_commit_sha_for_tag(tag)
+        for commit_sha in self._git_commit_list():
+            if commit_sha == tag_commit_sha:
+                break
+            self._git_revert(commit_sha)
+        self._dulwich_commit(self._make_author(),
+                             message='Rollback to {0}.'.format(tag))
 
         return 0
 
