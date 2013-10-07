@@ -19,6 +19,7 @@ from re import search
 import subprocess
 from time import time
 from datetime import datetime
+from collections import OrderedDict
 
 from dulwich.repo import Repo
 from dulwich.objects import Tag, Commit, parse_timezone
@@ -251,7 +252,21 @@ class Sartoris(object):
         """
         _repo = Repo(self.config['top_dir'])
         tags = _repo.refs.as_dict("refs/tags")
-        return tags
+        tag_keys = tags.keys()
+        commits = [commit for _, commit in tags.iteritems()]
+
+        # Reorder list by commit time
+        # TODO - this is a non dulwich dependency, refactor this to
+        # TODO (cont.) - use timestamps from the repo
+        #
+        ordered_tags = OrderedDict()
+
+        for commit in self._git_commit_list():
+            if commit in commits:
+                index = commits.index(commit)
+                ordered_tags[tag_keys[index]] = commit
+
+        return ordered_tags
 
     def _make_tag(self):
         timestamp = datetime.now().strftime(self.DATE_TIME_TAG_FORMAT)
@@ -573,20 +588,16 @@ class Sartoris(object):
         # Pull last 'num_tags' sync tags
         # Reverse the tags since the later ones will appear further down
         tags = self._dulwich_get_tags().keys()
-        tags.reverse()
 
         # Filter only matched deploy tags
-        f = lambda x: not search(self.config['user'] + '-', x)
+        f = lambda x: search(self.config['user'] + '-', x)
         tags = filter(f, tags)
-        if num_tags < len(tags):
+
+        if num_tags <= len(tags):
             tags = tags[:num_tags]
 
         for tag in tags:
-            if not num_tags:
-                break
-            if search(r'sync', tag):
-                print tag
-                num_tags -= 1
+            print tag
         return 0
 
     def diff(self, _):
