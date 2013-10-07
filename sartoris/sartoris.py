@@ -257,6 +257,14 @@ class Sartoris(object):
         return list(tree_changes(_repo, index.commit(_repo.object_store),
                                  _repo['HEAD'].tree))
 
+    def _dulwich_get_tags(self):
+        """
+        Get all tags & correspondin commit shas
+        """
+        _repo = Repo(self.config['top_dir'])
+        tags = _repo.refs.as_dict("refs/tags")
+        return tags
+
     def _make_tag(self):
         timestamp = datetime.now().strftime(self.DATE_TIME_TAG_FORMAT)
         return '{0}-{1}'.format(self.config['user'], timestamp)
@@ -279,7 +287,6 @@ class Sartoris(object):
             raise SartorisError(message=exit_codes[34], exit_code=34)
 
         commits = [i.split()[0] for i in proc_out[0][:-1].split('\n')]
-        commits.reverse()
 
         return commits
 
@@ -291,7 +298,6 @@ class Sartoris(object):
         proc = subprocess.Popen(cmd.split(),
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
-
         proc.communicate()
 
         if proc.returncode != 0:
@@ -484,7 +490,7 @@ class Sartoris(object):
             'stderr': stderr,
         }
 
-    def revert(self, args):
+    def revert(self, args, auto_sync=False):
         """
             * write a lock file
             * reset to last or specified tag
@@ -494,19 +500,19 @@ class Sartoris(object):
         if not self._check_lock():
             raise SartorisError(message=exit_codes[30])
 
+        # This will be the tag on the revert commit
         revert_tag = self._make_tag()
 
         # Extract tag on which to revert
-        tag = ''
         if hasattr(args, 'tag'):
             tag = args.tag
         else:
-            # revert to last tag
-            for item in os.walk(self.config['top_dir'] + '/.git/refs/tags/'):
-                if search(r'/.git/refs/tags/', item[0]):
-                    print item
-                    tag = item[2][-1]
-                    break
+            # revert to previous to current tag
+            repo_tags = self._dulwich_get_tags()
+            if len(repo_tags) >= 2:
+                tag = repo_tags.keys()[-2]
+            else:
+                raise SartorisError(message=exit_codes[36], exit_code=36)
 
         # Ensure tag to revert to was set
         if tag == '':
@@ -521,7 +527,7 @@ class Sartoris(object):
         #
 
         log.info(__name__ + ' :: revert - Attempting to revert to tag: {0}'.
-                 format(revert_tag))
+                 format(tag))
 
         tag_commit_sha = self._get_commit_sha_for_tag(tag)
         commit_sha = None
@@ -535,10 +541,13 @@ class Sartoris(object):
             self._dulwich_reset_to_tag()
             raise SartorisError(message=exit_codes[35], exit_code=35)
         self._dulwich_commit(self._make_author(),
-                             message='Rollback to {0}.'.format(revert_tag))
+                             message='Rollback to {0}.'.format(tag))
 
-        log.info(__name__ + ' :: revert - Reverted to tag: {0}'.
-                 format(revert_tag))
+        log.info(__name__ + ' :: revert - Reverted to tag: {0}, '
+                            'call "git deploy sync" to persist'.format(tag))
+
+        if auto_sync:
+            self._sync(revert_tag, True)
 
         return 0
 
