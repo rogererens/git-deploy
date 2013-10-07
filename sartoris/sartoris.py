@@ -504,6 +504,7 @@ class Sartoris(object):
             # revert to last tag
             for item in os.walk(self.config['top_dir'] + '/.git/refs/tags/'):
                 if search(r'/.git/refs/tags/', item[0]):
+                    print item
                     tag = item[2][-1]
                     break
 
@@ -518,6 +519,10 @@ class Sartoris(object):
         #   2. perform no-commit reverts
         #   3. commit
         #
+
+        log.info(__name__ + ' :: revert - Attempting to revert to tag: {0}'.
+                 format(revert_tag))
+
         tag_commit_sha = self._get_commit_sha_for_tag(tag)
         commit_sha = None
         for commit_sha in self._git_commit_list():
@@ -531,6 +536,10 @@ class Sartoris(object):
             raise SartorisError(message=exit_codes[35], exit_code=35)
         self._dulwich_commit(self._make_author(),
                              message='Rollback to {0}.'.format(revert_tag))
+
+        log.info(__name__ + ' :: revert - Reverted to tag: {0}'.
+                 format(revert_tag))
+
         return 0
 
     def release(self):
