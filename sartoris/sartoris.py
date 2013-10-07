@@ -167,10 +167,21 @@ class Sartoris(object):
             raise SartorisError(message=exit_codes[8], exit_code=8)
 
     def _get_latest_deploy_tag(self):
-        """ Returns the latest tag containing 'sync'
-            Sets self._tag to tag string
         """
-        return self._dulwich_get_tags().keys()[-1]
+        Returns the latest tag containing 'sync'
+        Sets self._tag to tag string
+        """
+        return self._get_deploy_tags()[-1]
+
+    def _get_deploy_tags(self):
+        """
+        Returns the all deploy tags.
+        """
+        # 1. Pull last 'num_tags' sync tags
+        # 2. Filter only matched deploy tags
+        tags = self._dulwich_get_tags().keys()
+        f = lambda x: search(self.config['user'] + '-', x)
+        return filter(f, tags)
 
     def _dulwich_tag(self, tag, author, message=DEFAULT_TAG_MSG):
         """
@@ -585,13 +596,7 @@ class Sartoris(object):
         except NameError:
             raise SartorisError(message=exit_codes[10], exit_code=10)
 
-        # Pull last 'num_tags' sync tags
-        # Reverse the tags since the later ones will appear further down
-        tags = self._dulwich_get_tags().keys()
-
-        # Filter only matched deploy tags
-        f = lambda x: search(self.config['user'] + '-', x)
-        tags = filter(f, tags)
+        tags = self._get_deploy_tags()
 
         if num_tags <= len(tags):
             tags = tags[:num_tags]
@@ -605,25 +610,16 @@ class Sartoris(object):
             * show a git diff of the last deploy and it's previous deploy
         """
 
-        # Get the last two tags - assumes tagging on deployment only
-        proc = subprocess.Popen("git tag".split(),
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE,)
-
-        # Get the last two tags
-        sync_tags = filter(lambda x: search(r'sync', x),
-                           proc.communicate()[0].split('\n'))
+        tags = self._get_deploy_tags()
 
         # Check the return code & whether at least two sync tags were
         # returned
-        if proc.returncode:
-            raise SartorisError(message=exit_codes[6], exit_code=6)
-        elif len(sync_tags) < 2:
+        if len(tags) < 2:
             raise SartorisError(message=exit_codes[7], exit_code=7)
 
         # Get the associated commit hashes for those tags
-        sha_1 = self._get_commit_sha_for_tag(sync_tags[0])
-        sha_2 = self._get_commit_sha_for_tag(sync_tags[1])
+        sha_1 = self._get_commit_sha_for_tag(tags[0])
+        sha_2 = self._get_commit_sha_for_tag(tags[1])
 
         # Produce the diff
         # @TODO replace with dulwich
