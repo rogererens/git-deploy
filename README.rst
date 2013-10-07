@@ -84,7 +84,10 @@ You can rollback to a tag with the revert call:
 
     $ git deploy revert [-t <tag_name>] [opts]
 
-If no tag is supplied the rollback uses the most recent tag.
+If no tag is supplied the rollback uses the most recent tag.  The default is to only commit the rollback locally
+however, by suppling the "-a" option for auto-sync the rollback automatically syncs also:
+
+    $ git deploy revert [-t <tag_name>] [opts]
 
 Deploy Hooks
 ------------

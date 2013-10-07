@@ -490,7 +490,7 @@ class Sartoris(object):
             'stderr': stderr,
         }
 
-    def revert(self, args, auto_sync=False):
+    def revert(self, args):
         """
             * write a lock file
             * reset to last or specified tag
@@ -543,11 +543,11 @@ class Sartoris(object):
         self._dulwich_commit(self._make_author(),
                              message='Rollback to {0}.'.format(tag))
 
-        log.info(__name__ + ' :: revert - Reverted to tag: {0}, '
+        log.info(__name__ + ' :: revert - Reverted to tag: "{0}", '
                             'call "git deploy sync" to persist'.format(tag))
 
-        if auto_sync:
-            self._sync(revert_tag, True)
+        if args.auto_sync:
+            return self._sync(revert_tag, args.force)
 
         return 0
 

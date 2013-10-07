@@ -58,8 +58,11 @@ def parseargs():
                         action="store_true",
                         help="force the action, bypass sanity checks.")
     parser.add_argument("-t", "--tag",
-                        default='', type =str,
+                        default='', type=str,
                         help="Specify the tag for the revert action.")
+    parser.add_argument("-a", "--auto_sync",
+                        default='', action="store_true",
+                        help="Auto sync flag.")
 
     args = parser.parse_args()
     return args
