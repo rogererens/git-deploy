@@ -169,19 +169,7 @@ class Sartoris(object):
         """ Returns the latest tag containing 'sync'
             Sets self._tag to tag string
         """
-        proc = subprocess.Popen("git tag".split(),
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
-        self._tag = None
-        for line_out in proc.communicate()[0].split('\n'):
-            if search(r'sync', line_out):
-                self._tag = line_out
-
-        if proc.returncode:
-            raise SartorisError(message=exit_codes[8], exit_code=8)
-        elif not self._tag:
-            raise SartorisError(message=exit_codes[8], exit_code=8)
-        return 0
+        return self._dulwich_get_tags().keys()[-1]
 
     def _dulwich_tag(self, tag, author, message=DEFAULT_TAG_MSG):
         """
@@ -569,8 +557,7 @@ class Sartoris(object):
             * display latest deploy tag
         """
         # Get latest "sync" tag - sets self._tag
-        self._get_latest_deploy_tag()
-        print self._tag
+        print self._get_latest_deploy_tag()
         return 0
 
     def log_deploys(self, args):
