@@ -291,7 +291,7 @@ class Sartoris(object):
         if proc.returncode != 0:
             raise SartorisError(message=exit_codes[33], exit_code=33)
 
-    def start(self, args):
+    def start(self, _):
         """
             * write a lock file
             * add a start tag
@@ -305,7 +305,7 @@ class Sartoris(object):
 
         return 0
 
-    def abort(self, args):
+    def abort(self, _):
         """
             * reset state back to start tag
             * remove lock file
@@ -552,7 +552,7 @@ class Sartoris(object):
         """
         pass
 
-    def show_tag(self, args):
+    def show_tag(self, _):
         """
             * display latest deploy tag
         """
@@ -572,12 +572,12 @@ class Sartoris(object):
 
         # Pull last 'num_tags' sync tags
         # Reverse the tags since the later ones will appear further down
-        tags = self._dulwich_get_tags()
+        tags = self._dulwich_get_tags().keys()
         tags.reverse()
 
         # Filter only matched deploy tags
         f = lambda x: not search(self.config['user'] + '-', x)
-        tags = filter(tags, f)
+        tags = filter(f, tags)
         if num_tags < len(tags):
             tags = tags[:num_tags]
 
@@ -589,7 +589,7 @@ class Sartoris(object):
                 num_tags -= 1
         return 0
 
-    def diff(self, args):
+    def diff(self, _):
         """
             * show a git diff of the last deploy and it's previous deploy
         """
