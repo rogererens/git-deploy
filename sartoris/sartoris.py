@@ -570,14 +570,17 @@ class Sartoris(object):
         except NameError:
             raise SartorisError(message=exit_codes[10], exit_code=10)
 
-        # Get tags for project
-        proc = subprocess.Popen("git tag".split(),
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
         # Pull last 'num_tags' sync tags
         # Reverse the tags since the later ones will appear further down
-        tags = proc.communicate()[0].split('\n')
+        tags = self._dulwich_get_tags()
         tags.reverse()
+
+        # Filter only matched deploy tags
+        f = lambda x: not search(self.config['user'] + '-', x)
+        tags = filter(tags, f)
+        if num_tags < len(tags):
+            tags = tags[:num_tags]
+
         for tag in tags:
             if not num_tags:
                 break
