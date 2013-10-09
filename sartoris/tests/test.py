@@ -214,12 +214,15 @@ class TestSartorisDulwichDeps(unittest.TestCase):
     def test_dulwich_tag(self):
         """
         Tests method Sartoris::_dulwich_tag
+
+            1. Call _dulwich_tag
+            2. Check most recent tag to verify tag exists
         """
-
-        #   1. Call _dulwich_tag
-        #   2. Check _repo['refs/tags/' + tag] to verify tag exists
-
-        assert False
+        s = Sartoris()
+        tag = 'test_tag'
+        s._dulwich_tag(tag, s._make_author())
+        tags = s._dulwich_get_tags()
+        assert tags.keys()[0] == tag
 
     @setup_deco
     def test_dulwich_reset_to_tag(self):
