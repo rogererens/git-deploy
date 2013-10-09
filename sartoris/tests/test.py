@@ -48,13 +48,6 @@ def teardown_tmp_repo():
     rmtree(config_local.TEST_REPO)
 
 
-class TestNullHandler(unittest.TestCase):
-    def test_emit(self):
-        # null_handler = NullHandler()
-        # self.assertEqual(expected, null_handler.emit(record))
-        assert False  # TODO: implement your test here
-
-
 class TestSartorisInit(unittest.TestCase):
     """ Test cases for Sartoris initialization and config """
     def test_conf_hook_dir(self):
@@ -98,6 +91,7 @@ class TestSartorisFunctionality(unittest.TestCase):
         except SartorisError:
             assert False
 
+    @setup_deco
     def test_diff(self):
         """
         diff - test to ensure that ``diff`` method functions
@@ -109,6 +103,7 @@ class TestSartorisFunctionality(unittest.TestCase):
         except SartorisError:
             assert False
 
+    @setup_deco
     def test_log_deploys(self):
         """
         log_deploys - test to ensure that ``log_deploys`` method functions
@@ -120,17 +115,7 @@ class TestSartorisFunctionality(unittest.TestCase):
         except SartorisError:
             assert False
 
-    def test_resync(self):
-        """
-        resync - test to ensure that ``resync`` method functions
-        without exception
-        """
-        sartoris_obj = Sartoris()
-        try:
-            sartoris_obj.resync(None)
-        except SartorisError:
-            assert False
-
+    @setup_deco
     def test_revert(self):
         """
         revert - test to ensure that ``revert`` method functions
