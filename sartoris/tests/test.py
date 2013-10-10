@@ -10,11 +10,17 @@
 
 import unittest
 from collections import namedtuple
+from sartoris.config import log
 from sartoris.sartoris import Sartoris, SartorisError, exit_codes
 from sartoris import config_local
 from dulwich.repo import Repo
 from os import mkdir, chdir
+from os.path import exists
 from shutil import rmtree
+
+# Create the initial singleton
+Sartoris(path=config_local.TEST_REPO,
+         client_path=config_local.TEST_REPO)
 
 
 def setup_deco(test_method):
@@ -28,6 +34,7 @@ def setup_deco(test_method):
             test_method(self)
         finally:
             teardown_tmp_repo()
+    setup_wrap.__name__ = test_method.__name__
     return setup_wrap
 
 
@@ -35,6 +42,12 @@ def init_tmp_repo():
     """
     Create a test repo, change to directory
     """
+
+    log.info(__name__ + ':: Creating test repo.')
+
+    if exists(config_local.TEST_REPO):
+        rmtree(config_local.TEST_REPO)
+
     mkdir(config_local.TEST_REPO)
     Repo.init(config_local.TEST_REPO)
     chdir(config_local.TEST_REPO)
@@ -44,6 +57,9 @@ def teardown_tmp_repo():
     """
     Remove the test repo
     """
+
+    log.info(__name__ + ':: Tearing down test repo.')
+
     chdir(config_local.PROJECT_HOME)
     rmtree(config_local.TEST_REPO)
 
@@ -81,9 +97,9 @@ class TestSartorisFunctionality(unittest.TestCase):
         without exception
         """
         sartoris_obj = Sartoris()
+
         try:
             sartoris_obj.start(None)
-            sartoris_obj.sync(None)
             sartoris_obj.abort(None)
 
             # TODO - check lock file & commit
