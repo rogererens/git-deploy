@@ -101,7 +101,7 @@ def set_log(args, out, err):
     log.setLevel(level)
 
 
-def configure():
+def configure(**kwargs):
     """ Parse configuration from git config """
     sc = StackedConfig(StackedConfig.default_backends())
     config = {}
@@ -136,7 +136,11 @@ def configure():
     # Assign the values of each git config element
     for key, value in config_elements.iteritems():
         try:
-            config[key] = sc.get(value[0], value[1])
+            # Override with kwargs if the attribute exists
+            if key in kwargs:
+                config[key] = kwargs[key]
+            else:
+                config[key] = sc.get(value[0], value[1])
         except KeyError:
             exit_code = value[2]
             log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))

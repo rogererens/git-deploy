@@ -93,14 +93,14 @@ class Sartoris(object):
             cls.__instance = super(Sartoris, cls).__new__(cls, *args, **kwargs)
 
             # Call config
-            cls.__instance._configure()
+            cls.__instance._configure(**kwargs)
 
             log.info('{0} :: Config - {1}'.format(__name__,
                      str(cls.__instance.config)))
         return cls.__instance
 
-    def _configure(self):
-        self.config = configure()
+    def _configure(self, **kwargs):
+        self.config = configure(**kwargs)
 
     def _check_lock(self):
         """ Returns boolean flag on lock file existence """
