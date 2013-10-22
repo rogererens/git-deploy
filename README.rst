@@ -95,3 +95,77 @@ Deploy Hooks
 In the working path of your local clone deploy hooks may be added to '.git/deploy/hooks'.  You are
 free to write your own hooks however, simple default hooks have been provided in 'sartoris/default-hooks',
 these can be copied to the hook folder in each client and target.
+
+
+Example
+-------
+
+The following example illustrates how git-deploy can be configured and used for a single client and target.  For this
+example the client host and target host will be referred to as *client.realm.org* and *target.realm.org* respectively.
+The home path on the client and target for our sample project is */home/me/project/* and */var/www/html/sample.com/*
+respectively.  It is assumed that the git remote is configured for your project and for this example the remote alias is
+*origin* and the remote branch is *master*.
+
+###Client Setup
+
+On your client machine clone git deploy, local install, configure settings and initialize:
+
+    $ git clone git@github.com:Git-Tools/git-deploy.git
+
+        Cloning into 'git-deploy'...
+        remote: Counting objects: 943, done.
+        remote: Compressing objects: 100% (380/380), done.
+        remote: Total 943 (delta 538), reused 936 (delta 531)
+        Receiving objects: 100% (943/943), 153.47 KiB | 208 KiB/s, done.
+        Resolving deltas: 100% (538/538), done.
+
+    $ cd git-deploy
+    $ sudo pip install -e .
+
+        Obtaining file:///Users/rfaulkner/projects/git-deploy
+          Running setup.py egg_info for package from file:///Users/rfaulkner/projects/git-deploy
+
+            warning: no files found matching '*' under directory 'docs'
+            no previously-included directories found matching 'docs/_build'
+        Requirement already satisfied (use --upgrade to upgrade): dulwich in /Library/Python/2.7/site-packages (from sartoris==0.1-devdev-20131021)
+        Requirement already satisfied (use --upgrade to upgrade): paramiko>=1.11.0 in /Library/Python/2.7/site-packages (from sartoris==0.1-devdev-20131021)
+        Requirement already satisfied (use --upgrade to upgrade): pycrypto>=2.1,!=2.4 in /Library/Python/2.7/site-packages (from paramiko>=1.11.0->sartoris==0.1-devdev-20131021)
+        Installing collected packages: git-deploy
+          Running setup.py develop for git-deploy
+
+            warning: no files found matching '*' under directory 'docs'
+            no previously-included directories found matching 'docs/_build'
+            Creating /Library/Python/2.7/site-packages/git-deploy.egg-link (link to .)
+            sartoris 0.1-devdev-20131021 is already the active version in easy-install.pth
+            Installing git-deploy script to /usr/local/bin
+
+            Installed /Users/rfaulkner/projects/git-deploy
+        Successfully installed git-deploy
+        Cleaning up...
+
+Next configure the client instance with git config by assigning the following settings:
+
+    [deploy]
+    target=target.realm.org
+    path=/home/me/project/
+    user=me
+    hook-dir=.git/deploy/hooks/
+    tag-prefix=sample.com
+    remote=origin
+    branch=master
+    client-path=/home/me/project/
+    [system]
+    run_root=/usr/bin/
+
+
+###Target Setup
+
+
+###Using Hooks
+
+
+###Using Git-Deploy
+
+
+
+
