@@ -27,7 +27,6 @@ from dulwich.diff_tree import tree_changes
 
 from config import log, configure, exit_codes, DEFAULT_CLIENT_HOOK, \
     DEFAULT_TARGET_HOOK
-from config_local import PKEY, PROJECT_HOME
 
 
 class SartorisError(Exception):
@@ -232,9 +231,10 @@ class Sartoris(object):
 
         # Iterate through files, those modified will be staged
         for elem in os.walk(self.config['top_dir']):
+            relative_path = elem[0].split('./')[-1]
             if not search(r'\.git', elem[0]):
-                files = [(elem[0] + '/' + file).split(PROJECT_HOME)[-1]
-                         for file in elem[2]]
+                files = [relative_path + '/' +
+                         filename for filename in elem[2]]
                 log.info(__name__ + ' :: Staging - {0}'.format(files))
                 _repo.stage(files)
 
@@ -460,7 +460,8 @@ class Sartoris(object):
         t = paramiko.Transport(sock)
         t.start_client()
 
-        rsa_key = paramiko.RSAKey.from_private_key_file(PKEY)
+        rsa_key = paramiko.RSAKey.from_private_key_file(
+            self.config['deploy.key_path '])
         t.auth_publickey(self.config['user.name'], rsa_key)
 
         # Start a scp channel
@@ -491,7 +492,7 @@ class Sartoris(object):
         ssh.connect(
             self.config['target'],
             username=self.config['user.name'],
-            key_filename=PKEY)
+            key_filename=self.config['deploy.key_path'])
         stdin, stdout, stderr = ssh.exec_command(cmd)
 
         stdout = [line.strip() for line in stdout.readlines()]
