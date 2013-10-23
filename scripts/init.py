@@ -12,9 +12,7 @@ import ConfigParser
 import subprocess
 import shutil
 
-from sartoris.config_local import PROJECT_HOME
-
-INI_FILE = PROJECT_HOME + 'scripts/sartoris.ini'
+INI_FILE = 'scripts/sartoris.ini'
 
 log_format = "%(asctime)s %(levelname)-8s %(message)s"
 handler = logging.StreamHandler(sys.stderr)
@@ -50,7 +48,7 @@ def main():
 
             # cp git-deploy
             if section == 'system' and name == 'run_root':
-                shutil.copy(PROJECT_HOME + 'sartoris/git-deploy', value)
+                shutil.copy('sartoris/git-deploy', value)
 
 
 def cli():

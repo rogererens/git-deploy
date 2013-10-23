@@ -12,15 +12,18 @@ import unittest
 from collections import namedtuple
 from sartoris.config import log
 from sartoris.sartoris import Sartoris, SartorisError, exit_codes
-from sartoris import config_local
 from dulwich.repo import Repo
 from os import mkdir, chdir
 from os.path import exists
 from shutil import rmtree
 
+from sartoris.config import configure
+
+
 # Create the initial singleton
-Sartoris(path=config_local.TEST_REPO,
-         client_path=config_local.TEST_REPO)
+config = configure()
+Sartoris(path=config['deploy.test_repo'],
+         client_path=config['deploy.test_repo'])
 
 
 def setup_deco(test_method):
