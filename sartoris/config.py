@@ -58,6 +58,8 @@ exit_codes = {
     34: 'git log failed. Exiting.',
     35: 'Revert failed, could not find tag. Exiting.',
     36: 'Not enough tags (<2) to revert on. Exiting.',
+    37: 'Missing system configuration item "key-path". Exiting.',
+    38: 'Missing system configuration item "test-repo-path". Exiting.',
     40: 'Failed to run sync script. Exiting.',
     50: 'Failed to read the .deploy file. Exiting.',
     60: 'Invalid git deploy action. Exiting.',
@@ -131,6 +133,8 @@ def configure(**kwargs):
         'client_path': ('deploy', 'client-path', 19),
         'user.name': ('user', 'name', 28),
         'user.email': ('user', 'email', 29),
+        'deploy.key_path': ('deploy', 'key-path', 37),
+        'deploy.test_repo': ('deploy', 'test-repo-path', 38),
     }
 
     # Assign the values of each git config element
