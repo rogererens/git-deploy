@@ -106,44 +106,18 @@ The home path on the client and target for our sample project is */home/me/proje
 respectively.  It is assumed that the git remote is configured for your project and for this example the remote alias is
 *origin* and the remote branch is *master*.
 
-###Client Setup
 
-On your client machine clone git deploy, local install, configure settings and initialize:
+**CLIENT SETUP**
+
+On *client.realm.org* clone git deploy, local install, configure settings and initialize:
 
     $ git clone git@github.com:Git-Tools/git-deploy.git
-
-        Cloning into 'git-deploy'...
-        remote: Counting objects: 943, done.
-        remote: Compressing objects: 100% (380/380), done.
-        remote: Total 943 (delta 538), reused 936 (delta 531)
-        Receiving objects: 100% (943/943), 153.47 KiB | 208 KiB/s, done.
-        Resolving deltas: 100% (538/538), done.
-
+    ...
     $ cd git-deploy
     $ sudo pip install -e .
+    ...
 
-        Obtaining file:///Users/rfaulkner/projects/git-deploy
-          Running setup.py egg_info for package from file:///Users/rfaulkner/projects/git-deploy
-
-            warning: no files found matching '*' under directory 'docs'
-            no previously-included directories found matching 'docs/_build'
-        Requirement already satisfied (use --upgrade to upgrade): dulwich in /Library/Python/2.7/site-packages (from sartoris==0.1-devdev-20131021)
-        Requirement already satisfied (use --upgrade to upgrade): paramiko>=1.11.0 in /Library/Python/2.7/site-packages (from sartoris==0.1-devdev-20131021)
-        Requirement already satisfied (use --upgrade to upgrade): pycrypto>=2.1,!=2.4 in /Library/Python/2.7/site-packages (from paramiko>=1.11.0->sartoris==0.1-devdev-20131021)
-        Installing collected packages: git-deploy
-          Running setup.py develop for git-deploy
-
-            warning: no files found matching '*' under directory 'docs'
-            no previously-included directories found matching 'docs/_build'
-            Creating /Library/Python/2.7/site-packages/git-deploy.egg-link (link to .)
-            sartoris 0.1-devdev-20131021 is already the active version in easy-install.pth
-            Installing git-deploy script to /usr/local/bin
-
-            Installed /Users/rfaulkner/projects/git-deploy
-        Successfully installed git-deploy
-        Cleaning up...
-
-Next configure the client instance with git config by assigning the following settings:
+Next configure the client instance with git config by assigning the following settings in *scripts/sartoris.ini*:
 
     [deploy]
     target=target.realm.org
@@ -154,18 +128,29 @@ Next configure the client instance with git config by assigning the following se
     remote=origin
     branch=master
     client-path=/home/me/project/
+    key-path=/home/me/.ssh/id_rsa
+    test-repo-path=/tmp/test_repo/
     [system]
     run_root=/usr/bin/
 
+Once you have defined settings in *sartoris.ini* call *init.py* to set the got config
 
-###Target Setup
-
-
-###Using Hooks
+    $ sudo ./scripts/init.py
 
 
-###Using Git-Deploy
+**TARGET SETUP**
 
+On *target.realm.org* there is no need to clone and install git-deploy but here the deploy hooks will need to be
+created.  There is a default hook in *sartoris/default-hooks/default-target-pull.py* that should be copied to
+*target.realm.org:/var/www/html/sample.com/.git/deploy/hooks/*.  This is a basic hook that will pull the changes
+pushed from the client instance on sync.
+
+
+**USING GIT DEPLOY**
+
+*start/sync*
+*start/abort*
+*start/rollback*
 
 
 
