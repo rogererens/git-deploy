@@ -48,12 +48,12 @@ def init_tmp_repo():
 
     log.info(__name__ + ':: Creating test repo.')
 
-    if exists(config_local.TEST_REPO):
-        rmtree(config_local.TEST_REPO)
+    if exists(config['deploy.test_repo']):
+        rmtree(config['deploy.test_repo'])
 
-    mkdir(config_local.TEST_REPO)
-    Repo.init(config_local.TEST_REPO)
-    chdir(config_local.TEST_REPO)
+    mkdir(config['deploy.test_repo'])
+    Repo.init(config['deploy.test_repo'])
+    chdir(config['deploy.test_repo'])
 
 
 def teardown_tmp_repo():
@@ -63,8 +63,8 @@ def teardown_tmp_repo():
 
     log.info(__name__ + ':: Tearing down test repo.')
 
-    chdir(config_local.PROJECT_HOME)
-    rmtree(config_local.TEST_REPO)
+    chdir(config['deploy.test_repo'])
+    rmtree(config['deploy.test_repo'])
 
 
 class TestSartorisInit(unittest.TestCase):
