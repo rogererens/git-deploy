@@ -164,8 +164,57 @@ pushed from the client instance on sync.
 
 **USING GIT DEPLOY**
 
-*start/sync*
+First initialize a new repository on *client.realm.org*:
+
+    client.realm.org:~ me$ mkdir me.com
+
+    client.realm.org:~ me$ cd me.com
+
+    client.realm.org:~ me$ git init
+
+    client.realm.org:~ me$ git remote add origin git@github.com:wikimedia/me.com.git
+
+    client.realm.org:~ me$ git push origin master
+
+Next initialize the client repo by following the client setup above.  Subsequently, initialize the deploy target
+on *target.realm.org* as indicated.
+
+    target.realm.org:~ me$ cp ~/default-client-pull.py /var/www/html/sample.com/.git/deploy/hooks/
+    target.realm.org:~ me$ chmod +x /var/www/html/sample.com/.git/deploy/hooks/default-client-pull.py
+
+
+*start/sync*:
+
+Ensure that the client is correctly synced to the remote by issuing a git pull or rebase.  Then you can issue a
+a start command to write the lock file to the target to begin the deployment.
+
+    client.realm.org:~ me$ cd me.com
+
+    client.realm.org:me.com me$ touch new_file
+
+    client.realm.org:me.com me$ git add new_file
+
+    client.realm.org:me.com me$ git commit -m "add - my new file"
+
+    client.realm.org:me.com me$ git pull --rebase origin master
+
+At this point you are ready to enter the deployment process:
+
+    client.realm.org:me.com me$ git deploy start
+
+    <perform any testing or add any other commits as necessary>
+
+    client.realm.org:me.com me$ git deploy sync
+
+Once you sync a the specified hooks will be invoked from the client and the target and a tag is written to the
+repository on the latest commit of the deploy. If the default push and pull hooks are used the client will simply
+push its changes to the remote and the target will pull in the new changes.  Deployment tags have the form
+*<repo>-sync-20130918-231126*.
+
+
 *start/abort*
+
+
 *start/rollback*
 
 
