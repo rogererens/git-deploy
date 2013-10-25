@@ -112,25 +112,41 @@ respectively.  It is assumed that the git remote is configured for your project 
 On *client.realm.org* clone git deploy, local install, configure settings and initialize:
 
     $ git clone git@github.com:Git-Tools/git-deploy.git
+
     ...
+
     $ cd git-deploy
+
     $ sudo pip install -e .
+
     ...
 
 Next configure the client instance with git config by assigning the following settings in *scripts/sartoris.ini*:
 
     [deploy]
+
     target=target.realm.org
+
     path=/home/me/project/
+
     user=me
+
     hook-dir=.git/deploy/hooks/
+
     tag-prefix=sample.com
+
     remote=origin
+
     branch=master
+
     client-path=/home/me/project/
+
     key-path=/home/me/.ssh/id_rsa
+
     test-repo-path=/tmp/test_repo/
+
     [system]
+
     run_root=/usr/bin/
 
 Once you have defined settings in *sartoris.ini* call *init.py* to set the got config
