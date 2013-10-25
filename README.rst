@@ -180,6 +180,7 @@ Next initialize the client repo by following the client setup above.  Subsequent
 on *target.realm.org* as indicated.
 
     target.realm.org:~ me$ cp ~/default-client-pull.py /var/www/html/sample.com/.git/deploy/hooks/
+    
     target.realm.org:~ me$ chmod +x /var/www/html/sample.com/.git/deploy/hooks/default-client-pull.py
 
 
@@ -209,10 +210,25 @@ At this point you are ready to enter the deployment process:
 Once you sync a the specified hooks will be invoked from the client and the target and a tag is written to the
 repository on the latest commit of the deploy. If the default push and pull hooks are used the client will simply
 push its changes to the remote and the target will pull in the new changes.  Deployment tags have the form
-*<repo>-sync-20130918-231126*.
+*<repo>-sync-<date>-<time>*.
 
 
 *start/abort*
+
+    client.realm.org:me.com me$ git deploy start
+
+    client.realm.org:me.com me$ git commit bad_change -m "add - some buggy code."
+
+Suddenly, you realize that your change introduced a bug after entering the deloy process.  Rather than syncing the bad
+code and then rolling back (next section) we can simply abort the deploy:
+
+    client.realm.org:me.com me$ git deploy abort
+
+    client.realm.org:me.com me$ git reset --soft HEAD^
+
+    ... continue with your local changes ...
+
+Now you have released deploy to other clients without infecting the code base with your buggy code.
 
 
 *start/rollback*
