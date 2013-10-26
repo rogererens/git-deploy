@@ -180,11 +180,11 @@ Next initialize the client repo by following the client setup above.  Subsequent
 on *target.realm.org* as indicated.
 
     target.realm.org:~ me$ cp ~/default-client-pull.py /var/www/html/sample.com/.git/deploy/hooks/
-    
+
     target.realm.org:~ me$ chmod +x /var/www/html/sample.com/.git/deploy/hooks/default-client-pull.py
 
 
-*start/sync*:
+*Sync*:
 
 Ensure that the client is correctly synced to the remote by issuing a git pull or rebase.  Then you can issue a
 a start command to write the lock file to the target to begin the deployment.
@@ -213,7 +213,9 @@ push its changes to the remote and the target will pull in the new changes.  Dep
 *<repo>-sync-<date>-<time>*.
 
 
-*start/abort*
+*Abort*
+
+At times it is necessary to exit the deploy cycle prematurely.  For instance, consider the following:
 
     client.realm.org:me.com me$ git deploy start
 
@@ -231,7 +233,15 @@ code and then rolling back (next section) we can simply abort the deploy:
 Now you have released deploy to other clients without infecting the code base with your buggy code.
 
 
-*start/rollback*
+*Rollback*
 
+If you accidentally deploy some code that needs to be rolled back the *revert* command cn be very helpful here.  You
+can rollback to previous deploy states by utilizing deploy tags.  To view the old tags:
 
+    client.realm.org:me.com me$ git tag
 
+Now to rollback to a previous deploy call *git revert* with the appropriate tag:
+
+    client.realm.org:me.com me$ git deploy start
+
+    client.realm.org:me.com me$ git deploy revert <tag>
