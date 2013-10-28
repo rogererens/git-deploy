@@ -1,5 +1,5 @@
 include Makefile CHANGES LICENSE AUTHORS
 include tox.ini
-recursive-include sartoris *
+recursive-include git-deploy *
 recursive-include docs *
 prune docs/_build

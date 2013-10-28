@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-    Prepares system state for Sartoris.
+    Prepares system state for GitDeploy.
 """
 
 import sys
@@ -12,7 +12,7 @@ import ConfigParser
 import subprocess
 import shutil
 
-INI_FILE = 'scripts/sartoris.ini'
+INI_FILE = 'scripts/git-deploy.ini'
 
 log_format = "%(asctime)s %(levelname)-8s %(message)s"
 handler = logging.StreamHandler(sys.stderr)
@@ -48,7 +48,7 @@ def main():
 
             # cp git-deploy
             if section == 'system' and name == 'run_root':
-                shutil.copy('sartoris/git-deploy', value)
+                shutil.copy('git-deploy/git-deploy', value)
 
 
 def cli():

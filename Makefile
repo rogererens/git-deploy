@@ -1,5 +1,5 @@
 #
-# Sartoris Makefile
+# Git-Deploy Makefile
 # ~~~~~~~~~~~~~~~~~
 #
 # Shortcuts for various tasks.
@@ -18,4 +18,4 @@ test:
 	python setup.py test
 
 coverage:
-	@(nosetests $(TEST_OPTIONS) --with-coverage --cover-package=sartoris --cover-html --cover-html-dir=coverage_out $(TESTS))
+	@(nosetests $(TEST_OPTIONS) --with-coverage --cover-package=git-deploy --cover-html --cover-html-dir=coverage_out $(TESTS))

@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-    Sartoris
+    GitDeploy
     ~~~~~~~~
 
-    Sartoris is a tool to manage using git as a deployment management tool.
+    GitDeploy is a tool to manage using git as a deployment management tool.
 
-    :copyright: (c) 2012 by the Wikimedia Foundation,
+    :copyright: (c) 2012 by Git-Tools,
     see AUTHORS for more details.
     :license: BSD, see LICENSE for more details.
 """

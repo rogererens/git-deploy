@@ -1,5 +1,5 @@
 """
-Config file for Sartoris.
+Config file for GitDeploy.
 """
 
 __authors__ = {

@@ -16,7 +16,7 @@ import os
 import sys
 import subprocess
 
-from sartoris.config import GIT_CALL
+from git-deploy.config import GIT_CALL
 
 
 def main():

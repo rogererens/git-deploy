@@ -12,14 +12,14 @@ Client Configuration
 The client is any working machine from which deployments may be initiated.  To configure a client,
 begin by cloning the repository to your client environment:
 
-    $ git clone https://github.com/wikimedia/sartoris.git sartoris
+    $ git clone https://github.com/Git-Tools/git-deploy.git
 
 Next, navigate to the root folder and install the package.
 
     $ sudo pip install -e .
 
 Next, execute the initialization script, this will prepare the git config and copy the git deploy script.  Make sure that
-the relevant values are set in sartoris.ini for your client/server-target beforehand (see below).
+the relevant values are set in git-deploy.ini for your client/server-target beforehand (see below).
 
     $ sudo ./scripts/init.py
 
@@ -78,7 +78,7 @@ Deploy Hooks
 ------------
 
 In the working path of your local clone deploy hooks may be added to '.git/deploy/hooks'.  You are
-free to write your own hooks however, simple default hooks have been provided in 'sartoris/default-hooks',
+free to write your own hooks however, simple default hooks have been provided in 'git-deploy/default-hooks',
 these can be copied to the hook folder in each client and target.
 
 
@@ -106,7 +106,7 @@ On *client.realm.org* clone git deploy, local install, configure settings and in
 
     ...
 
-Next configure the client instance with git config by assigning the following settings in *scripts/sartoris.ini*:
+Next configure the client instance with git config by assigning the following settings in *scripts/git-deploy.ini*:
 
     [deploy]
 
@@ -134,7 +134,7 @@ Next configure the client instance with git config by assigning the following se
 
     run_root=/usr/bin/
 
-Once you have defined settings in *sartoris.ini* call *init.py* to set the got config
+Once you have defined settings in *git-deploy.ini* call *init.py* to set the got config
 
     $ sudo ./scripts/init.py
 
@@ -142,7 +142,7 @@ Once you have defined settings in *sartoris.ini* call *init.py* to set the got c
 **TARGET SETUP**
 
 On *target.realm.org* there is no need to clone and install git-deploy but here the deploy hooks will need to be
-created.  There is a default hook in *sartoris/default-hooks/default-target-pull.py* that should be copied to
+created.  There is a default hook in *git-deploy/default-hooks/default-target-pull.py* that should be copied to
 *target.realm.org:/var/www/html/sample.com/.git/deploy/hooks/*.  This is a basic hook that will pull the changes
 pushed from the client instance on sync.
 

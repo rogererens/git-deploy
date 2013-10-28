@@ -1,11 +1,11 @@
 """
 This module defines the entities utilized to operate the git-deploy system
-defined by the Sartoris project.
+defined by the GitDeploy project.
 """
 
 __authors__ = {
     'Ryan Faulkner': 'bobs.ur.uncle@gmail.com',
-    'Patrick Reilly': 'patrick.reilly@gmail.com',
+    'Patrick Reilly': 'preilly@php.net',
     'Ryan Lane': 'rlane@wikimedia.org',
 }
 __date__ = '2013-09-08'
@@ -29,7 +29,7 @@ from config import log, configure, exit_codes, DEFAULT_CLIENT_HOOK, \
     DEFAULT_TARGET_HOOK
 
 
-class SartorisError(Exception):
+class GitDeployError(Exception):
     """ Basic exception class for UserMetric types """
     def __init__(self, message="Git deploy error.", exit_code=1):
         Exception.__init__(self, message)
@@ -53,7 +53,7 @@ def remove_readonly(fn, path, excinfo):
         os.remove(path)
 
 
-class Sartoris(object):
+class GitDeploy(object):
 
     # Pattern for git-deploy tags
     TAG_PATTERN = r'[a-zA-Z]*-[0-9]{8}-[0-9]{6}'
@@ -68,10 +68,10 @@ class Sartoris(object):
     LOCK_FILE_HANDLE = 'lock'
 
     # Default tag message
-    DEFAULT_TAG_MSG = 'Sartoris Tag.'
+    DEFAULT_TAG_MSG = 'GitDeploy Tag.'
 
     # Default tag message
-    DEFAULT_COMMIT_MSG = 'Sartoris Commit'
+    DEFAULT_COMMIT_MSG = 'GitDeploy Commit'
 
     # class instance
     __instance = None
@@ -89,7 +89,7 @@ class Sartoris(object):
     def __new__(cls, *args, **kwargs):
         """ This class is Singleton, return only one instance """
         if not cls.__instance:
-            cls.__instance = super(Sartoris, cls).__new__(cls, *args, **kwargs)
+            cls.__instance = super(GitDeploy, cls).__new__(cls, *args, **kwargs)
 
             # Call config
             cls.__instance._configure(**kwargs)
@@ -163,7 +163,7 @@ class Sartoris(object):
         if not proc.returncode and len(result) > 0:
             return result[0].strip()
         else:
-            raise SartorisError(message=exit_codes[8], exit_code=8)
+            raise GitDeployError(message=exit_codes[8], exit_code=8)
 
     def _get_latest_deploy_tag(self):
         """
@@ -221,7 +221,7 @@ class Sartoris(object):
         try:
             _repo.refs['HEAD'] = sha
         except AttributeError:
-            raise SartorisError(message=exit_codes[7], exit_code=7)
+            raise GitDeployError(message=exit_codes[7], exit_code=7)
 
     def _dulwich_stage_all(self):
         """
@@ -246,7 +246,7 @@ class Sartoris(object):
         commit_id = _repo.do_commit(message, committer=author)
 
         if not _repo.head() == commit_id:
-            raise SartorisError(message=exit_codes[14], exit_code=14)
+            raise GitDeployError(message=exit_codes[14], exit_code=14)
 
     def _dulwich_status(self):
         """
@@ -298,7 +298,7 @@ class Sartoris(object):
         proc_out = proc.communicate()
 
         if proc.returncode != 0:
-            raise SartorisError(message=exit_codes[34], exit_code=34)
+            raise GitDeployError(message=exit_codes[34], exit_code=34)
 
         commits = [i.split()[0] for i in proc_out[0][:-1].split('\n')]
 
@@ -315,7 +315,7 @@ class Sartoris(object):
         proc.communicate()
 
         if proc.returncode != 0:
-            raise SartorisError(message=exit_codes[33], exit_code=33)
+            raise GitDeployError(message=exit_codes[33], exit_code=33)
 
     def start(self, _):
         """
@@ -325,7 +325,7 @@ class Sartoris(object):
 
         # Create lock file - check if it already exists
         if self._check_lock():
-            raise SartorisError(message=exit_codes[2])
+            raise GitDeployError(message=exit_codes[2])
 
         self._create_lock()
 
@@ -340,7 +340,7 @@ class Sartoris(object):
         # Get the commit hash of the current tag
         try:
             commit_sha = self._get_commit_sha_for_tag(self._tag)
-        except SartorisError:
+        except GitDeployError:
             # No current tag
             commit_sha = None
 
@@ -352,12 +352,12 @@ class Sartoris(object):
         if commit_sha:
             if subprocess.call("git reset --hard {0}".
                                format(commit_sha).split()):
-                raise SartorisError(message=exit_codes[5], exit_code=5)
+                raise GitDeployError(message=exit_codes[5], exit_code=5)
             if subprocess.call("git reset --soft HEAD@{1}".split()):
-                raise SartorisError(message=exit_codes[5], exit_code=5)
+                raise GitDeployError(message=exit_codes[5], exit_code=5)
             if subprocess.call("git commit -m 'Revert to {0}'".
                                format(commit_sha).split()):
-                raise SartorisError(message=exit_codes[5], exit_code=5)
+                raise GitDeployError(message=exit_codes[5], exit_code=5)
 
         # Remove lock file
         self._remove_lock()
@@ -370,7 +370,7 @@ class Sartoris(object):
             * call a sync hook with the prefix (repo) and tag info
         """
         if not self._check_lock():
-            raise SartorisError(message=exit_codes[30], exit_code=30)
+            raise GitDeployError(message=exit_codes[30], exit_code=30)
 
         tag = self._make_tag()
 
@@ -403,7 +403,7 @@ class Sartoris(object):
                 self._dulwich_tag(tag, self._make_author())
             except Exception as e:
                 log.error(str(e))
-                raise SartorisError(message=exit_codes[12], exit_code=12)
+                raise GitDeployError(message=exit_codes[12], exit_code=12)
 
             self._default_sync()
 
@@ -513,7 +513,7 @@ class Sartoris(object):
         """
 
         if not self._check_lock():
-            raise SartorisError(message=exit_codes[30])
+            raise GitDeployError(message=exit_codes[30])
 
         # This will be the tag on the revert commit
         revert_tag = self._make_tag()
@@ -527,11 +527,11 @@ class Sartoris(object):
             if len(repo_tags) >= 2:
                 tag = repo_tags.keys()[-2]
             else:
-                raise SartorisError(message=exit_codes[36], exit_code=36)
+                raise GitDeployError(message=exit_codes[36], exit_code=36)
 
         # Ensure tag to revert to was set
         if tag == '':
-            raise SartorisError(message=exit_codes[13], exit_code=13)
+            raise GitDeployError(message=exit_codes[13], exit_code=13)
 
         #
         # Rollback to tag:
@@ -554,7 +554,7 @@ class Sartoris(object):
         # Ensure the commit tag was matched
         if commit_sha != tag_commit_sha or not commit_sha:
             self._dulwich_reset_to_tag()
-            raise SartorisError(message=exit_codes[35], exit_code=35)
+            raise GitDeployError(message=exit_codes[35], exit_code=35)
         self._dulwich_commit(self._make_author(),
                              message='Rollback to {0}.'.format(tag))
 
@@ -595,7 +595,7 @@ class Sartoris(object):
         try:
             num_tags = args.count
         except NameError:
-            raise SartorisError(message=exit_codes[10], exit_code=10)
+            raise GitDeployError(message=exit_codes[10], exit_code=10)
 
         tags = self._get_deploy_tags()
 
@@ -616,7 +616,7 @@ class Sartoris(object):
         # Check the return code & whether at least two sync tags were
         # returned
         if len(tags) < 2:
-            raise SartorisError(message=exit_codes[7], exit_code=7)
+            raise GitDeployError(message=exit_codes[7], exit_code=7)
 
         # Get the associated commit hashes for those tags
         sha_1 = self._get_commit_sha_for_tag(tags[0])
@@ -634,5 +634,5 @@ class Sartoris(object):
             for line in lines:
                 print line
         else:
-            raise SartorisError(message=exit_codes[6], exit_code=6)
+            raise GitDeployError(message=exit_codes[6], exit_code=6)
         return 0

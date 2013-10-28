@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-    sartoris.testsuite
+    git-deploy.testsuite
     ~~~~~~~~~~~~~~~~~~~~~~~
 
     :copyright: (c) 2013 by Wikimedia Foundation.
@@ -10,19 +10,19 @@
 
 import unittest
 from collections import namedtuple
-from sartoris.config import log
-from sartoris.sartoris import Sartoris, SartorisError, exit_codes
+from git-deploy.config import log
+from git-deploy.git-deploy import GitDeploy, GitDeployError, exit_codes
 from dulwich.repo import Repo
 from os import mkdir, chdir
 from os.path import exists
 from shutil import rmtree
 
-from sartoris.config import configure
+from git-deploy.config import configure
 
 
 # Create the initial singleton
 config = configure()
-Sartoris(path=config['deploy.test_repo'],
+GitDeploy(path=config['deploy.test_repo'],
          client_path=config['deploy.test_repo'])
 
 
@@ -67,31 +67,31 @@ def teardown_tmp_repo():
     rmtree(config['deploy.test_repo'])
 
 
-class TestSartorisInit(unittest.TestCase):
-    """ Test cases for Sartoris initialization and config """
+class TestGitDeployInit(unittest.TestCase):
+    """ Test cases for GitDeploy initialization and config """
     def test_conf_hook_dir(self):
-        s = Sartoris()
+        s = GitDeploy()
         assert 'top_dir' in s.config
 
     def test_conf_top_dir(self):
-        s = Sartoris()
+        s = GitDeploy()
         assert 'hook_dir' in s.config
 
     def test_conf_repo_name(self):
-        s = Sartoris()
+        s = GitDeploy()
         assert 'repo_name' in s.config
 
     def test_conf_deploy_file(self):
-        s = Sartoris()
+        s = GitDeploy()
         assert 'deploy_file' in s.config
 
     def test_singleton(self):
-        s1 = Sartoris()
-        s2 = Sartoris()
+        s1 = GitDeploy()
+        s2 = GitDeploy()
         assert s1 == s2
 
 
-class TestSartorisFunctionality(unittest.TestCase):
+class TestGitDeployFunctionality(unittest.TestCase):
 
     @setup_deco
     def test_abort(self):
@@ -99,15 +99,15 @@ class TestSartorisFunctionality(unittest.TestCase):
         abort - test to ensure that ``abort`` method functions
         without exception
         """
-        sartoris_obj = Sartoris()
+        git-deploy_obj = GitDeploy()
 
         try:
-            sartoris_obj.start(None)
-            sartoris_obj.abort(None)
+            git-deploy_obj.start(None)
+            git-deploy_obj.abort(None)
 
             # TODO - check lock file & commit
 
-        except SartorisError:
+        except GitDeployError:
             assert False
 
     @setup_deco
@@ -116,10 +116,10 @@ class TestSartorisFunctionality(unittest.TestCase):
         diff - test to ensure that ``diff`` method functions
         without exception
         """
-        sartoris_obj = Sartoris()
+        git-deploy_obj = GitDeploy()
         try:
-            sartoris_obj.diff(None)
-        except SartorisError:
+            git-deploy_obj.diff(None)
+        except GitDeployError:
             assert False
 
     @setup_deco
@@ -128,10 +128,10 @@ class TestSartorisFunctionality(unittest.TestCase):
         log_deploys - test to ensure that ``log_deploys`` method functions
         without exception
         """
-        sartoris_obj = Sartoris()
+        git-deploy_obj = GitDeploy()
         try:
-            sartoris_obj.log_deploys(namedtuple('o', 'count')(1))
-        except SartorisError:
+            git-deploy_obj.log_deploys(namedtuple('o', 'count')(1))
+        except GitDeployError:
             assert False
 
     @setup_deco
@@ -140,10 +140,10 @@ class TestSartorisFunctionality(unittest.TestCase):
         revert - test to ensure that ``revert`` method functions
         without exception
         """
-        sartoris_obj = Sartoris()
+        git-deploy_obj = GitDeploy()
         try:
-            sartoris_obj.revert(namedtuple('o', 'force')(False))
-        except SartorisError:
+            git-deploy_obj.revert(namedtuple('o', 'force')(False))
+        except GitDeployError:
             assert False
 
     @setup_deco
@@ -152,13 +152,13 @@ class TestSartorisFunctionality(unittest.TestCase):
         start - test to ensure that start method functions
         without exception
         """
-        sartoris_obj = Sartoris()
+        git-deploy_obj = GitDeploy()
         try:
-            sartoris_obj.start(None)
-            sartoris_obj.sync(None)
-            sartoris_obj.show_tag(None)
+            git-deploy_obj.start(None)
+            git-deploy_obj.sync(None)
+            git-deploy_obj.show_tag(None)
 
-        except SartorisError:
+        except GitDeployError:
             assert False
 
     @setup_deco
@@ -167,10 +167,10 @@ class TestSartorisFunctionality(unittest.TestCase):
         start - test to ensure that ``start`` method functions
         without exception
         """
-        sartoris_obj = Sartoris()
+        git-deploy_obj = GitDeploy()
         try:
-            sartoris_obj.start(None)
-        except SartorisError:
+            git-deploy_obj.start(None)
+        except GitDeployError:
             assert False
 
     @setup_deco
@@ -179,50 +179,50 @@ class TestSartorisFunctionality(unittest.TestCase):
         sync - test to ensure that ``sync`` method functions
         without exception
         """
-        sartoris_obj = Sartoris()
+        git-deploy_obj = GitDeploy()
         try:
-            sartoris_obj.start(None)
-            sartoris_obj.sync(None)
+            git-deploy_obj.start(None)
+            git-deploy_obj.sync(None)
 
             # TODO - check tag and deploy file
-        except SartorisError:
+        except GitDeployError:
             assert False
 
     @setup_deco
     def test_deploy_in_progress(self):
         """
         deploy_in_progress - test to ensure that when the ``start`` method
-        is called when a deployment is in progress Sartoris exits with error
+        is called when a deployment is in progress GitDeploy exits with error
         """
-        sartoris_obj = Sartoris()
+        git-deploy_obj = GitDeploy()
 
         # TODO - ensure that the repo is "fresh"
 
         # Call ``start`` twice
         try:
-            sartoris_obj.start(None)
-            sartoris_obj.start(None)
-        except SartorisError as e:
+            git-deploy_obj.start(None)
+            git-deploy_obj.start(None)
+        except GitDeployError as e:
             if not e.msg == exit_codes[2]:
                 assert False
             return
         assert False
 
 
-class TestSartorisDulwichDeps(unittest.TestCase):
+class TestGitDeployDulwichDeps(unittest.TestCase):
     """
-    Class to test Sartoris dulwich dependencies.  Utilize test repos
+    Class to test GitDeploy dulwich dependencies.  Utilize test repos
     """
 
     @setup_deco
     def test_dulwich_tag(self):
         """
-        Tests method Sartoris::_dulwich_tag
+        Tests method GitDeploy::_dulwich_tag
 
             1. Call _dulwich_tag
             2. Check most recent tag to verify tag exists
         """
-        s = Sartoris()
+        s = GitDeploy()
         tag = 'test_tag'
         s._dulwich_tag(tag, s._make_author())
         tags = s._dulwich_get_tags()
@@ -231,7 +231,7 @@ class TestSartorisDulwichDeps(unittest.TestCase):
     @setup_deco
     def test_dulwich_reset_to_tag(self):
         """
-        Tests method Sartoris::_dulwich_reset_to_tag
+        Tests method GitDeploy::_dulwich_reset_to_tag
         """
 
         #   1. Create two dummy tags and commits
@@ -243,7 +243,7 @@ class TestSartorisDulwichDeps(unittest.TestCase):
     @setup_deco
     def test_dulwich_stage(self):
         """
-        Tests method Sartoris::_dulwich_stage
+        Tests method GitDeploy::_dulwich_stage
         """
 
         #   1. Create a dummy file - use object store
@@ -255,7 +255,7 @@ class TestSartorisDulwichDeps(unittest.TestCase):
     @setup_deco
     def test_dulwich_commit(self):
         """
-        Tests method Sartoris::_dulwich_commit
+        Tests method GitDeploy::_dulwich_commit
         """
 
         #   1. Follow steps in test_dulwich_stage

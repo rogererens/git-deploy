@@ -5,7 +5,7 @@
 
 `This`_ is a tool to manage using git as a deployment management tool
 
-.. _This: https://gerrit.wikimedia.org/r/gitweb?p=sartoris.git
+.. _This: https://github.com/Git-Tools/git-deploy
 
 See LICENSE for licensing details.
 
@@ -14,8 +14,8 @@ See LICENSE for licensing details.
 import sys
 import argparse
 
-from sartoris.sartoris import SartorisError, Sartoris
-from sartoris.config import set_log, log, exit_codes
+from git-deploy.git-deploy import GitDeployError, GitDeploy
+from git-deploy.config import set_log, log, exit_codes
 
 
 def parseargs():
@@ -28,7 +28,7 @@ def parseargs():
         description="This script performs ",
         epilog="",
         conflict_handler="resolve",
-        usage="sartoris [-q --quiet] [-s --silent] [-v --verbose] [method]\n"
+        usage="git-deploy [-q --quiet] [-s --silent] [-v --verbose] [method]\n"
               "method=[start|sync|abort|revert|diff|show_tag|log_deploys]"
     )
 
@@ -84,26 +84,26 @@ def main(out=None, err=None):
     args = parseargs()
     set_log(args, out, err)
 
-    log.debug("Sartoris is ready to run")
+    log.debug("git-deploy is ready to run")
 
-    # Inline call to functionality - if Sartoris does not possess this
+    # Inline call to functionality - if GitDeploy does not possess this
     #  attribute flag with logger
     if not args.method:
         log.error(exit_codes[3])
         print args.help
         return
 
-    method_exists = hasattr(Sartoris(), args.method)
+    method_exists = hasattr(GitDeploy(), args.method)
 
-    if not hasattr(Sartoris(), args.method):
+    if not hasattr(GitDeploy(), args.method):
         log.error(exit_codes[60])
         return
 
-    method_callable = callable(getattr(Sartoris(), args.method))
+    method_callable = callable(getattr(GitDeploy(), args.method))
     if method_exists and method_callable:
         try:
-            getattr(Sartoris(), args.method)(args)
-        except SartorisError as e:
+            getattr(GitDeploy(), args.method)(args)
+        except GitDeployError as e:
             log.error(e.message)
             return e.exit_code
     else:

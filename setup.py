@@ -4,19 +4,19 @@
 import sys
 from setuptools import setup
 
-__version__ = '0.1-dev'
+__version__ = '0.2-dev'
 
 meta = dict(
-    name='sartoris',
+    name='git-deploy',
     version=__version__,
     description='Tool to manage using git as a deployment management tool',
     long_description='Tool to manage using git as a deployment \
     management tool',
-    author="Wikimedia Foundation",
-    author_email="info@wikimedia.org",
-    url='https://github.com/wikimedia/sartoris',
-    packages=['sartoris'],
-    entry_points={'console_scripts': ['sartoris = sartoris:cli']},
+    author="Git Tools",
+    author_email="preilly@php.net,bobs.ur.uncle@gmail.com",
+    url='https://github.com/Git-Tools/git-deploy',
+    packages=['git-deploy'],
+    entry_points={'console_scripts': ['git-deploy = git-deploy:cli']},
     install_requires=[
         'dulwich',
         'paramiko >= 1.11.0',
