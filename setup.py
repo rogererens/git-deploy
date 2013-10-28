@@ -10,8 +10,7 @@ meta = dict(
     name='git-deploy',
     version=__version__,
     description='Tool to manage using git as a deployment management tool',
-    long_description='Tool to manage using git as a deployment \
-    management tool',
+    long_description=open('README.md').read(),
     author="Git Tools",
     author_email="preilly@php.net,bobs.ur.uncle@gmail.com",
     url='https://github.com/Git-Tools/git-deploy',
