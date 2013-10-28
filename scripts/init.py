@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 """
@@ -48,7 +48,7 @@ def main():
 
             # cp git-deploy
             if section == 'system' and name == 'run_root':
-                shutil.copy('git-deploy/git-deploy', value)
+                shutil.copy('git_deploy/git_deploy', value)
 
 
 def cli():
