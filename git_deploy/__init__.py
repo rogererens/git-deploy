@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-    GitDeploy
+    git_deploy
     ~~~~~~~~
 
     GitDeploy is a tool to manage using git as a deployment management tool.
@@ -11,4 +11,4 @@
 """
 
 # the version.  Usually set automatically by a script.
-__version__ = '0.9-dev'
+__version__ = '0.2-dev'

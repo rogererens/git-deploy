@@ -4,7 +4,7 @@ Config file for GitDeploy.
 
 __authors__ = {
     'Ryan Faulkner': 'bobs.ur.uncle@gmail.com',
-    'Patrick Reilly': 'patrick.reilly@gmail.com',
+    'Patrick Reilly': 'preilly@php.net',
     'Ryan Lane': 'rlane@wikimedia.org',
 }
 __date__ = '2013-09-08'

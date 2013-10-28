@@ -14,8 +14,8 @@ See LICENSE for licensing details.
 import sys
 import argparse
 
-from GitDeploy.GitDeploy import GitDeployError, GitDeploy
-from GitDeploy.config import set_log, log, exit_codes
+from git_deploy.git_deploy import GitDeployError, GitDeploy
+from git_deploy.config import set_log, log, exit_codes
 
 
 def parseargs():

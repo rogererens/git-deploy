@@ -10,14 +10,14 @@
 
 import unittest
 from collections import namedtuple
-from git-deploy.config import log
-from git-deploy.git-deploy import GitDeploy, GitDeployError, exit_codes
+from git_deploy.config import log
+from git_deploy.git_deploy import GitDeploy, GitDeployError, exit_codes
 from dulwich.repo import Repo
 from os import mkdir, chdir
 from os.path import exists
 from shutil import rmtree
 
-from git-deploy.config import configure
+from git_deploy.config import configure
 
 
 # Create the initial singleton
@@ -99,7 +99,7 @@ class TestGitDeployFunctionality(unittest.TestCase):
         abort - test to ensure that ``abort`` method functions
         without exception
         """
-        git-deploy_obj = GitDeploy()
+        git_deploy_obj = GitDeploy()
 
         try:
             git-deploy_obj.start(None)
@@ -116,7 +116,7 @@ class TestGitDeployFunctionality(unittest.TestCase):
         diff - test to ensure that ``diff`` method functions
         without exception
         """
-        git-deploy_obj = GitDeploy()
+        git_deploy_obj = GitDeploy()
         try:
             git-deploy_obj.diff(None)
         except GitDeployError:
@@ -128,7 +128,7 @@ class TestGitDeployFunctionality(unittest.TestCase):
         log_deploys - test to ensure that ``log_deploys`` method functions
         without exception
         """
-        git-deploy_obj = GitDeploy()
+        git_deploy_obj = GitDeploy()
         try:
             git-deploy_obj.log_deploys(namedtuple('o', 'count')(1))
         except GitDeployError:
@@ -140,7 +140,7 @@ class TestGitDeployFunctionality(unittest.TestCase):
         revert - test to ensure that ``revert`` method functions
         without exception
         """
-        git-deploy_obj = GitDeploy()
+        git_deploy_obj = GitDeploy()
         try:
             git-deploy_obj.revert(namedtuple('o', 'force')(False))
         except GitDeployError:
@@ -152,7 +152,7 @@ class TestGitDeployFunctionality(unittest.TestCase):
         start - test to ensure that start method functions
         without exception
         """
-        git-deploy_obj = GitDeploy()
+        git_deploy_obj = GitDeploy()
         try:
             git-deploy_obj.start(None)
             git-deploy_obj.sync(None)
@@ -167,7 +167,7 @@ class TestGitDeployFunctionality(unittest.TestCase):
         start - test to ensure that ``start`` method functions
         without exception
         """
-        git-deploy_obj = GitDeploy()
+        git_deploy_obj = GitDeploy()
         try:
             git-deploy_obj.start(None)
         except GitDeployError:
@@ -179,7 +179,7 @@ class TestGitDeployFunctionality(unittest.TestCase):
         sync - test to ensure that ``sync`` method functions
         without exception
         """
-        git-deploy_obj = GitDeploy()
+        git_deploy_obj = GitDeploy()
         try:
             git-deploy_obj.start(None)
             git-deploy_obj.sync(None)
@@ -194,7 +194,7 @@ class TestGitDeployFunctionality(unittest.TestCase):
         deploy_in_progress - test to ensure that when the ``start`` method
         is called when a deployment is in progress GitDeploy exits with error
         """
-        git-deploy_obj = GitDeploy()
+        git_deploy_obj = GitDeploy()
 
         # TODO - ensure that the repo is "fresh"
 
