@@ -16,7 +16,11 @@ meta = dict(
     author_email="preilly@php.net,bobs.ur.uncle@gmail.com",
     url='https://github.com/Git-Tools/git-deploy',
     packages=['git_deploy'],
-    entry_points={'console_scripts': ['git-deploy = git_deploy.git_deploy_console:cli']},
+    entry_points={
+        'console_scripts': [
+            'git-deploy = git_deploy.git_deploy_console:cli'
+        ]
+    },
     install_requires=[
         'dulwich',
         'paramiko >= 1.11.0',
