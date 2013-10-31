@@ -102,8 +102,8 @@ class TestGitDeployFunctionality(unittest.TestCase):
         git_deploy_obj = GitDeploy()
 
         try:
-            git-deploy_obj.start(None)
-            git-deploy_obj.abort(None)
+            git_deploy_obj.start(None)
+            git_deploy_obj.abort(None)
 
             # TODO - check lock file & commit
 
@@ -118,7 +118,7 @@ class TestGitDeployFunctionality(unittest.TestCase):
         """
         git_deploy_obj = GitDeploy()
         try:
-            git-deploy_obj.diff(None)
+            git_deploy_obj.diff(None)
         except GitDeployError:
             assert False
 
@@ -130,7 +130,7 @@ class TestGitDeployFunctionality(unittest.TestCase):
         """
         git_deploy_obj = GitDeploy()
         try:
-            git-deploy_obj.log_deploys(namedtuple('o', 'count')(1))
+            git_deploy_obj.log_deploys(namedtuple('o', 'count')(1))
         except GitDeployError:
             assert False
 
@@ -142,7 +142,7 @@ class TestGitDeployFunctionality(unittest.TestCase):
         """
         git_deploy_obj = GitDeploy()
         try:
-            git-deploy_obj.revert(namedtuple('o', 'force')(False))
+            git_deploy_obj.revert(namedtuple('o', 'force')(False))
         except GitDeployError:
             assert False
 
@@ -154,9 +154,9 @@ class TestGitDeployFunctionality(unittest.TestCase):
         """
         git_deploy_obj = GitDeploy()
         try:
-            git-deploy_obj.start(None)
-            git-deploy_obj.sync(None)
-            git-deploy_obj.show_tag(None)
+            git_deploy_obj.start(None)
+            git_deploy_obj.sync(None)
+            git_deploy_obj.show_tag(None)
 
         except GitDeployError:
             assert False
@@ -169,7 +169,7 @@ class TestGitDeployFunctionality(unittest.TestCase):
         """
         git_deploy_obj = GitDeploy()
         try:
-            git-deploy_obj.start(None)
+            git_deploy_obj.start(None)
         except GitDeployError:
             assert False
 
@@ -181,8 +181,8 @@ class TestGitDeployFunctionality(unittest.TestCase):
         """
         git_deploy_obj = GitDeploy()
         try:
-            git-deploy_obj.start(None)
-            git-deploy_obj.sync(None)
+            git_deploy_obj.start(None)
+            git_deploy_obj.sync(None)
 
             # TODO - check tag and deploy file
         except GitDeployError:
@@ -200,8 +200,8 @@ class TestGitDeployFunctionality(unittest.TestCase):
 
         # Call ``start`` twice
         try:
-            git-deploy_obj.start(None)
-            git-deploy_obj.start(None)
+            git_deploy_obj.start(None)
+            git_deploy_obj.start(None)
         except GitDeployError as e:
             if not e.msg == exit_codes[2]:
                 assert False
