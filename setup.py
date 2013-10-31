@@ -7,7 +7,7 @@ from setuptools import setup
 __version__ = '0.2-dev'
 
 meta = dict(
-    name='git-deploy',
+    name='git_deploy',
     version=__version__,
     description='Tool to manage using git as a deployment management tool',
     long_description=open('README.md').read(),
