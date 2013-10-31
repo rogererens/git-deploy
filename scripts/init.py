@@ -48,7 +48,7 @@ def main():
 
             # cp git-deploy
             if section == 'system' and name == 'run_root':
-                shutil.copy('bin/git-deploy', value)
+                shutil.copy('scripts/git-deploy', value)
 
 
 def cli():
