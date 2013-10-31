@@ -1,0 +1,118 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""
+
+`This`_ is a tool to manage using git as a deployment management tool
+
+.. _This: https://github.com/Git-Tools/git-deploy
+
+See LICENSE for licensing details.
+
+"""
+
+import sys
+import argparse
+
+from git_deploy.git_deploy import GitDeployError, GitDeploy
+from git_deploy.config import set_log, log, exit_codes
+
+
+def parseargs():
+    """Parse command line arguments.
+
+    Returns *args*, the list of arguments left over after processing.
+
+    """
+    parser = argparse.ArgumentParser(
+        description="This script performs ",
+        epilog="",
+        conflict_handler="resolve",
+        usage="git-deploy [-q --quiet] [-s --silent] [-v --verbose] [method]\n"
+              "method=[start|sync|abort|revert|diff|show_tag|log_deploys]"
+    )
+
+    parser.allow_interspersed_args = False
+
+    defaults = {
+        "quiet": 0,
+        "silent": False,
+        "verbose": 0,
+    }
+
+    # Global options.
+    parser.add_argument("method")
+    parser.add_argument("-c", "--count",
+                        default=1, type=int,
+                        help="number of tags to log")
+    parser.add_argument("-q", "--quiet",
+                        default=defaults["quiet"], action="count",
+                        help="decrease the logging verbosity")
+    parser.add_argument("-s", "--silent",
+                        default=defaults["silent"], action="store_true",
+                        help="silence the logger")
+    parser.add_argument("-v", "--verbose",
+                        default=defaults["verbose"], action="count",
+                        help="increase the logging verbosity")
+    parser.add_argument("-f", "--force",
+                        action="store_true",
+                        help="force the action, bypass sanity checks.")
+    parser.add_argument("-t", "--tag",
+                        default='', type=str,
+                        help="Specify the tag for the revert action.")
+    parser.add_argument("-a", "--auto_sync",
+                        default='', action="store_true",
+                        help="Auto sync flag.")
+
+    args = parser.parse_args()
+    return args
+
+
+def main(out=None, err=None):
+    """Main entry point.
+
+    Returns a value that can be understood by :func:`sys.exit`.
+
+    :param argv: a list of command line arguments, usually :data:`sys.argv`.
+    :param out: stream to write messages; :data:`sys.stdout` if None.
+    :param err: stream to write error messages; :data:`sys.stderr` if None.
+    """
+    if out is None:  # pragma: nocover
+        out = sys.stdout
+    if err is None:  # pragma: nocover
+        err = sys.stderr
+    args = parseargs()
+    set_log(args, out, err)
+
+    log.debug("git-deploy is ready to run")
+
+    # Inline call to functionality - if GitDeploy does not possess this
+    #  attribute flag with logger
+    if not args.method:
+        log.error(exit_codes[3])
+        print args.help
+        return
+
+    method_exists = hasattr(GitDeploy(), args.method)
+
+    if not hasattr(GitDeploy(), args.method):
+        log.error(exit_codes[60])
+        return
+
+    method_callable = callable(getattr(GitDeploy(), args.method))
+    if method_exists and method_callable:
+        try:
+            getattr(GitDeploy(), args.method)(args)
+        except GitDeployError as e:
+            log.error(e.message)
+            return e.exit_code
+    else:
+        log.error(__name__ + ' :: No function called %(method)s.' % {
+            'method': args.method})
+
+
+def cli():
+    sys.exit(main())
+
+if __name__ == "__main__":  # pragma: nocover
+    cli()
