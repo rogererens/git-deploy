@@ -482,9 +482,14 @@ class GitDeploy(object):
         t.close()
         sock.close()
 
-    def ssh_command_target(self, cmd):
+    def ssh_command_target(self, cmd, ssh_port=22):
         """
         Talk to the target via SSHClient
+
+        Params:
+
+            cmd         - The command to issue on SSH connection
+            ssh_port    - SSH port on remote, defaults to 22
         """
 
         ssh = paramiko.SSHClient()
@@ -492,7 +497,8 @@ class GitDeploy(object):
         ssh.connect(
             self.config['target'],
             username=self.config['user.name'],
-            key_filename=self.config['deploy.key_path'])
+            key_filename=self.config['deploy.key_path'],
+            port=ssh_port)
         stdin, stdout, stderr = ssh.exec_command(cmd)
 
         stdout = [line.strip() for line in stdout.readlines()]
