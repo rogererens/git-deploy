@@ -410,7 +410,7 @@ class GitDeploy(object):
         self._remove_lock()
         return 0
 
-    def _default_sync(self):
+    def _default_sync(self, remote='origin', branch='master'):
 
         #
         # Call deploy hook on client
@@ -423,8 +423,8 @@ class GitDeploy(object):
             self.config['client_path'],
             self.config['hook_dir'],
             DEFAULT_CLIENT_HOOK),
-            self.config['remote'],
-            self.config['branch']],
+            remote,
+            branch],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
         log.info('PUSH -> ' + '; '.join(
@@ -441,8 +441,8 @@ class GitDeploy(object):
         cmd = '{0}{1}{2} {3} {4}'.format(self.config['path'],
                                          self.config['hook_dir'],
                                          DEFAULT_TARGET_HOOK,
-                                         self.config['remote'],
-                                         self.config['branch'])
+                                         remote,
+                                         branch)
         ret = self.ssh_command_target(cmd)
         log.info('PULL -> ' + '; '.join(
             filter(lambda x: x, ret['stdout'])))
