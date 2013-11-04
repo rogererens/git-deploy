@@ -642,3 +642,10 @@ class GitDeploy(object):
         else:
             raise GitDeployError(message=exit_codes[6], exit_code=6)
         return 0
+
+    def dummy(self, args):
+        """
+        dummy method to test the entry point.
+        """
+        log.info(__name__ + " :: CLI ars -> {0}".format(args))
+        log.info(__name__ + " :: Passive call to the CLI.")
