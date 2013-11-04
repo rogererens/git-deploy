@@ -41,7 +41,10 @@ def parseargs():
     }
 
     # Global options.
-    parser.add_argument("method")
+    parser.add_argument('ordered_args', metavar='ordered_args', type=str,
+                        nargs='+', help='Specifies the git deploy method and '
+                                        'additional args depending on the '
+                                        'method called.')
     parser.add_argument("-c", "--count",
                         default=1, type=int,
                         help="number of tags to log")
@@ -88,22 +91,22 @@ def main(out=None, err=None):
 
     # Inline call to functionality - if GitDeploy does not possess this
     #  attribute flag with logger
-    if not args.method:
+    if not args.ordered_args[0]:
         log.error(exit_codes[3])
         print args.help
         return
 
-    method_exists = hasattr(GitDeploy(), args.method)
+    method_exists = hasattr(GitDeploy(), args.ordered_args[0])
 
-    if not hasattr(GitDeploy(), args.method):
+    if not hasattr(GitDeploy(), args.ordered_args[0]):
         log.error(exit_codes[60])
         return
 
-    method_callable = callable(getattr(GitDeploy(), args.method))
+    method_callable = callable(getattr(GitDeploy(), args.ordered_args[0]))
     if method_exists and method_callable:
 
         try:
-            getattr(GitDeploy(), args.method)(args)
+            getattr(GitDeploy(), args.ordered_args[0])(args)
 
         except (GitDeployError, Exception) as e:
 
@@ -120,7 +123,7 @@ def main(out=None, err=None):
 
     else:
         log.error(__name__ + ' :: No function called %(method)s.' % {
-            'method': args.method})
+            'method': args.ordered_args[0]})
 
     return 0
 
