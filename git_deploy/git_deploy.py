@@ -89,7 +89,8 @@ class GitDeploy(object):
     def __new__(cls, *args, **kwargs):
         """ This class is Singleton, return only one instance """
         if not cls.__instance:
-            cls.__instance = super(GitDeploy, cls).__new__(cls, *args, **kwargs)
+            cls.__instance = super(GitDeploy, cls).__new__(cls, *args,
+                                                           **kwargs)
 
             # Call config
             cls.__instance._configure(**kwargs)

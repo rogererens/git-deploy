@@ -127,6 +127,7 @@ def main(out=None, err=None):
 
     return 0
 
+
 def cli():
     sys.exit(main())
 
