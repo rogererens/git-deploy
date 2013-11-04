@@ -26,7 +26,8 @@ from dulwich.objects import Tag, Commit, parse_timezone
 from dulwich.diff_tree import tree_changes
 
 from config import log, configure, exit_codes, DEFAULT_CLIENT_HOOK, \
-    DEFAULT_TARGET_HOOK
+    DEFAULT_TARGET_HOOK, DEFAULT_BRANCH, DEFAULT_REMOTE, \
+    DEFAULT_REMOTE_ARG_IDX, DEFAULT_BRANCH_ARG_IDX
 
 
 class GitDeployError(Exception):
@@ -318,6 +319,19 @@ class GitDeploy(object):
         if proc.returncode != 0:
             raise GitDeployError(message=exit_codes[33], exit_code=33)
 
+    def _parse_remote(self, args):
+        """
+        Parse git deploy remote/branch from command line args
+        """
+        if hasattr(args, 'ordered_args') and len(args.ordered_args) >= 3:
+            remote = str(args.ordered_args[DEFAULT_REMOTE_ARG_IDX])
+            branch = str(args.ordered_args[DEFAULT_BRANCH_ARG_IDX])
+        else:
+            remote = DEFAULT_REMOTE
+            branch = DEFAULT_BRANCH
+
+        return remote, branch
+
     def start(self, _):
         """
             * write a lock file
@@ -375,9 +389,11 @@ class GitDeploy(object):
 
         tag = self._make_tag()
 
-        return self._sync(tag, args.force)
+        remote, branch = self._parse_remote(args)
 
-    def _sync(self, tag, force):
+        return self._sync(tag, args.force, remote, branch)
+
+    def _sync(self, tag, force, remote, branch):
 
         repo_name = self.config['repo_name']
         sync_script = '{0}/{1}.sync'.format(self.config["sync_dir"], repo_name)
@@ -406,12 +422,12 @@ class GitDeploy(object):
                 log.error(str(e))
                 raise GitDeployError(message=exit_codes[12], exit_code=12)
 
-            self._default_sync()
+            self._default_sync(remote, branch)
 
         self._remove_lock()
         return 0
 
-    def _default_sync(self, remote='origin', branch='master'):
+    def _default_sync(self, remote, branch):
 
         #
         # Call deploy hook on client

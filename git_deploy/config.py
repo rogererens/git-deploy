@@ -22,6 +22,12 @@ GIT_CALL = '/usr/bin/git'
 DEFAULT_CLIENT_HOOK = 'default-client-push.py'
 DEFAULT_TARGET_HOOK = 'default-target-pull.py'
 
+DEFAULT_REMOTE = 'origin'
+DEFAULT_BRANCH = 'master'
+
+DEFAULT_REMOTE_ARG_IDX = 1
+DEFAULT_BRANCH_ARG_IDX = 2
+
 # Codes emitted on exit conditions
 exit_codes = {
     1: 'Operation failed.  Exiting.',
