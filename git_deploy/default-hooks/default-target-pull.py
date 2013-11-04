@@ -28,7 +28,7 @@ def main():
 
     # Pull from remote -    TODO, dulwich
     #                       TODO, use git config for remote/branch
-    proc = subprocess.Popen([GIT_CALL, 'pull', 'origin', 'master'],
+    proc = subprocess.Popen([GIT_CALL, 'pull', 'origin', 'master', '--tags'],
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
     proc.communicate()

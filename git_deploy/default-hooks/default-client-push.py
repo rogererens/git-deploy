@@ -29,13 +29,7 @@ def main():
 
     # Push to remote -  TODO, dulwich
     #                   TODO, use git config for remote/branch
-    proc = subprocess.Popen([GIT_CALL, 'push', 'origin', 'master'],
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
-    proc.communicate()
-
-    # Push tags - TODO, dulwich
-    proc = subprocess.Popen([GIT_CALL, 'push', '--tags'],
+    proc = subprocess.Popen([GIT_CALL, 'push', 'origin', 'master', '--tags'],
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
     proc.communicate()
