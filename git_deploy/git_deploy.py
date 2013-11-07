@@ -589,13 +589,6 @@ class GitDeploy(object):
 
         return 0
 
-    def release(self):
-        """
-        * tag a release and push to remote
-        In this case you may want to perform the rollout yourself.
-        """
-        pass
-
     def finish(self):
         """
         Call after rolling out on 'release'
