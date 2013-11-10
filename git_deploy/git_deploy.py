@@ -269,8 +269,6 @@ class GitDeploy(object):
         commits = [commit for _, commit in tags.iteritems()]
 
         # Reorder list by commit time
-        # TODO - this is a non dulwich dependency, refactor this to
-        # TODO (cont.) - use timestamps from the repo
         #
         ordered_tags = OrderedDict()
 
