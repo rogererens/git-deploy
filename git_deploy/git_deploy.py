@@ -591,9 +591,10 @@ class GitDeploy(object):
 
     def finish(self):
         """
-        Call after rolling out on 'release'
+        * Remove lock file
         """
-        pass
+        if self._check_lock():
+            self._remove_lock()
 
     def show_tag(self, _):
         """
