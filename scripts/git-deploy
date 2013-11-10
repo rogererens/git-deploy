@@ -66,6 +66,9 @@ def parseargs():
     parser.add_argument("-a", "--auto_sync",
                         default='', action="store_true",
                         help="Auto sync flag.")
+    parser.add_argument("-y", "--sync",
+                        default='', type=str,
+                        help="Specify sync script.")
 
     args = parser.parse_args()
     return args

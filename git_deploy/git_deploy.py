@@ -391,27 +391,53 @@ class GitDeploy(object):
 
         remote, branch = self._parse_remote(args)
 
-        return self._sync(tag, args.force, remote, branch)
+        return self._sync(args.sync, tag, args.force, remote, branch)
 
-    def _sync(self, tag, force, remote, branch):
+    def _sync(self, sync_script, tag, force, remote, branch):
+        """
+        This method does the heavy lifting for the sync command.
 
-        repo_name = self.config['repo_name']
-        sync_script = '{0}/{1}.sync'.format(self.config["sync_dir"], repo_name)
+            * Check for sync script
+            * default sync if one is not specified
+        """
 
-        if os.path.exists(sync_script):
-            log.info('{0} :: Calling sync script at {1}'.format(__name__,
-                                                                sync_script))
-            proc = subprocess.Popen([sync_script,
-                                     '--repo="{0}"'.format(repo_name),
-                                     '--tag="{0}"'.format(tag),
-                                     '--force="{0}"'.format(force)])
-            proc_out = proc.communicate()[0]
-            log.info(proc_out)
+        sync_script = '{0}/{1}'.format(self.config["sync_dir"], sync_script)
 
-            if proc.returncode != 0:
-                exit_code = 40
-                log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
-                return exit_code
+        if sync_script:
+
+            sync_script_path = "{0}/{1}".format(self.config["hook_dir"],
+                                                sync_script)
+
+            # Call the sync script
+            if os.path.exists(sync_script_path):
+                log.info("{0} :: Calling sync "
+                         "script at {1}".format(__name__,
+                                                sync_script))
+
+                sync_cmd = "{0} --repo {1} --tag {2} --force".format(
+                    sync_script,
+                    self.config['repo_name'],
+                    tag
+                )
+                proc = subprocess.Popen(sync_cmd.split())
+                proc_out = proc.communicate()[0]
+
+                if proc.returncode != 0:
+                    exit_code = 40
+                    log.error("{0} :: {1}".format(__name__,
+                                                  exit_codes[exit_code]))
+                    return exit_code
+
+                log.info("{0} :: SYNC SCRIPT OUT-> {1}".format(
+                    __name__,
+                    proc_out))
+
+            else:
+                # Can't find the sync script - Exit with error
+                log.error("{0} :: Where is {1}?".format(__name__,
+                                                        sync_script_path))
+                raise GitDeployError(message=exit_codes[39], exit_code=39)
+
         else:
             # In absence of a sync script -- Tag the repo
             log.debug(__name__ + ' :: Calling default sync.')
@@ -424,7 +450,10 @@ class GitDeploy(object):
 
             self._default_sync(remote, branch)
 
-        self._remove_lock()
+        # Clean-up
+        if self._check_lock():
+            self._remove_lock()
+
         return 0
 
     def _default_sync(self, remote, branch):

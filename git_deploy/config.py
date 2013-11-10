@@ -64,6 +64,7 @@ exit_codes = {
     36: 'Not enough tags (<2) to revert on. Exiting.',
     37: 'Missing system configuration item "key-path". Exiting.',
     38: 'Missing system configuration item "test-repo-path". Exiting.',
+    39: 'Can\'t find sync script". Exiting.',
     40: 'Failed to run sync script. Exiting.',
     50: 'Failed to read the .deploy file. Exiting.',
     60: 'Invalid git deploy action. Exiting.',
