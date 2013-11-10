@@ -28,8 +28,13 @@ def parseargs():
         description="This script serves as the entry point for git deploy.",
         epilog="",
         conflict_handler="resolve",
-        usage="git-deploy [-q --quiet] [-s --silent] [-v --verbose] [method]\n"
-              "method=[start|sync|abort|revert|diff|show_tag|log_deploys]"
+        usage="git-deploy method [remote] [branch]"
+              "\n\t[-q --quiet] \n\t[-s --silent] "
+              "\n\t[-v --verbose] \n\t[-c --count [0-9]+] \n\t[-f --force] "
+              "\n\t[-t --tag] \n\t[-a --auto_sync] "
+              "\n\t[-y --sync SCRIPT NAME] "
+              "\n\nmethod=[start|sync|abort|revert|diff|show_tag|"
+              "log_deploys|finish]"
     )
 
     parser.allow_interspersed_args = False
