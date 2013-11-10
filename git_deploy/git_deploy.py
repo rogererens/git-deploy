@@ -441,14 +441,7 @@ class GitDeploy(object):
         else:
             # In absence of a sync script -- Tag the repo
             log.debug(__name__ + ' :: Calling default sync.')
-
-            try:
-                self._dulwich_tag(tag, self._make_author())
-            except Exception as e:
-                log.error(str(e))
-                raise GitDeployError(message=exit_codes[12], exit_code=12)
-
-            self._default_sync(remote, branch)
+            self._default_sync(remote, branch, tag)
 
         # Clean-up
         if self._check_lock():
@@ -456,13 +449,20 @@ class GitDeploy(object):
 
         return 0
 
-    def _default_sync(self, remote, branch):
+    def _default_sync(self, remote, branch, tag):
 
         #
         # Call deploy hook on client
         #
         #   {% PATH %}/.git/deploy/hooks/default-client-push origin master
         #
+
+        try:
+            self._dulwich_tag(tag, self._make_author())
+        except Exception as e:
+            log.error(str(e))
+            raise GitDeployError(message=exit_codes[12], exit_code=12)
+
         log.info('{0} :: Calling default sync - '
                  'pushing changes ... '.format(__name__))
         proc = subprocess.Popen(['{0}{1}{2}'.format(
