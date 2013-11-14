@@ -24,6 +24,7 @@ from collections import OrderedDict
 from dulwich.repo import Repo
 from dulwich.objects import Tag, Commit, parse_timezone
 from dulwich.diff_tree import tree_changes
+from dulwich.client import get_transport_and_path
 
 from config import log, configure, exit_codes, DEFAULT_CLIENT_HOOK, \
     DEFAULT_TARGET_HOOK, DEFAULT_BRANCH, DEFAULT_REMOTE, \
@@ -278,6 +279,18 @@ class GitDeploy(object):
                 ordered_tags[tag_keys[index]] = commit
 
         return ordered_tags
+
+    def _dulwich_push(self, remote, branch):
+        """
+        Remote push with dulwich via dulwich.client
+        """
+        pass
+
+    def _dulwich_pull(self, remote, branch):
+        """
+        Pull from remote with dulwich via dulwich.client
+        """
+        pass
 
     def _make_tag(self):
         timestamp = datetime.now().strftime(self.DATE_TIME_TAG_FORMAT)
