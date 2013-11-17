@@ -280,13 +280,25 @@ class GitDeploy(object):
 
         return ordered_tags
 
-    def _dulwich_push(self, remote, branch):
+    def _dulwich_push(self, git_url, branch):
         """
         Remote push with dulwich via dulwich.client
         """
-        pass
 
-    def _dulwich_pull(self, remote, branch):
+        # Open the repo
+        _repo = Repo(self.config['top_dir'])
+
+        # Get the client and path
+        client, path = get_transport_and_path(git_url)
+
+        def update_refs(refs):
+            refs_path = "refs/heads/master"
+            refs[refs_path] = _repo[refs_path]
+
+        client.send_pack(path, update_refs,
+                         _repo.object_store.generate_pack_contents)
+
+    def _dulwich_pull(self, git_url):
         """
         Pull from remote with dulwich via dulwich.client
         """
