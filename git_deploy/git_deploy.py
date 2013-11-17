@@ -302,7 +302,7 @@ class GitDeploy(object):
         """
         Pull from remote with dulwich via dulwich.client
         """
-        pass
+        raise NotImplementedError()
 
     def _make_tag(self):
         timestamp = datetime.now().strftime(self.DATE_TIME_TAG_FORMAT)
