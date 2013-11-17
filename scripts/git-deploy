@@ -122,7 +122,12 @@ def main(out=None, err=None):
 
             if GitDeploy()._check_lock():
                 log.info(__name__ + ' :: ABORTING DEPLOY -> Removing lock.')
-                GitDeploy()._remove_lock()
+
+                try:
+                    GitDeploy()._remove_lock()
+                except Exception as e:
+                    log.error(__name__ + ' :: Could not remove lock '
+                                         '-> "{0}".'.format(e.message))
 
             if hasattr(e, 'exit_code'):
                 return e.exit_code
