@@ -24,7 +24,7 @@ from collections import OrderedDict
 from dulwich.repo import Repo
 from dulwich.objects import Tag, Commit, parse_timezone
 from dulwich.diff_tree import tree_changes
-from dulwich.client import get_transport_and_path
+from dulwich.client import get_transport_and_path, SSHGitClient
 
 from config import log, configure, exit_codes, DEFAULT_CLIENT_HOOK, \
     DEFAULT_TARGET_HOOK, DEFAULT_BRANCH, DEFAULT_REMOTE, \
@@ -298,11 +298,18 @@ class GitDeploy(object):
         client.send_pack(path, update_refs,
                          _repo.object_store.generate_pack_contents)
 
-    def _dulwich_pull(self, git_url):
+    def _dulwich_pull(self, git_url, repo_name, branch):
         """
         Pull from remote with dulwich via dulwich.client
         """
-        raise NotImplementedError()
+
+        # Open the repo
+        _repo = Repo(self.config['top_dir'])
+
+        client = SSHGitClient(git_url)
+        remote_refs = client.fetch(repo_name, _repo)
+        _repo['HEAD'] = remote_refs["refs/heads/" + branch]
+
 
     def _make_tag(self):
         timestamp = datetime.now().strftime(self.DATE_TIME_TAG_FORMAT)
