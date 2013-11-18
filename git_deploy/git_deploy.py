@@ -310,7 +310,6 @@ class GitDeploy(object):
         remote_refs = client.fetch(repo_name, _repo)
         _repo['HEAD'] = remote_refs["refs/heads/" + branch]
 
-
     def _make_tag(self):
         timestamp = datetime.now().strftime(self.DATE_TIME_TAG_FORMAT)
         return '{0}-{1}'.format(self.config['user'], timestamp)
