@@ -15,8 +15,11 @@ import os
 import stat
 import paramiko
 import socket
-from re import search
+import dulwich
+import dulwich.walk
 import subprocess
+
+from re import search
 from time import time
 from datetime import datetime
 from collections import OrderedDict
@@ -182,7 +185,7 @@ class GitDeploy(object):
         # 1. Pull last 'num_tags' sync tags
         # 2. Filter only matched deploy tags
         tags = self._dulwich_get_tags().keys()
-        f = lambda x: search(self.config['user'] + '-', x)
+        f = lambda x: search(self.config['repo_name'] + '-sync-', x)
         return filter(f, tags)
 
     def _dulwich_tag(self, tag, author, message=DEFAULT_TAG_MSG):
@@ -266,18 +269,15 @@ class GitDeploy(object):
         """
         _repo = Repo(self.config['top_dir'])
         tags = _repo.refs.as_dict("refs/tags")
-        tag_keys = tags.keys()
-        commits = [commit for _, commit in tags.iteritems()]
-
-        # Reorder list by commit time
-        #
-        ordered_tags = OrderedDict()
-
-        for commit in self._git_commit_list():
-            if commit in commits:
-                index = commits.index(commit)
-                ordered_tags[tag_keys[index]] = commit
-
+        ordered_tags = {}
+        # Get the commit hashes associated with the tags
+        for tag, tag_commit in tags.items():
+            if tag not in ordered_tags:
+                ordered_tags[tag] = _repo.object_store.peel_sha(tag_commit)
+        # Sort by commit_time, then by tag name, as multiple tags can have
+        # the same commit_time for their commits
+        ordered_tags = OrderedDict(sorted(ordered_tags.items(),
+                                          key=lambda t: (t[1].commit_time, t)))
         return ordered_tags
 
     def _dulwich_push(self, git_url, branch):
@@ -298,21 +298,10 @@ class GitDeploy(object):
         client.send_pack(path, update_refs,
                          _repo.object_store.generate_pack_contents)
 
-    def _dulwich_pull(self, git_url, repo_name, branch):
-        """
-        Pull from remote with dulwich via dulwich.client
-        """
-
-        # Open the repo
-        _repo = Repo(self.config['top_dir'])
-
-        client = SSHGitClient(git_url)
-        remote_refs = client.fetch(repo_name, _repo)
-        _repo['HEAD'] = remote_refs["refs/heads/" + branch]
-
-    def _make_tag(self):
+    def _make_tag(self, tag_type):
         timestamp = datetime.now().strftime(self.DATE_TIME_TAG_FORMAT)
-        return '{0}-{1}'.format(self.config['user'], timestamp)
+        return '{0}-{1}-{2}'.format(self.config['repo_name'], tag_type,
+                                    timestamp)
 
     def _make_author(self):
         return '{0} <{1}>'.format(self.config['user.name'],
@@ -322,16 +311,11 @@ class GitDeploy(object):
         """
         Generate an in-order list of commits
         """
-        cmd = 'git log --pretty=oneline'
-        proc = subprocess.Popen(cmd.split(),
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
-        proc_out = proc.communicate()
+        _repo = Repo(self.config['top_dir'])
 
-        if proc.returncode != 0:
-            raise GitDeployError(message=exit_codes[34], exit_code=34)
-
-        commits = [i.split()[0] for i in proc_out[0][:-1].split('\n')]
+        commits = []
+        for entry in _repo.get_walker(order=dulwich.walk.ORDER_DATE):
+            commits.append(entry.commit.id)
 
         return commits
 
@@ -372,6 +356,8 @@ class GitDeploy(object):
             raise GitDeployError(message=exit_codes[2])
 
         self._create_lock()
+        self._tag = self._make_tag('start')
+        self._dulwich_tag(self._tag, self._make_author())
 
         return 0
 
@@ -416,7 +402,8 @@ class GitDeploy(object):
         if not self._check_lock():
             raise GitDeployError(message=exit_codes[30], exit_code=30)
 
-        tag = self._make_tag()
+        tag = self._make_tag('sync')
+        self._dulwich_tag(tag, self._make_author())
 
         remote, branch = self._parse_remote(args)
 
@@ -443,11 +430,13 @@ class GitDeploy(object):
                          "script at {1}".format(__name__,
                                                 sync_script))
 
-                sync_cmd = "{0} --repo {1} --tag {2} --force".format(
+                sync_cmd = "{0} --repo {1} --tag {2}".format(
                     sync_script,
                     self.config['repo_name'],
                     tag
                 )
+                if force:
+                    sync_cmd = sync_cmd + ' --force'
                 proc = subprocess.Popen(sync_cmd.split())
                 proc_out = proc.communicate()[0]
 
@@ -604,7 +593,7 @@ class GitDeploy(object):
             tag = args.tag
         else:
             # revert to previous to current tag
-            repo_tags = self._dulwich_get_tags()
+            repo_tags = self._get_deploy_tags()
             if len(repo_tags) >= 2:
                 tag = repo_tags.keys()[-2]
             else:
