@@ -10,7 +10,7 @@ __authors__ = {
 __date__ = '2013-09-08'
 __license__ = 'GPL v2.0 (or later)'
 
-from dulwich.config import StackedConfig
+from dulwich.repo import Repo
 import subprocess
 import sys
 import logging
@@ -110,7 +110,6 @@ def set_log(args, out, err):
 
 def configure(**kwargs):
     """ Parse configuration from git config """
-    sc = StackedConfig(StackedConfig.default_backends())
     config = {}
 
     # Get top level directory of project
@@ -118,6 +117,8 @@ def configure(**kwargs):
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
     config['top_dir'] = proc.communicate()[0].strip()
+    _repo = Repo(config['top_dir'])
+    sc = _repo.get_config_stack()
 
     if proc.returncode != 0:
         exit_code = 20
