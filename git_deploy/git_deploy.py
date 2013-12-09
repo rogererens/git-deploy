@@ -292,8 +292,10 @@ class GitDeploy(object):
         client, path = get_transport_and_path(git_url)
 
         def update_refs(refs):
-            refs_path = "refs/heads/master"
-            refs[refs_path] = _repo[refs_path]
+            new_refs = _repo.get_refs()
+            new_refs['refs/remotes/origin/' + branch] = new_refs['HEAD']
+            del new_refs['HEAD']
+            return new_refs
 
         client.send_pack(path, update_refs,
                          _repo.object_store.generate_pack_contents)
