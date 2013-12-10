@@ -300,6 +300,17 @@ class GitDeploy(object):
         client.send_pack(path, update_refs,
                          _repo.object_store.generate_pack_contents)
 
+    def _dulwich_pull(self, git_url):
+        """
+        Pull from remote via dulwich.client
+        """
+        # Open the repo
+        _repo = Repo(self.config['top_dir'])
+
+        client, path = get_transport_and_path(git_url)
+        remote_refs = client.fetch(path, _repo)
+        _repo['HEAD'] = remote_refs['refs/heads/master']
+
     def _make_tag(self, tag_type):
         timestamp = datetime.now().strftime(self.DATE_TIME_TAG_FORMAT)
         return '{0}-{1}-{2}'.format(self.config['repo_name'], tag_type,
