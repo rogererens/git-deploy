@@ -30,9 +30,9 @@ from dulwich.objects import Tag, Commit, parse_timezone
 from dulwich.diff_tree import tree_changes
 from dulwich.client import get_transport_and_path
 
-from drivers import DeployDriverDefault, DeployDriverHook
-from config import log, configure, exit_codes, DEFAULT_CLIENT_HOOK, \
-    DEFAULT_TARGET_HOOK, DEFAULT_BRANCH, DEFAULT_REMOTE, \
+from drivers.driver import DeployDriverDefault, DeployDriverHook
+from config import log, configure, exit_codes, \
+    DEFAULT_BRANCH, DEFAULT_REMOTE, \
     DEFAULT_REMOTE_ARG_IDX, DEFAULT_BRANCH_ARG_IDX
 
 
