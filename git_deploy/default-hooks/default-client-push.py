@@ -17,6 +17,7 @@ import sys
 import subprocess
 
 from git_deploy.config import GIT_CALL
+from git_deploy.git_deploy import GitDeploy
 
 
 def main():
@@ -27,12 +28,8 @@ def main():
                             stderr=subprocess.PIPE)
     os.chdir(proc.communicate()[0].strip())
 
-    # Push to remote -  TODO, dulwich
-    #                   TODO, use git config for remote/branch
-    proc = subprocess.Popen([GIT_CALL, 'push', 'origin', 'master', '--tags'],
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
-    proc.communicate()
+    # Dulwich push
+    GitDeploy()._dulwich_push(GitDeploy().config['remote_url'], 'master')
 
 
 def cli():
