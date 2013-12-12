@@ -321,7 +321,6 @@ class GitDeploy(object):
         index.build_index_from_tree(_repo.path, indexfile,
                                     _repo.object_store, tree)
 
-
     def _make_tag(self, tag_type):
         timestamp = datetime.now().strftime(self.DATE_TIME_TAG_FORMAT)
         return '{0}-{1}-{2}'.format(self.config['repo_name'], tag_type,
