@@ -28,8 +28,9 @@ from dulwich import index
 from dulwich.repo import Repo
 from dulwich.objects import Tag, Commit, parse_timezone
 from dulwich.diff_tree import tree_changes
-from dulwich.client import get_transport_and_path, SSHGitClient
+from dulwich.client import get_transport_and_path
 
+from drivers import DeployDriverDefault, DeployDriverHook
 from config import log, configure, exit_codes, DEFAULT_CLIENT_HOOK, \
     DEFAULT_TARGET_HOOK, DEFAULT_BRANCH, DEFAULT_REMOTE, \
     DEFAULT_REMOTE_ARG_IDX, DEFAULT_BRANCH_ARG_IDX
@@ -434,105 +435,22 @@ class GitDeploy(object):
 
     def _sync(self, sync_script, tag, force, remote, branch):
         """
-        This method does the heavy lifting for the sync command.
+        This method makes calls to specialized drivers to perform the deploy.
 
             * Check for sync script
             * default sync if one is not specified
         """
 
-        sync_script = '{0}/{1}'.format(self.config["sync_dir"], sync_script)
-
         if sync_script:
-
-            sync_script_path = "{0}/{1}".format(self.config["hook_dir"],
-                                                sync_script)
-
-            # Call the sync script
-            if os.path.exists(sync_script_path):
-                log.info("{0} :: Calling sync "
-                         "script at {1}".format(__name__,
-                                                sync_script))
-
-                sync_cmd = "{0} --repo {1} --tag {2}".format(
-                    sync_script,
-                    self.config['repo_name'],
-                    tag
-                )
-                if force:
-                    sync_cmd = sync_cmd + ' --force'
-                proc = subprocess.Popen(sync_cmd.split())
-                proc_out = proc.communicate()[0]
-
-                if proc.returncode != 0:
-                    exit_code = 40
-                    log.error("{0} :: {1}".format(__name__,
-                                                  exit_codes[exit_code]))
-                    return exit_code
-
-                log.info("{0} :: SYNC SCRIPT OUT-> {1}".format(
-                    __name__,
-                    proc_out))
-
-            else:
-                # Can't find the sync script - Exit with error
-                log.error("{0} :: Where is {1}?".format(__name__,
-                                                        sync_script_path))
-                raise GitDeployError(message=exit_codes[39], exit_code=39)
-
+            DeployDriverHook().sync(remote, branch, tag, force)
         else:
-            # In absence of a sync script -- Tag the repo
-            log.debug(__name__ + ' :: Calling default sync.')
-            self._default_sync(remote, branch, tag)
+            DeployDriverDefault().sync(remote, branch, tag, force)
 
         # Clean-up
         if self._check_lock():
             self._remove_lock()
 
         return 0
-
-    def _default_sync(self, remote, branch, tag):
-
-        #
-        # Call deploy hook on client
-        #
-        #   {% PATH %}/.git/deploy/hooks/default-client-push origin master
-        #
-
-        try:
-            self._dulwich_tag(tag, self._make_author())
-        except Exception as e:
-            log.error(str(e))
-            raise GitDeployError(message=exit_codes[12], exit_code=12)
-
-        log.info('{0} :: Calling default sync - '
-                 'pushing changes ... '.format(__name__))
-        proc = subprocess.Popen(['{0}{1}{2}'.format(
-            self.config['client_path'],
-            self.config['hook_dir'],
-            DEFAULT_CLIENT_HOOK),
-            remote,
-            branch],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE)
-        log.info('PUSH -> ' + '; '.join(
-            filter(lambda x: x, proc.communicate())))
-
-        #
-        # Call deploy hook on remote
-        #
-        #   ssh user@target {% PATH %}/.git/deploy/hooks/default-client-pull \
-        #       origin master
-        #
-        log.info('{0} :: Calling default sync - '
-                 'pulling to target'.format(__name__))
-        cmd = '{0}{1}{2} {3} {4}'.format(self.config['path'],
-                                         self.config['hook_dir'],
-                                         DEFAULT_TARGET_HOOK,
-                                         remote,
-                                         branch)
-        ret = self.ssh_command_target(cmd)
-        log.info('PULL -> ' + '; '.join(
-            filter(lambda x: x, ret['stdout'])))
 
     def scp_file(self, source, target, port=22):
         """
