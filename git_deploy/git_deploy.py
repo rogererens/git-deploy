@@ -24,6 +24,7 @@ from time import time
 from datetime import datetime
 from collections import OrderedDict
 
+from dulwich import index
 from dulwich.repo import Repo
 from dulwich.objects import Tag, Commit, parse_timezone
 from dulwich.diff_tree import tree_changes
@@ -310,6 +311,16 @@ class GitDeploy(object):
         client, path = get_transport_and_path(git_url)
         remote_refs = client.fetch(path, _repo)
         _repo['HEAD'] = remote_refs['refs/heads/master']
+
+        self._dulwich_checkout(_repo)
+
+    def _dulwich_checkout(self, _repo):
+        """ Perform 'git checkout .' - syncs staged changes """
+        indexfile = _repo.index_path()
+        tree = _repo["HEAD"].tree
+        index.build_index_from_tree(_repo.path, indexfile,
+                                    _repo.object_store, tree)
+
 
     def _make_tag(self, tag_type):
         timestamp = datetime.now().strftime(self.DATE_TIME_TAG_FORMAT)
