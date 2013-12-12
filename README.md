@@ -41,6 +41,8 @@ The .ini file defines the dependencies for the deploy section in your global .gi
 
     deploy.client-path {%client path%}
 
+    deploy.remote-url {%remote url%}    e.g. git@github.com:Git-Tools/git-deploy.git
+
 Also ensure that the global git params user.name and user.email are defined.
 
 
