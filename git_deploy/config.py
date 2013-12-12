@@ -66,6 +66,7 @@ exit_codes = {
     38: 'Missing system configuration item "test-repo-path". Exiting.',
     39: 'Can\'t find sync script". Exiting.',
     40: 'Failed to run sync script. Exiting.',
+    41: 'Missing system configuration item "remote-url". Exiting.',
     50: 'Failed to read the .deploy file. Exiting.',
     60: 'Invalid git deploy action. Exiting.',
 }
@@ -139,6 +140,7 @@ def configure(**kwargs):
         'user.email': ('user', 'email', 29),
         'deploy.key_path': ('deploy', 'key-path', 37),
         'deploy.test_repo': ('deploy', 'test-repo-path', 38),
+        'deploy.remote_url': ('deploy', 'remote-url', 41),
     }
 
     # Assign the values of each git config element
