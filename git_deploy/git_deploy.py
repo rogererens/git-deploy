@@ -13,23 +13,17 @@ __license__ = 'GPL v2.0 (or later)'
 
 import os
 import stat
-import paramiko
-import socket
 import dulwich
 import dulwich.walk
 import subprocess
 
 from re import search
-from time import time
 from datetime import datetime
-from collections import OrderedDict
 
-from dulwich import index
 from dulwich.repo import Repo
-from dulwich.objects import Tag, Commit, parse_timezone
-from dulwich.diff_tree import tree_changes
-from dulwich.client import get_transport_and_path
 
+from utils import ssh_command_target
+from git_methods import GitMethods
 from drivers.driver import DeployDriverDefault, DeployDriverHook
 from config import log, configure, exit_codes, \
     DEFAULT_BRANCH, DEFAULT_REMOTE, \
@@ -117,7 +111,12 @@ class GitDeploy(object):
             self._get_lock_file_name())
 
         log.debug('{0} :: Executing - "{1}"'.format(__name__, cmd))
-        ret = self.ssh_command_target(cmd)
+        ret = ssh_command_target(
+            cmd,
+            self.config['target'],
+            self.config['user.name'],
+            self.config['deploy.key_path'],
+            )
 
         # Pull the lock file handle from
         try:
@@ -147,7 +146,12 @@ class GitDeploy(object):
             self.config['path'],
             self.DEPLOY_DIR,
             self._get_lock_file_name())
-        self.ssh_command_target(cmd)
+        ssh_command_target(
+            cmd,
+            self.config['target'],
+            self.config['user.name'],
+            self.config['deploy.key_path']
+            )
 
     def _remove_lock(self):
         """ Remove the lock file """
@@ -155,23 +159,12 @@ class GitDeploy(object):
             self.config['path'],
             self.DEPLOY_DIR,
             self._get_lock_file_name())
-        self.ssh_command_target(cmd)
-
-    def _get_commit_sha_for_tag(self, tag):
-        """ Obtain the commit sha of an associated tag
-                e.g. `git rev-list $TAG | head -n 1` """
-        # @TODO replace with dulwich
-
-        cmd = "git rev-list {0}".format(tag)
-        proc = subprocess.Popen(cmd.split(),
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
-        result = proc.communicate()[0].split('\n')
-
-        if not proc.returncode and len(result) > 0:
-            return result[0].strip()
-        else:
-            raise GitDeployError(message=exit_codes[8], exit_code=8)
+        ssh_command_target(
+            cmd,
+            self.config['target'],
+            self.config['user.name'],
+            self.config['deploy.key_path'],
+        )
 
     def _get_latest_deploy_tag(self):
         """
@@ -186,141 +179,9 @@ class GitDeploy(object):
         """
         # 1. Pull last 'num_tags' sync tags
         # 2. Filter only matched deploy tags
-        tags = self._dulwich_get_tags().keys()
+        tags = GitMethods()._dulwich_get_tags(self.config['top_dir']).keys()
         f = lambda x: search(self.config['repo_name'] + '-sync-', x)
         return filter(f, tags)
-
-    def _dulwich_tag(self, tag, author, message=DEFAULT_TAG_MSG):
-        """
-        Creates a tag in git via dulwich calls:
-
-        Parameters:
-            tag - string :: "<project>-[start|sync]-<timestamp>"
-            author - string :: "Your Name <your.email@example.com>"
-        """
-
-        # Open the repo
-        _repo = Repo(self.config['top_dir'])
-
-        # Create the tag object
-        tag_obj = Tag()
-        tag_obj.tagger = author
-        tag_obj.message = message
-        tag_obj.name = tag
-        tag_obj.object = (Commit, _repo.refs['HEAD'])
-        tag_obj.tag_time = int(time())
-        tag_obj.tag_timezone = parse_timezone('-0200')[0]
-
-        # Add tag to the object store
-        _repo.object_store.add_object(tag_obj)
-        _repo['refs/tags/' + tag] = tag_obj.id
-
-    def _dulwich_reset_to_tag(self, tag=None):
-        """
-        Resets the HEAD to the commit
-        """
-        _repo = Repo(self.config['top_dir'])
-
-        if not tag:
-            sha = _repo.head()
-        else:
-            sha = self._get_commit_sha_for_tag(tag)
-
-        try:
-            _repo.refs['HEAD'] = sha
-        except AttributeError:
-            raise GitDeployError(message=exit_codes[7], exit_code=7)
-
-    def _dulwich_stage_all(self):
-        """
-        Stage modified files in the repo
-        """
-        _repo = Repo(self.config['top_dir'])
-
-        # Iterate through files, those modified will be staged
-        for elem in os.walk(self.config['top_dir']):
-            relative_path = elem[0].split('./')[-1]
-            if not search(r'\.git', elem[0]):
-                files = [relative_path + '/' +
-                         filename for filename in elem[2]]
-                log.info(__name__ + ' :: Staging - {0}'.format(files))
-                _repo.stage(files)
-
-    def _dulwich_commit(self, author, message=DEFAULT_COMMIT_MSG):
-        """
-        Commit staged files in the repo
-        """
-        _repo = Repo(self.config['top_dir'])
-        commit_id = _repo.do_commit(message, committer=author)
-
-        if not _repo.head() == commit_id:
-            raise GitDeployError(message=exit_codes[14], exit_code=14)
-
-    def _dulwich_status(self):
-        """
-        Return the git status
-        """
-        _repo = Repo(self.config['top_dir'])
-        index = _repo.open_index()
-        return list(tree_changes(_repo, index.commit(_repo.object_store),
-                                 _repo['HEAD'].tree))
-
-    def _dulwich_get_tags(self):
-        """
-        Get all tags & correspondin commit shas
-        """
-        _repo = Repo(self.config['top_dir'])
-        tags = _repo.refs.as_dict("refs/tags")
-        ordered_tags = {}
-        # Get the commit hashes associated with the tags
-        for tag, tag_commit in tags.items():
-            if tag not in ordered_tags:
-                ordered_tags[tag] = _repo.object_store.peel_sha(tag_commit)
-        # Sort by commit_time, then by tag name, as multiple tags can have
-        # the same commit_time for their commits
-        ordered_tags = OrderedDict(sorted(ordered_tags.items(),
-                                          key=lambda t: (t[1].commit_time, t)))
-        return ordered_tags
-
-    def _dulwich_push(self, git_url, branch):
-        """
-        Remote push with dulwich via dulwich.client
-        """
-
-        # Open the repo
-        _repo = Repo(self.config['top_dir'])
-
-        # Get the client and path
-        client, path = get_transport_and_path(git_url)
-
-        def update_refs(refs):
-            new_refs = _repo.get_refs()
-            new_refs['refs/remotes/origin/' + branch] = new_refs['HEAD']
-            del new_refs['HEAD']
-            return new_refs
-
-        client.send_pack(path, update_refs,
-                         _repo.object_store.generate_pack_contents)
-
-    def _dulwich_pull(self, git_url):
-        """
-        Pull from remote via dulwich.client
-        """
-        # Open the repo
-        _repo = Repo(self.config['top_dir'])
-
-        client, path = get_transport_and_path(git_url)
-        remote_refs = client.fetch(path, _repo)
-        _repo['HEAD'] = remote_refs['refs/heads/master']
-
-        self._dulwich_checkout(_repo)
-
-    def _dulwich_checkout(self, _repo):
-        """ Perform 'git checkout .' - syncs staged changes """
-        indexfile = _repo.index_path()
-        tree = _repo["HEAD"].tree
-        index.build_index_from_tree(_repo.path, indexfile,
-                                    _repo.object_store, tree)
 
     def _make_tag(self, tag_type):
         timestamp = datetime.now().strftime(self.DATE_TIME_TAG_FORMAT)
@@ -381,7 +242,8 @@ class GitDeploy(object):
 
         self._create_lock()
         self._tag = self._make_tag('start')
-        self._dulwich_tag(self._tag, self._make_author())
+        GitMethods()._dulwich_tag(self.config['top_dir'], self._tag,
+                                  self._make_author())
 
         return 0
 
@@ -393,7 +255,7 @@ class GitDeploy(object):
 
         # Get the commit hash of the current tag
         try:
-            commit_sha = self._get_commit_sha_for_tag(self._tag)
+            commit_sha = GitMethods()._get_commit_sha_for_tag(self._tag)
         except GitDeployError:
             # No current tag
             commit_sha = None
@@ -427,13 +289,30 @@ class GitDeploy(object):
             raise GitDeployError(message=exit_codes[30], exit_code=30)
 
         tag = self._make_tag('sync')
-        self._dulwich_tag(tag, self._make_author())
+        GitMethods()._dulwich_tag(self.config['top_dir'], tag,
+                                  self._make_author())
 
         remote, branch = self._parse_remote(args)
 
-        return self._sync(args.sync, tag, args.force, remote, branch)
+        kwargs = {
+            'author': self._make_author(),
+            'remote': remote,
+            'branch': branch,
+            'tag,': tag,
+            'sync_script': self.config['sync_script'],
+            'repo_name': self.config['repo_name'],
+            'client_path': self.config['client_path'],
+            'hook_dir': self.config['hook_dir'],
+            'target_path': self.config['path'],
+            'force': args.force,
+            'target_url': self.config['target'],
+            'user': self.config['user.name'],
+            'key_path': self.config['deploy.key_path']
+        }
 
-    def _sync(self, sync_script, tag, force, remote, branch):
+        return self._sync(args.sync, kwargs)
+
+    def _sync(self, sync_script, kwargs):
         """
         This method makes calls to specialized drivers to perform the deploy.
 
@@ -442,79 +321,15 @@ class GitDeploy(object):
         """
 
         if sync_script:
-            DeployDriverHook().sync(remote, branch, tag, force)
+            DeployDriverHook().sync(kwargs)
         else:
-            DeployDriverDefault().sync(remote, branch, tag, force)
+            DeployDriverDefault().sync(kwargs)
 
         # Clean-up
         if self._check_lock():
             self._remove_lock()
 
         return 0
-
-    def scp_file(self, source, target, port=22):
-        """
-        SCP files via paramiko.
-        """
-
-        # Socket connection to remote host
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.connect((self.config['target'], port))
-
-        # Build a SSH transport
-        t = paramiko.Transport(sock)
-        t.start_client()
-
-        rsa_key = paramiko.RSAKey.from_private_key_file(
-            self.config['deploy.key_path '])
-        t.auth_publickey(self.config['user.name'], rsa_key)
-
-        # Start a scp channel
-        scp_channel = t.open_session()
-
-        f = file(source, 'rb')
-        scp_channel.exec_command('scp -v -t %s\n'
-                                 % '/'.join(target.split('/')[:-1]))
-        scp_channel.send('C%s %d %s\n'
-                         % (oct(os.stat(source).st_mode)[-4:],
-                            os.stat(source)[6],
-                            target.split('/')[-1]))
-        scp_channel.sendall(f.read())
-
-        # Cleanup
-        f.close()
-        scp_channel.close()
-        t.close()
-        sock.close()
-
-    def ssh_command_target(self, cmd, ssh_port=22):
-        """
-        Talk to the target via SSHClient
-
-        Params:
-
-            cmd         - The command to issue on SSH connection
-            ssh_port    - SSH port on remote, defaults to 22
-        """
-
-        ssh = paramiko.SSHClient()
-        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(
-            self.config['target'],
-            username=self.config['user.name'],
-            key_filename=self.config['deploy.key_path'],
-            port=ssh_port)
-        stdin, stdout, stderr = ssh.exec_command(cmd)
-
-        stdout = [line.strip() for line in stdout.readlines()]
-        stderr = [line.strip() for line in stderr.readlines()]
-
-        ssh.close()
-
-        return {
-            'stdout': stdout,
-            'stderr': stderr,
-        }
 
     def revert(self, args):
         """
@@ -527,7 +342,7 @@ class GitDeploy(object):
             raise GitDeployError(message=exit_codes[30])
 
         # This will be the tag on the revert commit
-        revert_tag = self._make_tag()
+        revert_tag = self._make_tag('revert')
 
         # Extract tag on which to revert
         if hasattr(args, 'tag'):
@@ -536,7 +351,7 @@ class GitDeploy(object):
             # revert to previous to current tag
             repo_tags = self._get_deploy_tags()
             if len(repo_tags) >= 2:
-                tag = repo_tags.keys()[-2]
+                tag = repo_tags[-2]
             else:
                 raise GitDeployError(message=exit_codes[36], exit_code=36)
 
@@ -555,7 +370,7 @@ class GitDeploy(object):
         log.info(__name__ + ' :: revert - Attempting to revert to tag: {0}'.
                  format(tag))
 
-        tag_commit_sha = self._get_commit_sha_for_tag(tag)
+        tag_commit_sha = GitMethods()._get_commit_sha_for_tag(tag)
         commit_sha = None
         for commit_sha in self._git_commit_list():
             if commit_sha == tag_commit_sha:
@@ -564,10 +379,11 @@ class GitDeploy(object):
 
         # Ensure the commit tag was matched
         if commit_sha != tag_commit_sha or not commit_sha:
-            self._dulwich_reset_to_tag()
+            GitMethods()._dulwich_reset_to_tag(self.config['top_dir'])
             raise GitDeployError(message=exit_codes[35], exit_code=35)
-        self._dulwich_commit(self._make_author(),
-                             message='Rollback to {0}.'.format(tag))
+        GitMethods()._dulwich_commit(self.config['top_dir'],
+                                     self._make_author(),
+                                     message='Rollback to {0}.'.format(tag))
 
         log.info(__name__ + ' :: revert - Reverted to tag: "{0}", '
                             'call "git deploy sync" to persist'.format(tag))
@@ -624,8 +440,8 @@ class GitDeploy(object):
             raise GitDeployError(message=exit_codes[7], exit_code=7)
 
         # Get the associated commit hashes for those tags
-        sha_1 = self._get_commit_sha_for_tag(tags[0])
-        sha_2 = self._get_commit_sha_for_tag(tags[1])
+        sha_1 = GitMethods()._get_commit_sha_for_tag(tags[0])
+        sha_2 = GitMethods()._get_commit_sha_for_tag(tags[1])
 
         # Produce the diff
         # @TODO replace with dulwich
