@@ -8,7 +8,8 @@ __license__ = 'GPL v2.0 (or later)'
 import subprocess
 import os
 
-from git_deploy.git_deploy import GitDeploy
+from git_deploy.utils import ssh_command_target
+from git_deploy.git_methods import GitMethods
 from git_deploy.config import log, DEFAULT_TARGET_HOOK, exit_codes, \
     DEFAULT_CLIENT_HOOK
 
@@ -39,11 +40,12 @@ class DeployDriverDefault(object):
     def __new__(cls, *args, **kwargs):
         """ This class is Singleton, return only one instance """
         if not cls.__instance:
-            cls.__instance = super(DeployDriverDefault, cls).__new__(cls, *args,
-                                                              **kwargs)
+            cls.__instance = super(DeployDriverDefault, cls).__new__(cls,
+                                                                     *args,
+                                                                     **kwargs)
         return cls.__instance
 
-    def sync(self, remote, branch, tag, force=False):
+    def sync(self, args):
 
         #
         # Call deploy hook on client
@@ -52,7 +54,7 @@ class DeployDriverDefault(object):
         #
 
         try:
-            GitDeploy()._dulwich_tag(tag, GitDeploy()._make_author())
+            GitMethods()._dulwich_tag(args['tag'], args['author'])
         except Exception as e:
             log.error(str(e))
             raise DeployDriverError(message=exit_codes[12], exit_code=12)
@@ -60,11 +62,11 @@ class DeployDriverDefault(object):
         log.info('{0} :: Calling default sync - '
                  'pushing changes ... '.format(__name__))
         proc = subprocess.Popen(['{0}{1}{2}'.format(
-            GitDeploy().config['client_path'],
-            GitDeploy().config['hook_dir'],
+            args['client_path'],
+            args['hook_dir'],
             DEFAULT_CLIENT_HOOK),
-            remote,
-            branch],
+            args['remote'],
+            args['branch']],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
         log.info('PUSH -> ' + '; '.join(
@@ -78,20 +80,23 @@ class DeployDriverDefault(object):
         #
         log.info('{0} :: Calling default sync - '
                  'pulling to target'.format(__name__))
-        cmd = '{0}{1}{2} {3} {4}'.format(GitDeploy().config['path'],
-                                         GitDeploy().config['hook_dir'],
+        cmd = '{0}{1}{2} {3} {4}'.format(args['target_path'],
+                                         args['hook_dir'],
                                          DEFAULT_TARGET_HOOK,
-                                         remote,
-                                         branch)
-        ret = GitDeploy().ssh_command_target(cmd)
+                                         args['remote'],
+                                         args['branch'])
+        ret = ssh_command_target(
+            cmd,
+            args['target_url'],
+            args['user'],
+            args['key_path'],
+        )
         log.info('PULL -> ' + '; '.join(
             filter(lambda x: x, ret['stdout'])))
 
 
 class DeployDriverHook(object):
-    """
-    Driver class for custom hooks
-    """
+    """ Driver class for custom hooks """
 
     # class instance
     __instance = None
@@ -100,11 +105,6 @@ class DeployDriverHook(object):
         """ Initialize class instance """
         self.__class__.__instance = self
 
-        try:
-            self._hook_script = kwargs['sync_script']
-        except KeyError:
-            raise DeployDriverError(message=exit_codes[8], exit_code=8)
-
     def __new__(cls, *args, **kwargs):
         """ This class is Singleton, return only one instance """
         if not cls.__instance:
@@ -112,10 +112,10 @@ class DeployDriverHook(object):
                                                                     **kwargs)
         return cls.__instance
 
-    def sync(self, remote, branch, tag, force=False):
+    def sync(self, args):
 
-        hook_path = "{0}/{1}".format(GitDeploy().config["hook_dir"],
-                                            self._hook_script)
+        hook_path = "{0}/{1}".format(args['hook_dir'],
+                                     args['hook_script'])
 
         # Call the sync script
         if os.path.exists(hook_path):
@@ -125,10 +125,10 @@ class DeployDriverHook(object):
 
             sync_cmd = "{0} --repo {1} --tag {2}".format(
                 hook_path,
-                GitDeploy().config['repo_name'],
-                tag
+                args['repo_name'],
+                args['tag']
             )
-            if force:
+            if args['force']:
                 sync_cmd = sync_cmd + ' --force'
             proc = subprocess.Popen(sync_cmd.split())
             proc_out = proc.communicate()[0]
