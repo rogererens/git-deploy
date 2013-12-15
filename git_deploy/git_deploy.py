@@ -233,7 +233,6 @@ class GitDeploy(object):
     def start(self, _):
         """
             * write a lock file
-            * add a start tag
         """
 
         # Create lock file - check if it already exists
@@ -241,9 +240,6 @@ class GitDeploy(object):
             raise GitDeployError(message=exit_codes[2])
 
         self._create_lock()
-        self._tag = self._make_tag('start')
-        GitMethods()._dulwich_tag(self.config['top_dir'], self._tag,
-                                  self._make_author())
 
         return 0
 
