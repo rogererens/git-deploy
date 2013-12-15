@@ -110,7 +110,9 @@ class GitDeploy(object):
             self.DEPLOY_DIR,
             self._get_lock_file_name())
 
-        log.debug('{0} :: Executing - "{1}"'.format(__name__, cmd))
+        # log.debug('{0} :: Executing - "{1}"'.format(__name__, cmd))
+        log.info('{0} :: Checking for lock file at {1}.'.format(
+            __name__, self.config['target']))
         ret = ssh_command_target(
             cmd,
             self.config['target'],
@@ -122,13 +124,17 @@ class GitDeploy(object):
         try:
             file_handle = ret['stdout'][0].split('/')[-1].strip()
         except (IndexError, ValueError):
-            log.debug('{0} :: Could not extract '
-                      'the lock file name.'.format(__name__))
+            log.info('{0} :: No lock file exists.'.format(
+                __name__, self.config['target']))
             return False
 
         if file_handle == self._get_lock_file_name():
+            log.info('{0} :: {1} has lock.'.format(
+                __name__, self.config['user.name']))
             return True
         else:
+            log.info('{0} :: Another user has lock.'.format(
+                __name__, ))
             return False
 
     def _get_lock_file_name(self):
