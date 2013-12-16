@@ -138,7 +138,7 @@ Next configure the client instance with git config by assigning the following se
 
 Once you have defined settings in *git-deploy.ini* call *init.py* to set the got config
 
-    $ sudo ./scripts/init.py
+    $ sudo ./scripts/init_gd
 
 
 **TARGET SETUP**
