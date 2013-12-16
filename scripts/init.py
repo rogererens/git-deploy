@@ -7,17 +7,51 @@
 
 import sys
 import io
+import argparse
 import logging
 import ConfigParser
 import subprocess
 import shutil
 
+
 INI_FILE = 'scripts/git-deploy.ini'
+
+HOSTTYPE_CLIENT = 'client'
+HOSTTYPE_TARGET = 'target'
 
 log_format = "%(asctime)s %(levelname)-8s %(message)s"
 handler = logging.StreamHandler(sys.stderr)
 handler.setFormatter(logging.Formatter(fmt=log_format,
                      datefmt='%b-%d %H:%M:%S'))
+
+def parseargs():
+    """Parse command line arguments.
+
+    Returns *args*, the list of arguments left over after processing.
+
+    """
+    parser = argparse.ArgumentParser(
+        description="This script serves as the entry point for git deploy.",
+        epilog="",
+        conflict_handler="resolve",
+        usage="git-deploy method [remote] [branch]"
+              "\n\t[-q --quiet] \n\t[-s --silent] "
+              "\n\t[-v --verbose] \n\t[-c --count [0-9]+] \n\t[-f --force] "
+              "\n\t[-t --tag] \n\t[-a --auto_sync] "
+              "\n\t[-y --sync SCRIPT NAME] "
+              "\n\nmethod=[start|sync|abort|revert|diff|show_tag|"
+              "log_deploys|finish]"
+    )
+
+    parser.allow_interspersed_args = False
+
+    # Global options.
+    parser.add_argument("-t", "--hosttype",
+                        default=HOSTTYPE_TARGET, type=str,
+                        help="Specify the init type - is this a client or "
+                             "target host?")
+
+    return parser.parse_args()
 
 
 def git_config_global_set(section, prop, value):
@@ -27,7 +61,24 @@ def git_config_global_set(section, prop, value):
     proc.communicate()
 
 
+# def setup_client():
+#     shutil.copy('git-deploy/default-hooks/default-client-push.py', 'hook-dir')
+#
+#
+# def setup_target():
+#     shutil.copy('git-deploy/default-hooks/default-target-pull.py', 'hook-dir')
+#
+
 def main():
+
+    args = parseargs()
+
+    # Extract the init type
+    if args.hosttype != HOSTTYPE_CLIENT and args.hosttype != HOSTTYPE_TARGET:
+        # default to client on bas input
+        hosttype = HOSTTYPE_CLIENT
+    else:
+        hosttype = args.hosttype
 
     # Process INI
     try:
@@ -49,6 +100,13 @@ def main():
             # cp git-deploy
             if section == 'system' and name == 'run_root':
                 shutil.copy('scripts/git-deploy', value)
+
+    # Process different host type initialization
+    if hosttype == HOSTTYPE_CLIENT:
+        pass
+    elif hosttype == HOSTTYPE_TARGET:
+        pass
+
 
 
 def cli():
