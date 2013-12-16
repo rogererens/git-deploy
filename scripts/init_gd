@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-    Prepares system state for GitDeploy.
+Prepares system state for GitDeploy.
 """
 
 import sys
@@ -12,6 +12,9 @@ import logging
 import ConfigParser
 import subprocess
 import shutil
+
+from git_deploy.config import configure
+from git_deploy.utils import scp_file
 
 
 INI_FILE = 'scripts/git-deploy.ini'
@@ -61,14 +64,6 @@ def git_config_global_set(section, prop, value):
     proc.communicate()
 
 
-# def setup_client():
-#     shutil.copy('git-deploy/default-hooks/default-client-push.py', 'hook-dir')
-#
-#
-# def setup_target():
-#     shutil.copy('git-deploy/default-hooks/default-target-pull.py', 'hook-dir')
-#
-
 def main():
 
     args = parseargs()
@@ -101,12 +96,22 @@ def main():
             if section == 'system' and name == 'run_root':
                 shutil.copy('scripts/git-deploy', value)
 
+    _config = configure()
+
     # Process different host type initialization
     if hosttype == HOSTTYPE_CLIENT:
-        pass
-    elif hosttype == HOSTTYPE_TARGET:
-        pass
+        hook_dir = "{0}/{1}".format(_config['client_path'], _config['hook_dir'])
+        shutil.copy('git-deploy/default-hooks/default-client-push.py',
+                    hook_dir)
 
+    elif hosttype == HOSTTYPE_TARGET:
+        remote_hook_dir = "{0}/{1}".format(_config['path'], _config['hook_dir'])
+        scp_file(_config['target'],
+                 'git-deploy/default-hooks/default-target-pull.py',
+                 remote_hook_dir,
+                 _config['user.name'],
+                 _config['deploy.key_path']
+        )
 
 
 def cli():
