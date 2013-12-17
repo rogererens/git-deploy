@@ -8,18 +8,20 @@ __license__ = 'GPL v2.0 (or later)'
 import os
 import stat
 import subprocess
+from datetime import datetime
 
 from re import search
 from time import time
 from collections import OrderedDict
 
+from dulwich import walk
 from dulwich import index
 from dulwich.repo import Repo
 from dulwich.objects import Tag, Commit, parse_timezone
 from dulwich.diff_tree import tree_changes
 from dulwich.client import get_transport_and_path
 
-from config import log, exit_codes
+from config import log, exit_codes, configure
 
 
 class GitMethodsError(Exception):
@@ -48,6 +50,9 @@ def remove_readonly(fn, path, excinfo):
 
 class GitMethods(object):
 
+    # Module level attribute for tagging datetime format
+    DATE_TIME_TAG_FORMAT = '%Y%m%d-%H%M%S'
+
     # Default tag message
     DEFAULT_TAG_MSG = 'GitDeploy Tag.'
 
@@ -66,7 +71,64 @@ class GitMethods(object):
         if not cls.__instance:
             cls.__instance = super(GitMethods, cls).__new__(cls, *args,
                                                             **kwargs)
+            # Call config
+            cls.__instance._configure(**kwargs)
+
         return cls.__instance
+
+    def _configure(self, **kwargs):
+        self.config = configure(**kwargs)
+
+    def _get_latest_deploy_tag(self):
+        """
+        Returns the latest tag containing 'sync'
+        Sets self._tag to tag string
+        """
+        return self._get_deploy_tags()[-1]
+
+    def _get_deploy_tags(self):
+        """
+        Returns the all deploy tags.
+        """
+        # 1. Pull last 'num_tags' sync tags
+        # 2. Filter only matched deploy tags
+        tags = GitMethods()._dulwich_get_tags(self.config['top_dir']).keys()
+        f = lambda x: search(self.config['repo_name'] + '-sync-', x)
+        return filter(f, tags)
+
+    def _make_tag(self, tag_type):
+        timestamp = datetime.now().strftime(self.DATE_TIME_TAG_FORMAT)
+        return '{0}-{1}-{2}'.format(self.config['repo_name'], tag_type,
+                                    timestamp)
+
+    def _make_author(self):
+        return '{0} <{1}>'.format(self.config['user.name'],
+                                  self.config['user.email'])
+
+    def _git_commit_list(self):
+        """
+        Generate an in-order list of commits
+        """
+        _repo = Repo(self.config['top_dir'])
+
+        commits = []
+        for entry in _repo.get_walker(order=walk.ORDER_DATE):
+            commits.append(entry.commit.id)
+
+        return commits
+
+    def _git_revert(self, commit_sha):
+        """
+        Perform a no-commit revert
+        """
+        cmd = 'git revert --no-commit {0}'.format(commit_sha)
+        proc = subprocess.Popen(cmd.split(),
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+        proc.communicate()
+
+        if proc.returncode != 0:
+            raise GitMethodsError(message=exit_codes[33], exit_code=33)
 
     def _get_commit_sha_for_tag(self, tag):
         """ Obtain the commit sha of an associated tag

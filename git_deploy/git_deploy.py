@@ -13,14 +13,7 @@ __license__ = 'GPL v2.0 (or later)'
 
 import os
 import stat
-import dulwich
-import dulwich.walk
 import subprocess
-
-from re import search
-from datetime import datetime
-
-from dulwich.repo import Repo
 
 from utils import ssh_command_target
 from git_methods import GitMethods
@@ -58,9 +51,6 @@ class GitDeploy(object):
 
     # Pattern for git-deploy tags
     TAG_PATTERN = r'[a-zA-Z]*-[0-9]{8}-[0-9]{6}'
-
-    # Module level attribute for tagging datetime format
-    DATE_TIME_TAG_FORMAT = '%Y%m%d-%H%M%S'
 
     # Name of deployment directory
     DEPLOY_DIR = '.git/deploy/'
@@ -172,57 +162,6 @@ class GitDeploy(object):
             self.config['deploy.key_path'],
         )
 
-    def _get_latest_deploy_tag(self):
-        """
-        Returns the latest tag containing 'sync'
-        Sets self._tag to tag string
-        """
-        return self._get_deploy_tags()[-1]
-
-    def _get_deploy_tags(self):
-        """
-        Returns the all deploy tags.
-        """
-        # 1. Pull last 'num_tags' sync tags
-        # 2. Filter only matched deploy tags
-        tags = GitMethods()._dulwich_get_tags(self.config['top_dir']).keys()
-        f = lambda x: search(self.config['repo_name'] + '-sync-', x)
-        return filter(f, tags)
-
-    def _make_tag(self, tag_type):
-        timestamp = datetime.now().strftime(self.DATE_TIME_TAG_FORMAT)
-        return '{0}-{1}-{2}'.format(self.config['repo_name'], tag_type,
-                                    timestamp)
-
-    def _make_author(self):
-        return '{0} <{1}>'.format(self.config['user.name'],
-                                  self.config['user.email'])
-
-    def _git_commit_list(self):
-        """
-        Generate an in-order list of commits
-        """
-        _repo = Repo(self.config['top_dir'])
-
-        commits = []
-        for entry in _repo.get_walker(order=dulwich.walk.ORDER_DATE):
-            commits.append(entry.commit.id)
-
-        return commits
-
-    def _git_revert(self, commit_sha):
-        """
-        Perform a no-commit revert
-        """
-        cmd = 'git revert --no-commit {0}'.format(commit_sha)
-        proc = subprocess.Popen(cmd.split(),
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
-        proc.communicate()
-
-        if proc.returncode != 0:
-            raise GitDeployError(message=exit_codes[33], exit_code=33)
-
     def _parse_remote(self, args):
         """
         Parse git deploy remote/branch from command line args
@@ -290,14 +229,14 @@ class GitDeploy(object):
         if not self._check_lock():
             raise GitDeployError(message=exit_codes[30], exit_code=30)
 
-        tag = self._make_tag('sync')
+        tag = GitMethods()._make_tag('sync')
         GitMethods()._dulwich_tag(self.config['top_dir'], tag,
-                                  self._make_author())
+                                  GitMethods()._make_author())
 
         remote, branch = self._parse_remote(args)
 
         kwargs = {
-            'author': self._make_author(),
+            'author': GitMethods()._make_author(),
             'remote': remote,
             'branch': branch,
             'tag,': tag,
@@ -344,14 +283,14 @@ class GitDeploy(object):
             raise GitDeployError(message=exit_codes[30])
 
         # This will be the tag on the revert commit
-        revert_tag = self._make_tag('revert')
+        revert_tag = GitMethods()._make_tag('revert')
 
         # Extract tag on which to revert
         if hasattr(args, 'tag'):
             tag = args.tag
         else:
             # revert to previous to current tag
-            repo_tags = self._get_deploy_tags()
+            repo_tags = GitMethods()._get_deploy_tags()
             if len(repo_tags) >= 2:
                 tag = repo_tags[-2]
             else:
@@ -374,17 +313,17 @@ class GitDeploy(object):
 
         tag_commit_sha = GitMethods()._get_commit_sha_for_tag(tag)
         commit_sha = None
-        for commit_sha in self._git_commit_list():
+        for commit_sha in GitMethods()._git_commit_list():
             if commit_sha == tag_commit_sha:
                 break
-            self._git_revert(commit_sha)
+            GitMethods()._git_revert(commit_sha)
 
         # Ensure the commit tag was matched
         if commit_sha != tag_commit_sha or not commit_sha:
             GitMethods()._dulwich_reset_to_tag(self.config['top_dir'])
             raise GitDeployError(message=exit_codes[35], exit_code=35)
         GitMethods()._dulwich_commit(self.config['top_dir'],
-                                     self._make_author(),
+                                     GitMethods()._make_author(),
                                      message='Rollback to {0}.'.format(tag))
 
         log.info(__name__ + ' :: revert - Reverted to tag: "{0}", '
@@ -407,7 +346,7 @@ class GitDeploy(object):
             * display latest deploy tag
         """
         # Get latest "sync" tag - sets self._tag
-        print self._get_latest_deploy_tag()
+        print GitMethods()._get_latest_deploy_tag()
         return 0
 
     def log_deploys(self, args):
@@ -434,7 +373,7 @@ class GitDeploy(object):
             * show a git diff of the last deploy and it's previous deploy
         """
 
-        tags = self._get_deploy_tags()
+        tags = GitMethods()._get_deploy_tags()
 
         # Check the return code & whether at least two sync tags were
         # returned
