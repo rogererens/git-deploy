@@ -103,6 +103,22 @@ class GitMethods(object):
 
         return commits
 
+    def _git_diff(self, sha_1, sha_2):
+        """
+        Produce the diff between sha1 & sha2
+        @TODO replace with dulwich
+        """
+        proc = subprocess.Popen("git diff {0} {1}".format(sha_2, sha_1).
+                                split(),
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+        lines = proc.communicate()[0].split('\n')
+
+        if not proc.returncode:
+            return lines
+        else:
+            raise GitMethodsError(message=exit_codes[6], exit_code=6)
+
     def _git_revert(self, commit_sha):
         """
         Perform a no-commit revert

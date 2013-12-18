@@ -355,18 +355,10 @@ class GitDeploy(object):
         sha_2 = GitMethods()._get_commit_sha_for_tag(tags[1])
 
         # Produce the diff
-        # @TODO replace with dulwich
-        proc = subprocess.Popen("git diff {0} {1}".format(sha_2, sha_1).
-                                split(),
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
-        lines = proc.communicate()[0].split('\n')
+        lines = GitMethods()._git_diff(sha_1, sha_2)
+        for line in lines:
+            print line
 
-        if not proc.returncode:
-            for line in lines:
-                print line
-        else:
-            raise GitDeployError(message=exit_codes[6], exit_code=6)
         return 0
 
     def dummy(self, args):
