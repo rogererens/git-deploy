@@ -6,7 +6,6 @@ __date__ = '2013-12-13'
 __license__ = 'GPL v2.0 (or later)'
 
 import os
-import stat
 import subprocess
 from datetime import datetime
 
@@ -33,19 +32,6 @@ class GitMethodsError(Exception):
     @property
     def exit_code(self):
         return self._exit_code
-
-
-def remove_readonly(fn, path, excinfo):
-    """
-    Modifies path to writable for recursive path removal.
-        e.g. shutil.rmtree(path, onerror=remove_readonly)
-    """
-    if fn is os.rmdir:
-        os.chmod(path, stat.S_IWRITE)
-        os.rmdir(path)
-    elif fn is os.remove:
-        os.chmod(path, stat.S_IWRITE)
-        os.remove(path)
 
 
 class GitMethods(object):

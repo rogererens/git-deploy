@@ -7,8 +7,22 @@ __license__ = 'GPL v2.0 (or later)'
 
 
 import paramiko
+import stat
 import socket
 import os
+
+
+def remove_readonly(fn, path, excinfo):
+    """
+    Modifies path to writable for recursive path removal.
+        e.g. shutil.rmtree(path, onerror=remove_readonly)
+    """
+    if fn is os.rmdir:
+        os.chmod(path, stat.S_IWRITE)
+        os.rmdir(path)
+    elif fn is os.remove:
+        os.chmod(path, stat.S_IWRITE)
+        os.remove(path)
 
 
 def scp_file(
