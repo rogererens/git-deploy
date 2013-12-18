@@ -15,7 +15,7 @@ import os
 import subprocess
 
 from utils import ssh_command_target
-from git_methods import GitMethods
+from git_methods import GitMethods, GitMethodsError
 from drivers.driver import DeployDriverDefault, DeployDriverHook
 from config import log, configure, exit_codes, \
     DEFAULT_BRANCH, DEFAULT_REMOTE, \
@@ -31,6 +31,7 @@ class GitDeployError(Exception):
     @property
     def exit_code(self):
         return self._exit_code
+
 
 class GitDeploy(object):
 
@@ -179,27 +180,11 @@ class GitDeploy(object):
             * remove lock file
         """
 
-        # Get the commit hash of the current tag
-        try:
-            commit_sha = GitMethods()._get_commit_sha_for_tag(self._tag)
-        except GitDeployError:
-            # No current tag
-            commit_sha = None
+        log.info('{0} :: ABORTING git deploy'.format(__name__))
 
-        # 1. hard reset the index to the desired tree
-        # 2. move the branch pointer back to the previous HEAD
-        # 3. commit revert
-        # @TODO replace with dulwich
-
-        if commit_sha:
-            if subprocess.call("git reset --hard {0}".
-                               format(commit_sha).split()):
-                raise GitDeployError(message=exit_codes[5], exit_code=5)
-            if subprocess.call("git reset --soft HEAD@{1}".split()):
-                raise GitDeployError(message=exit_codes[5], exit_code=5)
-            if subprocess.call("git commit -m 'Revert to {0}'".
-                               format(commit_sha).split()):
-                raise GitDeployError(message=exit_codes[5], exit_code=5)
+        # Reset to last tag (or head)
+        tag = GitMethods()._get_latest_deploy_tag()
+        GitMethods()._dulwich_reset_to_tag(tag)
 
         # Remove lock file
         self._remove_lock()
@@ -305,7 +290,7 @@ class GitDeploy(object):
 
         # Ensure the commit tag was matched
         if commit_sha != tag_commit_sha or not commit_sha:
-            GitMethods()._dulwich_reset_to_tag(self.config['top_dir'])
+            GitMethods()._dulwich_reset_to_tag()
             raise GitDeployError(message=exit_codes[35], exit_code=35)
         GitMethods()._dulwich_commit(self.config['top_dir'],
                                      GitMethods()._make_author(),

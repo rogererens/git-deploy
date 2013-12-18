@@ -117,8 +117,10 @@ class GitMethods(object):
             raise GitMethodsError(message=exit_codes[33], exit_code=33)
 
     def _get_commit_sha_for_tag(self, tag):
-        """ Obtain the commit sha of an associated tag
-                e.g. `git rev-list $TAG | head -n 1` """
+        """
+        Obtain the commit sha of an associated tag
+            e.g. `git rev-list $TAG | head -n 1`
+        """
         # @TODO replace with dulwich
 
         cmd = "git rev-list {0}".format(tag)
@@ -157,11 +159,11 @@ class GitMethods(object):
         _repo.object_store.add_object(tag_obj)
         _repo['refs/tags/' + tag] = tag_obj.id
 
-    def _dulwich_reset_to_tag(self, path, tag=None):
+    def _dulwich_reset_to_tag(self, tag=None):
         """
         Resets the HEAD to the commit
         """
-        _repo = Repo(path)
+        _repo = Repo(self.config['top_dir'])
 
         if not tag:
             sha = _repo.head()
