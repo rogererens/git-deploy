@@ -16,7 +16,7 @@ import sys
 import subprocess
 
 from git_deploy.config import GIT_CALL
-from git_deploy.git_deploy import GitDeploy
+from git_deploy.git_deploy import GitMethods
 
 
 def main():
@@ -28,7 +28,7 @@ def main():
     os.chdir(proc.communicate()[0].strip())
 
     # Dulwich push
-    GitDeploy()._dulwich_pull(GitDeploy().config['remote_url'])
+    GitMethods()._dulwich_pull(GitMethods().config['remote_url'])
 
 
 def cli():
