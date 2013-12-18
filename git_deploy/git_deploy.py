@@ -196,21 +196,23 @@ class GitDeploy(object):
             * write a .deploy file with the tag information
             * call a sync hook with the prefix (repo) and tag info
         """
+
         if not self._check_lock():
             raise GitDeployError(message=exit_codes[30], exit_code=30)
 
         tag = GitMethods()._make_tag('sync')
-        GitMethods()._dulwich_tag(self.config['top_dir'], tag,
-                                  GitMethods()._make_author())
+
+        log.info('{0} :: SYNC - tag local'.format(__name__))
+        GitMethods()._dulwich_tag(tag, GitMethods()._make_author())
 
         remote, branch = self._parse_remote(args)
 
-        kwargs = {
+        args = {
             'author': GitMethods()._make_author(),
             'remote': remote,
             'branch': branch,
-            'tag,': tag,
-            'sync_script': self.config['sync_script'],
+            'tag': tag,
+            'hook_script': args.sync,
             'repo_name': self.config['repo_name'],
             'client_path': self.config['client_path'],
             'hook_dir': self.config['hook_dir'],
@@ -221,9 +223,9 @@ class GitDeploy(object):
             'key_path': self.config['deploy.key_path']
         }
 
-        return self._sync(args.sync, kwargs)
+        return self._sync(args)
 
-    def _sync(self, sync_script, kwargs):
+    def _sync(self, args):
         """
         This method makes calls to specialized drivers to perform the deploy.
 
@@ -231,10 +233,13 @@ class GitDeploy(object):
             * default sync if one is not specified
         """
 
-        if sync_script:
-            DeployDriverHook().sync(kwargs)
+        if args['hook_script']:
+            log.info('{0} :: SYNC - calling sync hook: {0}.'.format(
+                __name__, args['hook_script']))
+            DeployDriverHook().sync(args)
         else:
-            DeployDriverDefault().sync(kwargs)
+            log.info('{0} :: SYNC - calling default sync.'.format(__name__))
+            DeployDriverDefault().sync(args)
 
         # Clean-up
         if self._check_lock():

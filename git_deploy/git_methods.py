@@ -150,7 +150,7 @@ class GitMethods(object):
         else:
             raise GitMethodsError(message=exit_codes[8], exit_code=8)
 
-    def _dulwich_tag(self, path, tag, author, message=DEFAULT_TAG_MSG):
+    def _dulwich_tag(self, tag, author, message=DEFAULT_TAG_MSG):
         """
         Creates a tag in git via dulwich calls:
 
@@ -160,7 +160,7 @@ class GitMethods(object):
         """
 
         # Open the repo
-        _repo = Repo(path)
+        _repo = Repo(self.config['top_dir'])
 
         # Create the tag object
         tag_obj = Tag()
