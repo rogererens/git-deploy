@@ -89,12 +89,16 @@ class GitDeploy(object):
         # log.debug('{0} :: Executing - "{1}"'.format(__name__, cmd))
         log.info('{0} :: Checking for lock file at {1}.'.format(
             __name__, self.config['target']))
-        ret = ssh_command_target(
-            cmd,
-            self.config['target'],
-            self.config['user.name'],
-            self.config['deploy.key_path'],
-            )
+
+        try:
+            ret = ssh_command_target(
+                cmd,
+                self.config['target'],
+                self.config['user.name'],
+                self.config['deploy.key_path'],
+                )
+        except Exception as e:
+            raise GitDeployError(message=exit_codes[2])
 
         # Pull the lock file handle from
         try:
@@ -128,12 +132,16 @@ class GitDeploy(object):
             self.config['path'],
             self.DEPLOY_DIR,
             self._get_lock_file_name())
-        ssh_command_target(
-            cmd,
-            self.config['target'],
-            self.config['user.name'],
-            self.config['deploy.key_path']
-            )
+
+        try:
+            ssh_command_target(
+                cmd,
+                self.config['target'],
+                self.config['user.name'],
+                self.config['deploy.key_path']
+                )
+        except Exception as e:
+            raise GitDeployError(message=exit_codes[2])
 
     def _remove_lock(self):
         """ Remove the lock file """
@@ -141,12 +149,16 @@ class GitDeploy(object):
             self.config['path'],
             self.DEPLOY_DIR,
             self._get_lock_file_name())
-        ssh_command_target(
-            cmd,
-            self.config['target'],
-            self.config['user.name'],
-            self.config['deploy.key_path'],
-        )
+
+        try:
+            ssh_command_target(
+                cmd,
+                self.config['target'],
+                self.config['user.name'],
+                self.config['deploy.key_path'],
+            )
+        except Exception as e:
+            raise GitDeployError(message=exit_codes[2])
 
     def _parse_remote(self, args):
         """

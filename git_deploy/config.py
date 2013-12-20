@@ -64,6 +64,7 @@ exit_codes = {
     36: 'Not enough tags (<2) to revert on. Exiting.',
     37: 'Missing system configuration item "key-path". Exiting.',
     38: 'Missing system configuration item "test-repo-path". Exiting.',
+    39: 'Call to SSH failed. Exiting.',
     40: 'Failed to run sync script. Exiting.',
     41: 'Missing system configuration item "remote-url". Exiting.',
     50: 'Failed to read the .deploy file. Exiting.',
