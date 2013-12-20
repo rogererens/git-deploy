@@ -6,46 +6,6 @@ It is a tool to manage using git as a deployment management tool implemented in 
 [1] https://github.com/jelmer/dulwich
 
 
-Client Configuration
---------------------
-
-The client is any working machine from which deployments may be initiated.  To configure a client,
-begin by cloning the repository to your client environment:
-
-    $ git clone https://github.com/Git-Tools/git-deploy.git
-
-Next, navigate to the root folder and install the package.
-
-    $ sudo pip install -e .
-
-Next, execute the initialization script, this will prepare the git config and copy the git deploy script.  Make sure that
-the relevant values are set in git-deploy.ini for your client/server-target beforehand (see below).
-
-    $ sudo ./scripts/init.py
-
-The .ini file defines the dependencies for the deploy section in your global .gitconfig:
-
-    deploy.target {%target host%} # e.g. my.remotehost.com:8080 a.k.a deploy host
-
-    deploy.path {%remote deploy path%}
-
-    deploy.user {%authorized user on deploy target%}
-
-    deploy.hook-dir .git/deploy/hooks/
-
-    deploy.tag-prefix {%project name%}
-
-    deploy.remote {%remote name%}
-
-    deploy.branch {%deploy branch name%}
-
-    deploy.client-path {%client path%}
-
-    deploy.remote-url {%remote url%}    e.g. git@github.com:Git-Tools/git-deploy.git
-
-Also ensure that the global git params user.name and user.email are defined.
-
-
 Usage
 -----
 
@@ -84,8 +44,8 @@ free to write your own hooks however, simple default hooks have been provided in
 these can be copied to the hook folder in each client and target.
 
 
-Example
--------
+Setup
+-----
 
 The following example illustrates how git-deploy can be configured and used for a single client and target.  For this
 example the client host and target host will be referred to as *client.realm.org* and *target.realm.org* respectively.
@@ -96,7 +56,8 @@ respectively.  It is assumed that the git remote is configured for your project 
 
 **CLIENT SETUP**
 
-On *client.realm.org* clone git deploy, local install, configure settings and initialize:
+The client is any working machine from which deployments may be initiated.  On *client.realm.org* clone git deploy, local
+install, configure settings and initialize:
 
     $ git clone git@github.com:Git-Tools/git-deploy.git
 
@@ -171,7 +132,7 @@ on *target.realm.org* as indicated.
     target.realm.org:~ me$ chmod +x /var/www/html/sample.com/.git/deploy/hooks/default-client-pull.py
 
 
-*Sync*:
+*Start* & *Sync*:
 
 Ensure that the client is correctly synced to the remote by issuing a git pull or rebase.  Then you can issue a
 a start command to write the lock file to the target to begin the deployment.
@@ -190,7 +151,7 @@ At this point you are ready to enter the deployment process:
 
     client.realm.org:me.com me$ git deploy start
 
-    <perform any testing or add any other commits as necessary>
+    <perform any testing or add any other commits as necessary you've locked the remote at this point>
 
     client.realm.org:me.com me$ git deploy sync
 
@@ -232,3 +193,119 @@ Now to rollback to a previous deploy call *git revert* with the appropriate tag:
     client.realm.org:me.com me$ git deploy start
 
     client.realm.org:me.com me$ git deploy revert <tag>
+
+
+Examples
+--------
+
+*Reverting to a tag*
+
+This example illustrates how to rollback a deploy to an earlier tag.
+
+In the directory of the client repository check Git history:
+
+    richrushbay-lm:test_sartoris rfaulk$ git log
+
+    commit 779a07774dd5a7baf8dc86657cbfc491264ff970
+    Author: rfaulk <rfaulk@yahoo-inc.com>
+    Date:   Sun Dec 8 23:28:50 2013 -0800
+
+        test
+
+    commit 1ab80a78fc1e89ae6f8872282f96f5f42677b843
+    Author: rfaulk <rfaulk@yahoo-inc.com>
+    Date:   Sat Nov 16 18:31:26 2013 -0800
+
+        test git-deploy 20131116_0.file.
+
+    commit 12311863e111a266c4c1c513da45a39ed3e8cdd5
+    Author: rfaulk <rfaulk@yahoo-inc.com>
+    Date:   Sat Nov 2 19:42:58 2013 -0700
+
+    Initial commit.
+
+Next, take a look at the existing sync tags:
+
+    richrushbay-lm:test_sartoris rfaulk$ git tag
+
+    sartoris-sync-20131220-000105
+    sartoris-sync-20131220-012354
+    sartoris-sync-20131220-013503
+
+Let's start the deploy:
+
+    richrushbay-lm:test_sartoris rfaulk$ git deploy start
+
+    Dec-20 01:53:00 DEBUG    git-deploy is ready to run
+    Dec-20 01:53:00 INFO     git_deploy.git_deploy :: Config - {'deploy.test_repo': '/tmp/test/', 'deploy.key_path': '/Users/rfaulk/.ssh/id_rsa', 'target': 'stat1.wikimedia.org', 'top_dir': '/Users/rfaulk/Projects/test_sartoris', 'user.name': 'rfaulk', 'user.email': 'rfaulk@yahoo-inc.com', 'deploy.remote_url': 'git@github.com:rfaulkner/test_sartoris.git', 'hook_dir': '.git/deploy/hooks/', 'client_path': '/Users/rfaulk/Projects/test_sartoris/', 'sync_dir': '.git/deploy/hooks//sync', 'path': '/home/rfaulk/test_sartoris/', 'repo_name': 'sartoris', 'deploy_file': '/Users/rfaulk/Projects/test_sartoris/.git/.deploy', 'user': 'rfaulk'}
+    Dec-20 01:53:00 INFO     git_deploy.git_deploy :: Checking for lock file at stat1.wikimedia.org.
+    Dec-20 01:53:01 INFO     git_deploy.git_deploy :: No lock file exists.
+    Dec-20 01:53:01 INFO     git_deploy.git_deploy :: SSH Lock create.
+
+Next call the revert action - a tag can be explicitly supplied, but in this example it isn't and the rollback applies to the
+previous sync tag:
+
+    richrushbay-lm:test_sartoris rfaulk$ git deploy revert
+
+    Dec-20 01:53:13 DEBUG    git-deploy is ready to run
+    Dec-20 01:53:13 INFO     git_deploy.git_deploy :: Config - {'deploy.test_repo': '/tmp/test/', 'deploy.key_path': '/Users/rfaulk/.ssh/id_rsa', 'target': 'stat1.wikimedia.org', 'top_dir': '/Users/rfaulk/Projects/test_sartoris', 'user.name': 'rfaulk', 'user.email': 'rfaulk@yahoo-inc.com', 'deploy.remote_url': 'git@github.com:rfaulkner/test_sartoris.git', 'hook_dir': '.git/deploy/hooks/', 'client_path': '/Users/rfaulk/Projects/test_sartoris/', 'sync_dir': '.git/deploy/hooks//sync', 'path': '/home/rfaulk/test_sartoris/', 'repo_name': 'sartoris', 'deploy_file': '/Users/rfaulk/Projects/test_sartoris/.git/.deploy', 'user': 'rfaulk'}
+    Dec-20 01:53:13 INFO     git_deploy.git_deploy :: Checking for lock file at stat1.wikimedia.org.
+    Dec-20 01:53:15 INFO     git_deploy.git_deploy :: rfaulk has lock.
+    Dec-20 01:53:15 INFO     git_deploy.git_deploy :: REVERT -> no tag specified, using: ''
+    Dec-20 01:53:15 INFO     git_deploy.git_deploy :: REVERT -> Attempting to revert to tag: 'sartoris-sync-20131220-012354'
+    Dec-20 01:53:15 INFO     git_deploy.git_deploy :: REVERT -> Reverted to tag: 'sartoris-sync-20131220-012354', call "git deploy sync" to persist
+
+And sync the changes:
+
+    richrushbay-lm:test_sartoris rfaulk$ git deploy sync
+
+    Dec-20 01:53:49 DEBUG    git-deploy is ready to run
+    Dec-20 01:53:49 INFO     git_deploy.git_deploy :: Config - {'deploy.test_repo': '/tmp/test/', 'deploy.key_path': '/Users/rfaulk/.ssh/id_rsa', 'target': 'stat1.wikimedia.org', 'top_dir': '/Users/rfaulk/Projects/test_sartoris', 'user.name': 'rfaulk', 'user.email': 'rfaulk@yahoo-inc.com', 'deploy.remote_url': 'git@github.com:rfaulkner/test_sartoris.git', 'hook_dir': '.git/deploy/hooks/', 'client_path': '/Users/rfaulk/Projects/test_sartoris/', 'sync_dir': '.git/deploy/hooks//sync', 'path': '/home/rfaulk/test_sartoris/', 'repo_name': 'sartoris', 'deploy_file': '/Users/rfaulk/Projects/test_sartoris/.git/.deploy', 'user': 'rfaulk'}
+    Dec-20 01:53:49 INFO     git_deploy.git_deploy :: Checking for lock file at stat1.wikimedia.org.
+    Dec-20 01:53:51 INFO     git_deploy.git_deploy :: rfaulk has lock.
+    Dec-20 01:53:51 INFO     git_deploy.git_deploy :: SYNC - tag local
+    Dec-20 01:53:51 INFO     git_deploy.git_deploy :: SYNC - calling default sync.
+    Dec-20 01:53:51 INFO     git_deploy.drivers.driver :: Calling default sync - pushing changes ...
+    Dec-20 01:53:53 INFO     PUSH ->
+    Dec-20 01:53:53 INFO     git_deploy.drivers.driver :: Calling default sync - pulling to target
+    Dec-20 01:53:56 INFO     PULL -> Updating 779a077..38f42d3; Fast-forward
+    Dec-20 01:53:56 INFO     git_deploy.git_deploy :: Checking for lock file at stat1.wikimedia.org.
+    Dec-20 01:53:57 INFO     git_deploy.git_deploy :: rfaulk has lock.
+    Dec-20 01:53:57 INFO     git_deploy.git_deploy :: SSH Lock destroy.
+
+We're done, check the git history, you should see a rollback commit.  This is persisted to the remote repo and the target host:
+
+    richrushbay-lm:test_sartoris rfaulk$ git log
+
+    commit 38f42d3be6831c16b475786f3016bcc588499e56
+    Author: rfaulk <rfaulk@yahoo-inc.com>
+    Date:   Fri Dec 20 09:53:15 2013 +0000
+
+        Rollback to sartoris-sync-20131220-012354.
+
+    commit 779a07774dd5a7baf8dc86657cbfc491264ff970
+    Author: rfaulk <rfaulk@yahoo-inc.com>
+    Date:   Sun Dec 8 23:28:50 2013 -0800
+
+        test
+
+    commit 1ab80a78fc1e89ae6f8872282f96f5f42677b843
+    Author: rfaulk <rfaulk@yahoo-inc.com>
+    Date:   Sat Nov 16 18:31:26 2013 -0800
+
+        test git-deploy 20131116_0.file.
+
+    commit 12311863e111a266c4c1c513da45a39ed3e8cdd5
+    Author: rfaulk <rfaulk@yahoo-inc.com>
+    Date:   Sat Nov 2 19:42:58 2013 -0700
+
+        test git-deploy.
+
+Finally, note the new sync tag for the rollback:
+
+    richrushbay-lm:test_sartoris rfaulk$ git tag
+
+    sartoris-sync-20131220-000105
+    sartoris-sync-20131220-012354
+    sartoris-sync-20131220-013503
+    sartoris-sync-20131220-015351
