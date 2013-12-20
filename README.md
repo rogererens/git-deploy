@@ -222,7 +222,7 @@ In the directory of the client repository check Git history:
     Author: rfaulk <rfaulk@yahoo-inc.com>
     Date:   Sat Nov 2 19:42:58 2013 -0700
 
-    Initial commit.
+        Initial commit.
 
 Next, take a look at the existing sync tags:
 
@@ -299,7 +299,7 @@ We're done, check the git history, you should see a rollback commit.  This is pe
     Author: rfaulk <rfaulk@yahoo-inc.com>
     Date:   Sat Nov 2 19:42:58 2013 -0700
 
-        test git-deploy.
+        Initial commit.
 
 Finally, note the new sync tag for the rollback:
 
