@@ -183,7 +183,7 @@ Now you have released deploy to other clients without infecting the code base wi
 
 *Rollback*
 
-If you accidentally deploy some code that needs to be rolled back the *revert* command cn be very helpful here.  You
+If you accidentally deploy some code that needs to be rolled back the *revert* command can be very helpful here.  You
 can rollback to previous deploy states by utilizing deploy tags.  To view the old tags:
 
     client.realm.org:me.com me$ git tag
