@@ -29,7 +29,7 @@ def main():
     os.chdir(proc.communicate()[0].strip())
 
     # Dulwich push
-    GitMethods()._dulwich_push(GitMethods().config['remote_url'], 'master')
+    GitMethods()._dulwich_push(GitMethods().config['deploy.remote_url'], 'master')
 
 
 def cli():
