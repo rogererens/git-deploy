@@ -78,7 +78,7 @@ class GitMethods(object):
         """
         # 1. Pull last 'num_tags' sync tags
         # 2. Filter only matched deploy tags
-        tags = GitMethods()._dulwich_get_tags(self.config['top_dir']).keys()
+        tags = GitMethods()._dulwich_get_tags().keys()
         f = lambda x: search(self.config['repo_name'] + '-sync-', x)
         return filter(f, tags)
 
@@ -191,14 +191,14 @@ class GitMethods(object):
         except AttributeError:
             raise GitMethodsError(message=exit_codes[7], exit_code=7)
 
-    def _dulwich_stage_all(self, path):
+    def _dulwich_stage_all(self):
         """
         Stage modified files in the repo
         """
-        _repo = Repo(path)
+        _repo = Repo(self.config['top_dir'])
 
         # Iterate through files, those modified will be staged
-        for elem in os.walk(path):
+        for elem in os.walk(self.config['top_dir']):
             relative_path = elem[0].split('./')[-1]
             if not search(r'\.git', elem[0]):
                 files = [relative_path + '/' +
@@ -206,30 +206,30 @@ class GitMethods(object):
                 log.info(__name__ + ' :: Staging - {0}'.format(files))
                 _repo.stage(files)
 
-    def _dulwich_commit(self, path, author, message=DEFAULT_COMMIT_MSG):
+    def _dulwich_commit(self, author, message=DEFAULT_COMMIT_MSG):
         """
         Commit staged files in the repo
         """
-        _repo = Repo(path)
+        _repo = Repo(self.config['top_dir'])
         commit_id = _repo.do_commit(message, committer=author)
 
         if not _repo.head() == commit_id:
             raise GitMethodsError(message=exit_codes[14], exit_code=14)
 
-    def _dulwich_status(self, path):
+    def _dulwich_status(self):
         """
         Return the git status
         """
-        _repo = Repo(path)
+        _repo = Repo(self.config['top_dir'])
         index = _repo.open_index()
         return list(tree_changes(_repo, index.commit(_repo.object_store),
                                  _repo['HEAD'].tree))
 
-    def _dulwich_get_tags(self, path):
+    def _dulwich_get_tags(self):
         """
         Get all tags & correspondin commit shas
         """
-        _repo = Repo(path)
+        _repo = Repo(self.config['top_dir'])
         tags = _repo.refs.as_dict("refs/tags")
         ordered_tags = {}
         # Get the commit hashes associated with the tags
@@ -242,13 +242,13 @@ class GitMethods(object):
                                           key=lambda t: (t[1].commit_time, t)))
         return ordered_tags
 
-    def _dulwich_push(self, path, git_url, branch):
+    def _dulwich_push(self, git_url, branch):
         """
         Remote push with dulwich via dulwich.client
         """
 
         # Open the repo
-        _repo = Repo(path)
+        _repo = Repo(self.config['top_dir'])
 
         # Get the client and path
         client, path = get_transport_and_path(git_url)
@@ -262,11 +262,11 @@ class GitMethods(object):
         client.send_pack(path, update_refs,
                          _repo.object_store.generate_pack_contents)
 
-    def _dulwich_pull(self, path, git_url):
+    def _dulwich_pull(self, git_url):
         """ Pull from remote via dulwich.client """
 
         # Open the repo
-        _repo = Repo(path)
+        _repo = Repo(self.config['top_dir'])
 
         client, path = get_transport_and_path(git_url)
         remote_refs = client.fetch(path, _repo)

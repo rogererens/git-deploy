@@ -309,8 +309,7 @@ class GitDeploy(object):
         if commit_sha != tag_commit_sha or not commit_sha:
             GitMethods()._dulwich_reset_to_tag()
             raise GitDeployError(message=exit_codes[35], exit_code=35)
-        GitMethods()._dulwich_commit(self.config['top_dir'],
-                                     GitMethods()._make_author(),
+        GitMethods()._dulwich_commit(GitMethods()._make_author(),
                                      message='Rollback to {0}.'.format(tag))
 
         log.info(__name__ + ' :: revert - Reverted to tag: "{0}", '
