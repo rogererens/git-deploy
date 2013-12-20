@@ -145,6 +145,8 @@ class GitDeploy(object):
 
     def _remove_lock(self):
         """ Remove the lock file """
+        log.info('{0} :: SSH Lock destroy.'.format(__name__))
+
         cmd = "rm {0}{1}{2}".format(
             self.config['path'],
             self.DEPLOY_DIR,
