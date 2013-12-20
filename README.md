@@ -251,7 +251,7 @@ previous sync tag:
     Dec-20 01:53:13 INFO     git_deploy.git_deploy :: Config - {'deploy.test_repo': '/tmp/test/', 'deploy.key_path': '/Users/rfaulk/.ssh/id_rsa', 'target': 'stat1.wikimedia.org', 'top_dir': '/Users/rfaulk/Projects/test_sartoris', 'user.name': 'rfaulk', 'user.email': 'rfaulk@yahoo-inc.com', 'deploy.remote_url': 'git@github.com:rfaulkner/test_sartoris.git', 'hook_dir': '.git/deploy/hooks/', 'client_path': '/Users/rfaulk/Projects/test_sartoris/', 'sync_dir': '.git/deploy/hooks//sync', 'path': '/home/rfaulk/test_sartoris/', 'repo_name': 'sartoris', 'deploy_file': '/Users/rfaulk/Projects/test_sartoris/.git/.deploy', 'user': 'rfaulk'}
     Dec-20 01:53:13 INFO     git_deploy.git_deploy :: Checking for lock file at stat1.wikimedia.org.
     Dec-20 01:53:15 INFO     git_deploy.git_deploy :: rfaulk has lock.
-    Dec-20 01:53:15 INFO     git_deploy.git_deploy :: REVERT -> no tag specified, using: ''
+    Dec-20 01:53:15 INFO     git_deploy.git_deploy :: REVERT -> no tag specified, using: 'sartoris-sync-20131220-012354'
     Dec-20 01:53:15 INFO     git_deploy.git_deploy :: REVERT -> Attempting to revert to tag: 'sartoris-sync-20131220-012354'
     Dec-20 01:53:15 INFO     git_deploy.git_deploy :: REVERT -> Reverted to tag: 'sartoris-sync-20131220-012354', call "git deploy sync" to persist
 
