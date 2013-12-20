@@ -271,13 +271,12 @@ class GitDeploy(object):
         if not self._check_lock():
             raise GitDeployError(message=exit_codes[30])
 
-        # This will be the tag on the revert commit
-        revert_tag = GitMethods()._make_tag('revert')
-
         # Extract tag on which to revert
+        tag = ''
         if hasattr(args, 'tag'):
             tag = args.tag
-        else:
+
+        if not hasattr(args, 'tag') or not tag:
             # revert to previous to current tag
             repo_tags = GitMethods()._get_deploy_tags()
             if len(repo_tags) >= 2:
@@ -285,9 +284,8 @@ class GitDeploy(object):
             else:
                 raise GitDeployError(message=exit_codes[36], exit_code=36)
 
-        # Ensure tag to revert to was set
-        if tag == '':
-            raise GitDeployError(message=exit_codes[13], exit_code=13)
+            log.info('{0} :: REVERT -> no tag specified, using: \'{1}\''.
+                format(__name__, tag))
 
         #
         # Rollback to tag:
@@ -297,8 +295,8 @@ class GitDeploy(object):
         #   3. commit
         #
 
-        log.info(__name__ + ' :: revert - Attempting to revert to tag: {0}'.
-                 format(tag))
+        log.info(__name__ + ' :: REVERT -> Attempting to revert to '
+                            'tag: \'{0}\''.format(tag))
 
         tag_commit_sha = GitMethods()._get_commit_sha_for_tag(tag)
         commit_sha = None
@@ -314,11 +312,11 @@ class GitDeploy(object):
         GitMethods()._dulwich_commit(GitMethods()._make_author(),
                                      message='Rollback to {0}.'.format(tag))
 
-        log.info(__name__ + ' :: revert - Reverted to tag: "{0}", '
+        log.info(__name__ + ' :: REVERT -> Reverted to tag: \'{0}\', '
                             'call "git deploy sync" to persist'.format(tag))
 
         if args.auto_sync:
-            return self._sync(revert_tag, args.force)
+            return self._sync(args)
 
         return 0
 
