@@ -86,6 +86,17 @@ log = logging.getLogger(__name__)
 log.addHandler(NullHandler())
 
 
+class GitDeployConfigError(Exception):
+    """ Basic exception class for UserMetric types """
+    def __init__(self, message="Git deploy error.", exit_code=1):
+        Exception.__init__(self, message)
+        self._exit_code = int(exit_code)
+
+    @property
+    def exit_code(self):
+        return self._exit_code
+
+
 def set_log(args, out, err):
     """
     Sets the logger.
@@ -121,9 +132,9 @@ def configure(**kwargs):
     sc = _repo.get_config_stack()
 
     if proc.returncode != 0:
-        exit_code = 20
-        log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
-        sys.exit(exit_code)
+        # log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
+        raise GitDeployConfigError(message=exit_codes[20], exit_code=20)
+
 
     config['deploy_file'] = config['top_dir'] + '/.git/.deploy'
 
@@ -151,9 +162,8 @@ def configure(**kwargs):
             else:
                 config[key] = sc.get(value[0], value[1])
         except KeyError:
-            exit_code = value[2]
-            log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
-            sys.exit(exit_code)
+            # log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
+            raise GitDeployConfigError(message=exit_codes[2], exit_code=2)
 
     config['sync_dir'] = '{0}/sync'.format(config['hook_dir'])
 

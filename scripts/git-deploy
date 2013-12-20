@@ -15,7 +15,7 @@ import sys
 import argparse
 
 from git_deploy.git_deploy import GitDeployError, GitDeploy
-from git_deploy.config import set_log, log, exit_codes
+from git_deploy.config import set_log, log, exit_codes, GitDeployConfigError
 
 
 def parseargs():
@@ -116,7 +116,7 @@ def main(out=None, err=None):
         try:
             getattr(GitDeploy(), args.ordered_args[0])(args)
 
-        except (GitDeployError, Exception) as e:
+        except (GitDeployError, GitDeployConfigError) as e:
 
             log.error(__name__ + ' :: GIT DEPLOY FAILED -> ' + e.message)
 
