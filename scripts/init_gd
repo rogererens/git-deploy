@@ -13,7 +13,7 @@ import ConfigParser
 import subprocess
 import shutil
 
-from git_deploy.config import configure
+from git_deploy.config import configure, log, set_log, GitDeployConfigError
 from git_deploy.utils import scp_file
 
 
@@ -48,11 +48,26 @@ def parseargs():
 
     parser.allow_interspersed_args = False
 
+    defaults = {
+        "quiet": 0,
+        "silent": False,
+        "verbose": 0,
+    }
+
     # Global options.
     parser.add_argument("-t", "--hosttype",
                         default=HOSTTYPE_TARGET, type=str,
                         help="Specify the init type - is this a client or "
                              "target host?")
+    parser.add_argument("-q", "--quiet",
+                        default=defaults["quiet"], action="count",
+                        help="decrease the logging verbosity")
+    parser.add_argument("-s", "--silent",
+                        default=defaults["silent"], action="store_true",
+                        help="silence the logger")
+    parser.add_argument("-v", "--verbose",
+                        default=defaults["verbose"], action="count",
+                        help="increase the logging verbosity")
 
     return parser.parse_args()
 
@@ -67,6 +82,7 @@ def git_config_global_set(section, prop, value):
 def main():
 
     args = parseargs()
+    set_log(args, sys.stdout, sys.stderr)
 
     # Extract the init type
     if args.hosttype != HOSTTYPE_CLIENT and args.hosttype != HOSTTYPE_TARGET:
@@ -90,24 +106,45 @@ def main():
         for name, value in config.items(section):
             # git config
             if section == 'deploy':
+                log.info("{0} :: Setting config for {1}.{2} @ {3}".format(
+                    __name__, section, name, value))
                 git_config_global_set(section, name, value)
 
             # cp git-deploy
             if section == 'system' and name == 'run_root':
+                log.info("{0} :: Adding git-deploy exec to '{1}'".format(
+                    __name__, value
+                ))
                 shutil.copy('scripts/git-deploy', value)
 
-    _config = configure()
+    try:
+        log.info("{0} :: loading config ...".format(__name__))
+        _config = configure()
+    except GitDeployConfigError as e:
+        log.error("{0} :: call to configure() failed - '{1}'".format(
+            __name__, e.message))
+        sys.exit(e.exit_code)
 
     # Process different host type initialization
     if hosttype == HOSTTYPE_CLIENT:
         hook_dir = "{0}/{1}".format(_config['client_path'], _config['hook_dir'])
-        shutil.copy('git-deploy/default-hooks/default-client-push.py',
+        git_deploy_push_script = 'git-deploy/default-hooks/default-client-push.py'
+
+        log.info("{0} :: Copying '{1}' to '{2}'".format(
+            __name__, git_deploy_push_script, hook_dir))
+
+        shutil.copy('git_deploy/default-hooks/default-client-push.py',
                     hook_dir)
 
     elif hosttype == HOSTTYPE_TARGET:
         remote_hook_dir = "{0}/{1}".format(_config['path'], _config['hook_dir'])
+        git_deploy_pull_script = 'git_deploy/default-hooks/default-target-pull.py'
+
+        log.info("{0} :: secure copying '{1}' to '{2}'".format(
+            __name__, git_deploy_pull_script, remote_hook_dir))
+
         scp_file(_config['target'],
-                 'git-deploy/default-hooks/default-target-pull.py',
+                 git_deploy_pull_script,
                  remote_hook_dir,
                  _config['user.name'],
                  _config['deploy.key_path']
