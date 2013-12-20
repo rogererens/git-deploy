@@ -198,7 +198,7 @@ Now to rollback to a previous deploy call *git revert* with the appropriate tag:
 Examples
 --------
 
-*Reverting to a tag*
+**Reverting to a tag**
 
 This example illustrates how to rollback a deploy to an earlier tag.
 
