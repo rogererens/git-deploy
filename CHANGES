@@ -1,15 +1,28 @@
 Git-Deploy Changelog
-==================
+====================
+
+
+Version 0.3
+-----------
+
+    * revert (rollback) functionality
+    * fix tagging model
+    * dulwich dependencies for git remote push/pulls
+    * driver model abstraction to allow for extensibility to other deployment models
+    * split core git deploy functions into git_methods module that handles git interfacing
+    * upgrades to init_gd to make tool setup more seamless
+    * add paramiko support for securely talking to remotes
+    * add project to pypi
+
 
 Version 0.2
 -----------
 
-Change name of project
+    * Change name of project
 
 
 Version 0.1
 -----------
 
-Released on Dec 15th 2012, codename sartoris.
-
-- Initial release
+    * Released on Dec 15th 2012, codename sartoris.
+    * Initial release
