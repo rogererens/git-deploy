@@ -4,7 +4,7 @@
 import sys
 from setuptools import setup
 
-__version__ = '0.2-dev'
+__version__ = '0.3'
 
 meta = dict(
     name='git_deploy',
@@ -29,8 +29,8 @@ meta = dict(
         "Development Status :: 2 - Pre-Alpha",
         "Environment :: Console",
         "Intended Audience :: Developers",
-        "Topic :: Utilities"
-        "Topic :: Software Development :: Libraries :: Python Modules",
+        "Topic :: Utilities",
+        "Topic :: Software Development :: Version Control",
         "Programming Language :: Python",
         "Programming Language :: Python :: 2.7",
         "Operating System :: OS Independent",
