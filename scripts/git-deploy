@@ -74,6 +74,9 @@ def parseargs():
     parser.add_argument("-y", "--sync",
                         default='', type=str,
                         help="Specify sync script.")
+    parser.add_argument("-e", "--env",
+                        default='', type=str,
+                        help="Environment to deploy to.")
 
     args = parser.parse_args()
     return args
