@@ -79,6 +79,19 @@ def git_config_global_set(section, prop, value):
     proc.communicate()
 
 
+def create_hook_path():
+    """ Sets up hooking paths for git deploy """
+    #
+    # $GIT_WORK_DIR/deploy/                   # deploy directory
+    #                     /apps/              # Directory per application + 'common'
+    #                          /common/       # deploy scripts that apply to all apps
+    #                          /$app/         # deploy scripts for a specific $app
+    #                     /sync/              # sync
+    #                          /$app.sync
+
+    pass
+
+
 def main():
 
     args = parseargs()
