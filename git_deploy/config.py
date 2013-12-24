@@ -37,7 +37,7 @@ exit_codes = {
     5: 'Could not reset.  Exiting.',
     6: 'Diff failed.  Exiting.',
     7: 'Missing tag(s).  Exiting.',
-    8: 'Could not find last deploy tag.  Exiting.',
+    8: 'Could not find tag.  Exiting.',
     9: 'Could not get listing from deploy target.  Exiting.',
     10: 'Please specify number of deploy tags to emit with -c.  Exiting',
     11: 'Could not find any deploys.  Exiting',

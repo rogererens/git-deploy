@@ -133,22 +133,15 @@ class GitMethods(object):
             raise GitMethodsError(message=exit_codes[33], exit_code=33)
 
     def _get_commit_sha_for_tag(self, tag):
-        """
-        Obtain the commit sha of an associated tag
-            e.g. `git rev-list $TAG | head -n 1`
-        """
-        # @TODO replace with dulwich
+        """Obtain the commit sha of an associated tag
 
-        cmd = "git rev-list {0}".format(tag)
-        proc = subprocess.Popen(cmd.split(),
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
-        result = proc.communicate()[0].split('\n')
+        :param tag: git tag to match to commit sha
+        """
+        for repo_tag, commit_obj in self._dulwich_get_tags():
+            if tag == repo_tag:
+                return commit_obj.id
 
-        if not proc.returncode and len(result) > 0:
-            return result[0].strip()
-        else:
-            raise GitMethodsError(message=exit_codes[8], exit_code=8)
+        raise GitMethodsError(message=exit_codes[8], exit_code=8)
 
     def _dulwich_tag(self, tag, author, message=DEFAULT_TAG_MSG):
         """
