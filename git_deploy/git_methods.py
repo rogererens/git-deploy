@@ -122,9 +122,12 @@ class GitMethods(object):
             raise GitMethodsError(message=exit_codes[6], exit_code=6)
 
     def _git_revert(self, commit_sha):
+        """Perform a no-commit revert
+
+        :param commit_sha: commit sha to revert to
         """
-        Perform a no-commit revert
-        """
+
+        # TODO - replace native git
         cmd = 'git revert --no-commit {0}'.format(commit_sha)
         proc = subprocess.Popen(cmd.split(),
                                 stdout=subprocess.PIPE,
