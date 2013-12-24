@@ -15,6 +15,7 @@ from collections import OrderedDict
 
 from dulwich import walk
 from dulwich import index
+from dulwich import porcelain
 from dulwich.repo import Repo
 from dulwich.objects import Tag, Commit, parse_timezone
 from dulwich.diff_tree import tree_changes
@@ -104,19 +105,20 @@ class GitMethods(object):
         return commits
 
     def _git_diff(self, sha_1, sha_2):
-        """
-        Produce the diff between sha1 & sha2
-        @TODO replace with dulwich
-        """
-        proc = subprocess.Popen("git diff {0} {1}".format(sha_2, sha_1).
-                                split(),
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
-        lines = proc.communicate()[0].split('\n')
+        """Produce the diff between sha1 & sha2
 
-        if not proc.returncode:
-            return lines
-        else:
+        :param sha_1: commit sha of "before" state
+        :param sha_2: commit sha of "before" state
+        """
+        _repo = Repo(self.config['top_dir'])
+
+        c_old = _repo.get_object(sha_1)
+        c_new = _repo.get_object(sha_1)
+
+        # default writes to stdout
+        try:
+            porcelain.diff_tree(_repo, c_old.tree, c_new.tree)
+        except:
             raise GitMethodsError(message=exit_codes[6], exit_code=6)
 
     def _git_revert(self, commit_sha):
