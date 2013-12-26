@@ -224,21 +224,22 @@ class GitDeploy(object):
 
         remote, branch = self._parse_remote(args)
 
-        args = {
+        kwargs = {
             'author': GitMethods()._make_author(),
             'remote': remote,
             'branch': branch,
             'tag': tag,
             'hook_script': args.sync,
             'force': args.force,
+            'env': args.env,
         }
 
         for key, value in self.config.iteritems():
-            args[key] = value
+            kwargs[key] = value
 
-        return self._sync(args)
+        return self._sync(kwargs)
 
-    def _sync(self, args):
+    def _sync(self, kwargs):
         """
         This method makes calls to specialized drivers to perform the deploy.
 
@@ -246,13 +247,13 @@ class GitDeploy(object):
             * default sync if one is not specified
         """
 
-        if args['hook_script']:
+        if kwargs['hook_script']:
             log.info('{0} :: SYNC - calling sync hook: {0}.'.format(
-                __name__, args['hook_script']))
-            DeployDriverCustom().sync(args)
+                __name__, kwargs['hook_script']))
+            DeployDriverCustom().sync(kwargs)
         else:
             log.info('{0} :: SYNC - calling default sync.'.format(__name__))
-            DeployDriverDefault().sync(args)
+            DeployDriverDefault().sync(kwargs)
 
         # Clean-up
         if self._check_lock():
