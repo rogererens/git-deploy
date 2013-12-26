@@ -29,12 +29,6 @@ handler.setFormatter(logging.Formatter(fmt=log_format,
 
 def main():
 
-    # Move to root - TODO, dulwich
-    proc = subprocess.Popen([GIT_CALL, 'rev-parse', '--show-toplevel'],
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
-    os.chdir(proc.communicate()[0].strip())
-
     # Dulwich push
     remote = GitMethods().config['deploy.remote_url']
     logging.info(__name__ + ' :: Default sync, pushing to \'{0}\''.format(
