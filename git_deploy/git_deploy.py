@@ -98,7 +98,8 @@ class GitDeploy(object):
                 self.config['deploy.key_path'],
                 )
         except Exception as e:
-            raise GitDeployError(message=exit_codes[2])
+            log.error(__name__ + ' :: ' + e.message)
+            raise GitDeployError(message=exit_codes[16], exit_code=16)
 
         # Pull the lock file handle from
         try:
@@ -141,7 +142,8 @@ class GitDeploy(object):
                 self.config['deploy.key_path']
                 )
         except Exception as e:
-            raise GitDeployError(message=exit_codes[2])
+            log.error(__name__ + ' :: ' + e.message)
+            raise GitDeployError(message=exit_codes[16], exit_code=16)
 
     def _remove_lock(self):
         """ Remove the lock file """
@@ -160,7 +162,8 @@ class GitDeploy(object):
                 self.config['deploy.key_path'],
             )
         except Exception as e:
-            raise GitDeployError(message=exit_codes[2])
+            log.error(__name__ + ' :: ' + e.message)
+            raise GitDeployError(message=exit_codes[16], exit_code=16)
 
     def _parse_remote(self, args):
         """
