@@ -17,9 +17,6 @@ from git_deploy.config import configure, log, set_log, GitDeployConfigError
 
 INI_FILE = 'scripts/git-deploy.ini'
 
-HOSTTYPE_CLIENT = 'client'
-HOSTTYPE_TARGET = 'target'
-
 
 def parseargs():
     """Parse command line arguments.
@@ -49,10 +46,6 @@ def parseargs():
     }
 
     # Global options.
-    parser.add_argument("-t", "--hosttype",
-                        default=HOSTTYPE_TARGET, type=str,
-                        help="Specify the init type - is this a client or "
-                             "target host?")
     parser.add_argument("-q", "--quiet",
                         default=defaults["quiet"], action="count",
                         help="decrease the logging verbosity")
@@ -105,13 +98,6 @@ def main():
 
     args = parseargs()
     set_log(args, sys.stdout, sys.stderr)
-
-    # Extract the init type
-    if args.hosttype != HOSTTYPE_CLIENT and args.hosttype != HOSTTYPE_TARGET:
-        # default to client on bas input
-        hosttype = HOSTTYPE_CLIENT
-    else:
-        hosttype = args.hosttype
 
     # Process INI
     try:
