@@ -42,7 +42,7 @@ def parseargs():
     defaults = {
         "quiet": 0,
         "silent": False,
-        "verbose": 0,
+        "verbose": 1,
     }
 
     # Global options.
