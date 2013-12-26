@@ -15,10 +15,16 @@ are the following:
 import os
 import sys
 import subprocess
+import logging
 
 from git_deploy.config import GIT_CALL
 from git_deploy.git_deploy import GitMethods
 from git_deploy.utils import ssh_command_target
+
+log_format = "%(asctime)s %(levelname)-8s %(message)s"
+handler = logging.StreamHandler(sys.stderr)
+handler.setFormatter(logging.Formatter(fmt=log_format,
+                     datefmt='%b-%d %H:%M:%S'))
 
 
 def main():
@@ -31,15 +37,21 @@ def main():
 
     # Dulwich push
     remote = GitMethods().config['deploy.remote_url']
+    logging.info(__name__ + ' :: Default sync, pushing to \'{0}\''.format(
+        remote))
     GitMethods()._dulwich_push(remote, 'master')
 
     # git pull on remote
     target_path = GitMethods().config['path']
     cmd = "git --git-dir={0}/.git --work-tree={0} pull origin master".format(
         target_path)
+    target = GitMethods().config['target']
     user = GitMethods().config['user.name']
     key_path = GitMethods().config['deploy.key_path']
-    ssh_command_target(cmd, remote, user, key_path)
+
+    logging.info(__name__ + ' :: Default sync, pulling '
+                            'changes to \'{0}\''.format(target))
+    ssh_command_target(cmd, target, user, key_path)
 
 
 def cli():
