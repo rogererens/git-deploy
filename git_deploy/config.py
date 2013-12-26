@@ -45,6 +45,7 @@ exit_codes = {
     14: 'Commit failed, does not match HEAD. Exiting.',
     15: 'Missing git config. Aborting.',
     16: 'SSH call failed. Aborting.',
+    17: 'Call to deploy hook failed. Aborting.',
     19: 'Missing system configuration item "deploy.client-path". Exiting.',
     20: 'Cannot find top level directory for the git repository. Exiting.',
     21: 'Missing system configuration item "hook-dir". Exiting.',
