@@ -6,6 +6,7 @@ Prepares system state for GitDeploy.
 """
 
 import sys
+import os
 import io
 import argparse
 import logging
@@ -79,8 +80,11 @@ def git_config_global_set(section, prop, value):
     proc.communicate()
 
 
-def create_hook_path():
-    """ Sets up hooking paths for git deploy """
+def create_hook_tree(config):
+    """ Sets up hooking paths for git deploy
+
+    :param config: git-deploy configuration
+
     #
     # $GIT_WORK_DIR/deploy/                   # deploy directory
     #                     /apps/              # Directory per application + 'common'
@@ -89,7 +93,15 @@ def create_hook_path():
     #                     /sync/              # sync
     #                          /$app.sync
 
-    pass
+    """
+
+    if os.path.exists(config['deploy_root']):
+        shutil.rmtree(config['deploy_root'])
+
+    os.mkdir(config['deploy_root'])
+    os.mkdir(config['deploy_apps'])
+    os.mkdir(config['deploy_apps_common'])
+    os.mkdir(config['deploy_sync'])
 
 
 def main():
@@ -137,6 +149,9 @@ def main():
         log.error("{0} :: call to configure() failed - '{1}'".format(
             __name__, e.message))
         sys.exit(e.exit_code)
+
+    # create deploy tree
+    create_hook_tree(_config)
 
     # Process different host type initialization
     if hosttype == HOSTTYPE_CLIENT:

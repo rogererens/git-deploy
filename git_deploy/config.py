@@ -137,7 +137,10 @@ def configure(**kwargs):
         raise GitDeployConfigError(message=exit_codes[20], exit_code=20)
 
 
-    config['deploy_file'] = config['top_dir'] + '/.git/.deploy'
+    config['deploy_root'] = config['top_dir'] + '/.git/.deploy'
+    config['deploy_apps'] = config['deploy_root'] + '/apps'
+    config['deploy_apps_common'] = config['deploy_root'] + '/apps/common'
+    config['deploy_sync'] = config['deploy_root'] + '/sync'
 
     # Define the key names, git config names, and error codes
     config_elements = {

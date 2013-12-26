@@ -81,9 +81,9 @@ class TestGitDeployInit(unittest.TestCase):
         s = GitDeploy()
         assert 'repo_name' in s.config
 
-    def test_conf_deploy_file(self):
+    def test_conf_deploy_root(self):
         s = GitDeploy()
-        assert 'deploy_file' in s.config
+        assert 'deploy_root' in s.config
 
     def test_singleton(self):
         s1 = GitDeploy()
