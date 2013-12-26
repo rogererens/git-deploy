@@ -98,8 +98,7 @@ def create_hook_tree(config):
     os.mkdir(config['deploy_apps_common'])
     os.mkdir(config['deploy_sync'])
 
-    shutil.copy('git_deploy/default-hooks/default-client-push.py',
-                config['deploy_sync'])
+    shutil.copy('git_deploy/default.sync', config['deploy_sync'])
 
 
 def main():

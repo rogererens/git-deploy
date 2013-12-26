@@ -10,8 +10,8 @@ import os
 
 from git_deploy.utils import ssh_command_target
 from git_deploy.git_methods import GitMethods
-from git_deploy.config import log, DEFAULT_TARGET_HOOK, exit_codes, \
-    DEFAULT_CLIENT_HOOK
+from git_deploy.config import log, exit_codes, \
+    DEFAULT_HOOK
 
 
 class DeployDriverError(Exception):
@@ -61,38 +61,18 @@ class DeployDriverDefault(object):
 
         log.info('{0} :: Calling default sync - '
                  'pushing changes ... '.format(__name__))
+
         proc = subprocess.Popen(['{0}{1}{2}'.format(
             args['client_path'],
             args['hook_dir'],
-            DEFAULT_CLIENT_HOOK),
+            DEFAULT_HOOK),
             args['remote'],
             args['branch']],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
-        log.info('PUSH -> ' + '; '.join(
-            filter(lambda x: x, proc.communicate())))
 
-        #
-        # Call deploy hook on remote
-        #
-        #   ssh user@target {% PATH %}/.git/deploy/hooks/default-client-pull \
-        #       origin master
-        #
-        log.info('{0} :: Calling default sync - '
-                 'pulling to target'.format(__name__))
-        cmd = '{0}{1}{2} {3} {4}'.format(args['target_path'],
-                                         args['hook_dir'],
-                                         DEFAULT_TARGET_HOOK,
-                                         args['remote'],
-                                         args['branch'])
-        ret = ssh_command_target(
-            cmd,
-            args['target_url'],
-            args['user'],
-            args['key_path'],
-        )
-        log.info('PULL -> ' + '; '.join(
-            filter(lambda x: x, ret['stdout'])))
+        log.info('SYNC OUT -> ' + '; '.join(
+            filter(lambda x: x, proc.communicate())))
 
 
 class DeployDriverHook(object):

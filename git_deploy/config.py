@@ -19,8 +19,7 @@ import logging
 GIT_CALL = '/usr/bin/git'
 
 # DEFAULT DEPLOY HOOKS
-DEFAULT_CLIENT_HOOK = 'default-client-push.py'
-DEFAULT_TARGET_HOOK = 'default-target-pull.py'
+DEFAULT_HOOK = 'default.sync'
 
 DEFAULT_REMOTE = 'origin'
 DEFAULT_BRANCH = 'master'
