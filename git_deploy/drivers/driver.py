@@ -59,13 +59,12 @@ class DeployDriverDefault(object):
             log.error(str(e))
             raise DeployDriverError(message=exit_codes[12], exit_code=12)
 
-        log.info('{0} :: Calling default sync - '
-                 'pushing changes ... '.format(__name__))
+        sync_file = '{0}/{1}'.format(args['deploy_sync'], DEFAULT_HOOK)
 
-        proc = subprocess.Popen(['{0}{1}{2}'.format(
-            args['client_path'],
-            args['hook_dir'],
-            DEFAULT_HOOK),
+        log.info('{0} :: Calling default sync \'{1}\' ... '.
+            format(__name__, sync_file))
+
+        proc = subprocess.Popen([sync_file,
             args['remote'],
             args['branch']],
             stdout=subprocess.PIPE,
