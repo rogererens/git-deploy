@@ -43,6 +43,7 @@ exit_codes = {
     12: 'Tagging failed. Exiting',
     13: 'Revert tag not found. Exiting',
     14: 'Commit failed, does not match HEAD. Exiting.',
+    15: 'Missing git config. Aborting.',
     19: 'Missing system configuration item "deploy.client-path". Exiting.',
     20: 'Cannot find top level directory for the git repository. Exiting.',
     21: 'Missing system configuration item "hook-dir". Exiting.',
@@ -158,9 +159,9 @@ def configure(**kwargs):
                 config[key] = kwargs[key]
             else:
                 config[key] = sc.get(value[0], value[1])
-        except KeyError:
-            # log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
-            raise GitDeployConfigError(message=exit_codes[2], exit_code=2)
+        except KeyError as e:
+            log.error("{0} :: {1}".format(__name__, e.message))
+            raise GitDeployConfigError(message=exit_codes[15], exit_code=15)
 
     config['sync_dir'] = '{0}/sync'.format(config['hook_dir'])
 
