@@ -74,7 +74,7 @@ class DeployDriverDefault(object):
             filter(lambda x: x, proc.communicate())))
 
 
-class DeployDriverHook(object):
+class DeployDriverCustom(object):
     """ Driver class for custom hooks """
 
     # class instance
@@ -87,7 +87,7 @@ class DeployDriverHook(object):
     def __new__(cls, *args, **kwargs):
         """ This class is Singleton, return only one instance """
         if not cls.__instance:
-            cls.__instance = super(DeployDriverHook, cls).__new__(cls, *args,
+            cls.__instance = super(DeployDriverCustom, cls).__new__(cls, *args,
                                                                     **kwargs)
         return cls.__instance
 

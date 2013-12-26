@@ -16,7 +16,7 @@ import subprocess
 
 from utils import ssh_command_target
 from git_methods import GitMethods, GitMethodsError
-from drivers.driver import DeployDriverDefault, DeployDriverHook
+from drivers.driver import DeployDriverDefault, DeployDriverCustom
 from config import log, configure, exit_codes, \
     DEFAULT_BRANCH, DEFAULT_REMOTE, \
     DEFAULT_REMOTE_ARG_IDX, DEFAULT_BRANCH_ARG_IDX
@@ -249,7 +249,7 @@ class GitDeploy(object):
         if args['hook_script']:
             log.info('{0} :: SYNC - calling sync hook: {0}.'.format(
                 __name__, args['hook_script']))
-            DeployDriverHook().sync(args)
+            DeployDriverCustom().sync(args)
         else:
             log.info('{0} :: SYNC - calling default sync.'.format(__name__))
             DeployDriverDefault().sync(args)
