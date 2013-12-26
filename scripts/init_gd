@@ -9,24 +9,17 @@ import sys
 import os
 import io
 import argparse
-import logging
 import ConfigParser
 import subprocess
 import shutil
 
 from git_deploy.config import configure, log, set_log, GitDeployConfigError
-from git_deploy.utils import scp_file
-
 
 INI_FILE = 'scripts/git-deploy.ini'
 
 HOSTTYPE_CLIENT = 'client'
 HOSTTYPE_TARGET = 'target'
 
-log_format = "%(asctime)s %(levelname)-8s %(message)s"
-handler = logging.StreamHandler(sys.stderr)
-handler.setFormatter(logging.Formatter(fmt=log_format,
-                     datefmt='%b-%d %H:%M:%S'))
 
 def parseargs():
     """Parse command line arguments.
@@ -52,7 +45,7 @@ def parseargs():
     defaults = {
         "quiet": 0,
         "silent": False,
-        "verbose": 0,
+        "verbose": 1,
     }
 
     # Global options.
@@ -95,6 +88,8 @@ def create_hook_tree(config):
 
     """
 
+    log.info("{0} :: Creating deploy tree.".format(__name__))
+
     if os.path.exists(config['deploy_root']):
         shutil.rmtree(config['deploy_root'])
 
@@ -102,6 +97,9 @@ def create_hook_tree(config):
     os.mkdir(config['deploy_apps'])
     os.mkdir(config['deploy_apps_common'])
     os.mkdir(config['deploy_sync'])
+
+    shutil.copy('git_deploy/default-hooks/default-client-push.py',
+                config['deploy_sync'])
 
 
 def main():
@@ -123,7 +121,7 @@ def main():
         config = ConfigParser.RawConfigParser(allow_no_value=True)
         config.readfp(io.BytesIO(config_handle))
     except IOError:
-        logging.error(__name__ + ' :: Could not find .ini.')
+        log.error(__name__ + ' :: Could not find .ini.')
         return
 
     # Set the ini conf
@@ -152,31 +150,6 @@ def main():
 
     # create deploy tree
     create_hook_tree(_config)
-
-    # Process different host type initialization
-    if hosttype == HOSTTYPE_CLIENT:
-        hook_dir = "{0}/{1}".format(_config['client_path'], _config['hook_dir'])
-        git_deploy_push_script = 'git-deploy/default-hooks/default-client-push.py'
-
-        log.info("{0} :: Copying '{1}' to '{2}'".format(
-            __name__, git_deploy_push_script, hook_dir))
-
-        shutil.copy('git_deploy/default-hooks/default-client-push.py',
-                    hook_dir)
-
-    elif hosttype == HOSTTYPE_TARGET:
-        remote_hook_dir = "{0}/{1}".format(_config['path'], _config['hook_dir'])
-        git_deploy_pull_script = 'git_deploy/default-hooks/default-target-pull.py'
-
-        log.info("{0} :: secure copying '{1}' to '{2}'".format(
-            __name__, git_deploy_pull_script, remote_hook_dir))
-
-        scp_file(_config['target'],
-                 git_deploy_pull_script,
-                 remote_hook_dir,
-                 _config['user.name'],
-                 _config['deploy.key_path']
-        )
 
 
 def cli():
