@@ -227,15 +227,11 @@ class GitDeploy(object):
             'branch': branch,
             'tag': tag,
             'hook_script': args.sync,
-            'repo_name': self.config['repo_name'],
-            'client_path': self.config['client_path'],
-            'hook_dir': self.config['hook_dir'],
-            'target_path': self.config['path'],
             'force': args.force,
-            'target_url': self.config['target'],
-            'user': self.config['user.name'],
-            'key_path': self.config['deploy.key_path']
         }
+
+        for key, value in self.config.iteritems():
+            args[key] = value
 
         return self._sync(args)
 
