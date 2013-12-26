@@ -136,12 +136,6 @@ def configure(**kwargs):
         # log.error("{0} :: {1}".format(__name__, exit_codes[exit_code]))
         raise GitDeployConfigError(message=exit_codes[20], exit_code=20)
 
-
-    config['deploy_root'] = config['top_dir'] + '/.git/.deploy'
-    config['deploy_apps'] = config['deploy_root'] + '/apps'
-    config['deploy_apps_common'] = config['deploy_root'] + '/apps/common'
-    config['deploy_sync'] = config['deploy_root'] + '/sync'
-
     # Define the key names, git config names, and error codes
     config_elements = {
         'hook_dir': ('deploy', 'hook-dir', 21),
@@ -170,5 +164,10 @@ def configure(**kwargs):
             raise GitDeployConfigError(message=exit_codes[2], exit_code=2)
 
     config['sync_dir'] = '{0}/sync'.format(config['hook_dir'])
+
+    config['deploy_root'] = config['client_path'] + '/.git/deploy'
+    config['deploy_apps'] = config['deploy_root'] + '/apps'
+    config['deploy_apps_common'] = config['deploy_root'] + '/apps/common'
+    config['deploy_sync'] = config['deploy_root'] + '/sync'
 
     return config
