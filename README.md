@@ -36,13 +36,6 @@ however, by suppling the "-a" option for auto-sync the rollback automatically sy
 
     $ git deploy revert [-t <tag_name>] [opts]
 
-Deploy Hooks
-------------
-
-In the working path of your local clone deploy hooks may be added to '.git/deploy/hooks'.  You are
-free to write your own hooks however, simple default hooks have been provided in 'git-deploy/default-hooks',
-these can be copied to the hook folder in each client and target.
-
 
 Setup
 -----
@@ -193,6 +186,53 @@ Now to rollback to a previous deploy call *git revert* with the appropriate tag:
     client.realm.org:me.com me$ git deploy start
 
     client.realm.org:me.com me$ git deploy revert <tag>
+
+
+Deploy Hooks
+------------
+
+This behaviour mimics that found in https://github.com/git-deploy/git-deploy#deploy-hooks &
+https://github.com/git-deploy/git-deploy#writing-deploy-hooks.
+
+The hooking system can be used to execute user defined actions in the deploy process.
+
+**Writing Hooks**
+
+This system is based around a sync model where a sync is the process by which the deploy target is made consistent with
+a calling client.  There are two phases that define the behaviour around deployment, pre/post-sync.
+
+The pre-deploy framework is expected to reside in the $GIT_WORK_DIR/deploy directory (i.e. the deploy directory of the
+repository that's being rolled out). This directory has the following tree:
+
+    $GIT_WORK_DIR/deploy/                   # deploy directory
+                        /apps/              # Directory per application + 'common'
+                             /common/       # deploy scripts that apply to all apps
+                             /$app/         # deploy scripts for a specific $app
+                        /sync/              # sync
+                             /$app.sync
+
+The $app in deploy/{apps,sync}/$app is the server prefix that you'd see in the rollout tag. E.g. A company might have
+multiple environments which they roll out, for instance "sheep", "cows" and "goats". Here is a practical example of the
+deployment hooks that might be used in the sheep environment:
+
+    $ tree deploy/apps/{sheep,common}/ deploy/sync/
+    deploy/apps/sheep/
+    |-- post-sync.010_httpd_configtest.sh
+    |-- post-sync.020_restart_httpd.sh
+    |-- pre-sync.010_nobranch_rollout.sh
+    |-- pre-sync.020_check_that_we_are_in_the_load_balancer.pl
+    |-- pre-sync.021_take_us_out_of_the_load_balancer.pl
+    `-- pre-sync.022_check_that_we_are_not_in_the_load_balancer.pl -> pre-pull.020_check_that_we_are_in_the_load_balancer.pl
+    deploy/apps/common/
+    |-- pre-sync.001_setup_affiliate_symlink.pl
+    `-- pre-sync.002_check_permissions.pl
+    deploy/sync/
+    |-- sheep.sync
+
+All the hooks in deploy/apps are prefixed by a phase in which git-deploy will execute them (e.g. pre-sync just before a sync).
+
+During these phases git-deploy will glob in all the deploy/apps/{common,$app}/$phase.* hooks and execute them in sort order, first
+the common hooks and then the $app specific hooks. Note that the hooks MUST have their executable bit set.
 
 
 Examples
