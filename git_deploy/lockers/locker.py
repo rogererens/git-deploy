@@ -22,6 +22,13 @@ class DeployLocker(object):
     Abstract Locker interface
     """
 
+    def get_lock_name(self, args):
+        """
+        lock instance name
+        """
+        raise NotImplementedError()
+
+
     def add_lock(self, args):
         """
         lock creation
