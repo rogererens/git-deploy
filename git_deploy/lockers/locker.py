@@ -5,6 +5,8 @@ Locking model that allows customized deploy locking bahaviour
 __date__ = '2013-12-20'
 __license__ = 'GPL v2.0 (or later)'
 
+from git_deploy.utils import ssh_command_target
+from git_deploy.config import exit_codes, log
 
 class DeployLockerError(Exception):
     """ Basic exception class for DeployLocker types """
@@ -48,9 +50,9 @@ class DeployLocker(object):
         raise NotImplementedError()
 
 
-class DeployLockerDefault(object):
+class DeployLockerDefault(DeployLocker):
     """
-    Default Locker class
+    Default Locker class - implements a lock file
     """
 
     # class instance
@@ -67,3 +69,21 @@ class DeployLockerDefault(object):
                                                                      *args,
                                                                      **kwargs)
         return cls.__instance
+
+    def add_lock(self, args):
+        """Write the lock file """
+
+        cmd = "touch {0}/{2}".format(
+            args.deploy_path,
+            self.get_lock_name(args))
+
+        try:
+            ssh_command_target(
+                cmd,
+                args.target,
+                args.user,
+                args.key_path
+                )
+        except Exception as e:
+            log.error(__name__ + ' :: ' + e.message)
+            raise DeployLockerError(message=exit_codes[16], exit_code=16)
