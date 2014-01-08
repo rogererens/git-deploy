@@ -70,6 +70,12 @@ class DeployLockerDefault(DeployLocker):
                                                                      **kwargs)
         return cls.__instance
 
+    def get_lock_name(self, args):
+        """
+        Generates the name of the lock file
+        """
+        return args.lock_handle + '-' + args.user + '.lock'
+
     def add_lock(self, args):
         """Write the lock file """
 
