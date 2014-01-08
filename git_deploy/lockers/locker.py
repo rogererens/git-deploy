@@ -71,25 +71,54 @@ class DeployLockerDefault(DeployLocker):
         return cls.__instance
 
     def get_lock_name(self, args):
-        """
-        Generates the name of the lock file
-        """
+        """ Generates the name of the lock file """
         return args.lock_handle + '-' + args.user + '.lock'
 
     def add_lock(self, args):
-        """Write the lock file """
+        """ Write the lock file """
 
         cmd = "touch {0}/{2}".format(
             args.deploy_path,
             self.get_lock_name(args))
 
         try:
-            ssh_command_target(
-                cmd,
-                args.target,
-                args.user,
-                args.key_path
-                )
+            ret = ssh_command_target(cmd, args.target, args.user,
+                                     args.key_path)
         except Exception as e:
             log.error(__name__ + ' :: ' + e.message)
             raise DeployLockerError(message=exit_codes[16], exit_code=16)
+
+    def check_lock(self, args):
+        """ Returns boolean flag on lock file existence """
+
+        cmd = "ls {0}{1}{2}".format(
+            args.deploy_path,
+            args.get_lock_name())
+
+        # log.debug('{0} :: Executing - "{1}"'.format(__name__, cmd))
+        log.info('{0} :: Checking for lock file at {1}.'.format(
+            __name__, args.target))
+
+        try:
+            ret = ssh_command_target(cmd, args.target, args.user,
+                                     args.key_path)
+        except Exception as e:
+            log.error(__name__ + ' :: ' + e.message)
+            raise DeployLockerError(message=exit_codes[16], exit_code=16)
+
+        # Pull the lock file handle from
+        try:
+            file_handle = ret['stdout'][0].split('/')[-1].strip()
+        except (IndexError, ValueError):
+            log.info('{0} :: No lock file exists.'.format(__name__,
+                                                          args.target))
+            return False
+
+        if file_handle == self.get_lock_name(args):
+            log.info('{0} :: {1} has lock.'.format(__name__,
+                                                   args.user))
+            return True
+        else:
+            log.info('{0} :: Another user has lock.'.format(
+                __name__, ))
+            return False
