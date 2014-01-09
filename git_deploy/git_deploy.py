@@ -12,8 +12,8 @@ __date__ = '2013-09-08'
 __license__ = 'GPL v2.0 (or later)'
 
 import os
-import subprocess
 
+from lockers.locker import DeployLockerDefault
 from utils import ssh_command_target
 from git_methods import GitMethods, GitMethodsError
 from drivers.driver import DeployDriverDefault, DeployDriverCustom
@@ -62,6 +62,9 @@ class GitDeploy(object):
 
         # Stores tag state
         self._tag = None
+
+        # Locking model
+        self._locker = DeployLockerDefault()
 
     def __new__(cls, *args, **kwargs):
         """ This class is Singleton, return only one instance """
