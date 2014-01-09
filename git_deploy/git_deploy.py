@@ -14,8 +14,7 @@ __license__ = 'GPL v2.0 (or later)'
 import os
 
 from lockers.locker import DeployLockerDefault
-from utils import ssh_command_target
-from git_methods import GitMethods, GitMethodsError
+from git_methods import GitMethods
 from drivers.driver import DeployDriverDefault, DeployDriverCustom
 from config import log, configure, exit_codes, \
     DEFAULT_BRANCH, DEFAULT_REMOTE, \
@@ -85,92 +84,6 @@ class GitDeploy(object):
     def _configure(self, **kwargs):
         self.config = configure(**kwargs)
 
-    def _check_lock(self):
-        """ Returns boolean flag on lock file existence """
-        cmd = "ls {0}{1}{2}".format(
-            self.config['path'],
-            self.DEPLOY_DIR,
-            self._get_lock_file_name())
-
-        # log.debug('{0} :: Executing - "{1}"'.format(__name__, cmd))
-        log.info('{0} :: Checking for lock file at {1}.'.format(
-            __name__, self.config['target']))
-
-        try:
-            ret = ssh_command_target(
-                cmd,
-                self.config['target'],
-                self.config['user.name'],
-                self.config['deploy.key_path'],
-                )
-        except Exception as e:
-            log.error(__name__ + ' :: ' + e.message)
-            raise GitDeployError(message=exit_codes[16], exit_code=16)
-
-        # Pull the lock file handle from
-        try:
-            file_handle = ret['stdout'][0].split('/')[-1].strip()
-        except (IndexError, ValueError):
-            log.info('{0} :: No lock file exists.'.format(
-                __name__, self.config['target']))
-            return False
-
-        if file_handle == self._get_lock_file_name():
-            log.info('{0} :: {1} has lock.'.format(
-                __name__, self.config['user.name']))
-            return True
-        else:
-            log.info('{0} :: Another user has lock.'.format(
-                __name__, ))
-            return False
-
-    def _get_lock_file_name(self):
-        return self.LOCK_FILE_HANDLE + '-' + self.config['user']
-
-    def _create_lock(self):
-        """
-        Create a lock file
-
-        Write the user name to the lock file in the dploy directory.
-        """
-        log.info('{0} :: SSH Lock create.'.format(__name__))
-
-        cmd = "touch {0}{1}{2}".format(
-            self.config['path'],
-            self.DEPLOY_DIR,
-            self._get_lock_file_name())
-
-        try:
-            ssh_command_target(
-                cmd,
-                self.config['target'],
-                self.config['user.name'],
-                self.config['deploy.key_path']
-                )
-        except Exception as e:
-            log.error(__name__ + ' :: ' + e.message)
-            raise GitDeployError(message=exit_codes[16], exit_code=16)
-
-    def _remove_lock(self):
-        """ Remove the lock file """
-        log.info('{0} :: SSH Lock destroy.'.format(__name__))
-
-        cmd = "rm {0}{1}{2}".format(
-            self.config['path'],
-            self.DEPLOY_DIR,
-            self._get_lock_file_name())
-
-        try:
-            ssh_command_target(
-                cmd,
-                self.config['target'],
-                self.config['user.name'],
-                self.config['deploy.key_path'],
-            )
-        except Exception as e:
-            log.error(__name__ + ' :: ' + e.message)
-            raise GitDeployError(message=exit_codes[16], exit_code=16)
-
     def _parse_remote(self, args):
         """
         Parse git deploy remote/branch from command line args
@@ -190,10 +103,10 @@ class GitDeploy(object):
         """
 
         # Create lock file - check if it already exists
-        if self._check_lock():
+        if self._locker.check_lock():
             raise GitDeployError(message=exit_codes[2])
 
-        self._create_lock()
+        self._locker.add_lock()
 
         return 0
 
@@ -210,7 +123,7 @@ class GitDeploy(object):
         GitMethods()._dulwich_reset_to_tag(tag)
 
         # Remove lock file
-        self._remove_lock()
+        self._locker.remove_lock()
         return 0
 
     def sync(self, args):
@@ -220,7 +133,7 @@ class GitDeploy(object):
             * call a sync hook with the prefix (repo) and tag info
         """
 
-        if not self._check_lock():
+        if not self._locker.check_lock():
             raise GitDeployError(message=exit_codes[30], exit_code=30)
 
         tag = GitMethods()._make_tag('sync')
@@ -262,8 +175,8 @@ class GitDeploy(object):
             DeployDriverDefault().sync(kwargs)
 
         # Clean-up
-        if self._check_lock():
-            self._remove_lock()
+        if self._locker.check_lock():
+            self._locker.remove_lock()
 
         return 0
 
@@ -274,7 +187,7 @@ class GitDeploy(object):
             * call sync hook with the prefix (repo) and tag info
         """
 
-        if not self._check_lock():
+        if not self._locker.check_lock():
             raise GitDeployError(message=exit_codes[30])
 
         # Extract tag on which to revert
@@ -330,8 +243,8 @@ class GitDeploy(object):
         """
         * Remove lock file
         """
-        if self._check_lock():
-            self._remove_lock()
+        if self._locker.check_lock():
+            self._locker.remove_lock()
 
     def show_tag(self, _):
         """
