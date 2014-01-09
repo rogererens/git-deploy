@@ -62,6 +62,15 @@ class DeployLockerDefault(DeployLocker):
         """ Initialize class instance """
         self.__class__.__instance = self
 
+        try:
+            self.deploy_path = kwargs['deploy_path']
+            self.deploy_path = kwargs['target']
+            self.deploy_path = kwargs['user']
+            self.deploy_path = kwargs['key_path']
+
+        except KeyError as e:
+            raise DeployLockerError(message=exit_codes[18], exit_code=18)
+
     def __new__(cls, *args, **kwargs):
         """ This class is Singleton, return only one instance """
         if not cls.__instance:
