@@ -24,26 +24,26 @@ class DeployLocker(object):
     Abstract Locker interface
     """
 
-    def get_lock_name(self, args):
+    def get_lock_name(self):
         """
         lock instance name
         """
         raise NotImplementedError()
 
 
-    def add_lock(self, args):
+    def add_lock(self):
         """
         lock creation
         """
         raise NotImplementedError()
 
-    def check_lock(self, args):
+    def check_lock(self):
         """
         lock checking
         """
         raise NotImplementedError()
 
-    def remove_lock(self, args):
+    def remove_lock(self):
         """
         lock removal
         """
@@ -64,11 +64,12 @@ class DeployLockerDefault(DeployLocker):
 
         try:
             self.deploy_path = kwargs['deploy_path']
-            self.deploy_path = kwargs['target']
-            self.deploy_path = kwargs['user']
-            self.deploy_path = kwargs['key_path']
+            self.target = kwargs['target']
+            self.user = kwargs['user']
+            self.key_path = kwargs['key_path']
+            self.lock_handle = kwargs['lock_handle']
 
-        except KeyError as e:
+        except KeyError:
             raise DeployLockerError(message=exit_codes[18], exit_code=18)
 
     def __new__(cls, *args, **kwargs):
@@ -79,34 +80,34 @@ class DeployLockerDefault(DeployLocker):
                                                                      **kwargs)
         return cls.__instance
 
-    def get_lock_name(self, args):
+    def get_lock_name(self):
         """ Generates the name of the lock file """
-        return args.lock_handle + '-' + args.user + '.lock'
+        return self.lock_handle + '-' + self.user + '.lock'
 
-    def add_lock(self, args):
+    def add_lock(self):
         """ Write the lock file """
 
-        cmd = "touch {0}/{2}".format(args.deploy_path,
-                                     self.get_lock_name(args))
+        cmd = "touch {0}/{2}".format(self.deploy_path,
+                                     self.get_lock_name())
         try:
-            ret = ssh_command_target(cmd, args.target, args.user,
-                                     args.key_path)
+            ret = ssh_command_target(cmd, self.target, self.user,
+                                     self.key_path)
         except Exception as e:
             log.error(__name__ + ' :: ' + e.message)
             raise DeployLockerError(message=exit_codes[16], exit_code=16)
 
-    def check_lock(self, args):
+    def check_lock(self):
         """ Returns boolean flag on lock file existence """
 
-        cmd = "ls {0}/{1}".format(args.deploy_path, args.get_lock_name())
+        cmd = "ls {0}/{1}".format(self.deploy_path, self.get_lock_name())
 
         # log.debug('{0} :: Executing - "{1}"'.format(__name__, cmd))
         log.info('{0} :: Checking for lock file at {1}.'.format(
-            __name__, args.target))
+            __name__, self.target))
 
         try:
-            ret = ssh_command_target(cmd, args.target, args.user,
-                                     args.key_path)
+            ret = ssh_command_target(cmd, self.target, self.user,
+                                     self.key_path)
         except Exception as e:
             log.error(__name__ + ' :: ' + e.message)
             raise DeployLockerError(message=exit_codes[16], exit_code=16)
@@ -116,27 +117,26 @@ class DeployLockerDefault(DeployLocker):
             file_handle = ret['stdout'][0].split('/')[-1].strip()
         except (IndexError, ValueError):
             log.info('{0} :: No lock file exists.'.format(__name__,
-                                                          args.target))
+                                                          self.target))
             return False
 
-        if file_handle == self.get_lock_name(args):
+        if file_handle == self.get_lock_name():
             log.info('{0} :: {1} has lock.'.format(__name__,
-                                                   args.user))
+                                                   self.user))
             return True
         else:
             log.info('{0} :: Another user has lock.'.format(
                 __name__, ))
             return False
 
-    def _remove_lock(self, args):
+    def _remove_lock(self):
         """ Remove the lock file """
         log.info('{0} :: SSH Lock destroy.'.format(__name__))
 
-        cmd = "rm {0}/{1}".format(args.deploy_path, args.get_lock_name())
+        cmd = "rm {0}/{1}".format(self.deploy_path, self.get_lock_name())
 
         try:
-            ssh_command_target(cmd, args.target, args.user,
-                                     args.key_path)
+            ssh_command_target(cmd, self.target, self.user, self.key_path)
         except Exception as e:
             log.error(__name__ + ' :: ' + e.message)
             raise DeployLockerError(message=exit_codes[16], exit_code=16)
