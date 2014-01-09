@@ -60,9 +60,6 @@ class GitDeploy(object):
         if not os.path.exists(self.DEPLOY_DIR):
             os.mkdir(self.DEPLOY_DIR)
 
-        # Stores tag state
-        self._tag = None
-
         # Locking model
         self._locker = DeployLockerDefault()
 
