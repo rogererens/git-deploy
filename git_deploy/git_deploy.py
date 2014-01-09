@@ -61,7 +61,13 @@ class GitDeploy(object):
             os.mkdir(self.DEPLOY_DIR)
 
         # Locking model
-        self._locker = DeployLockerDefault()
+        self._locker = DeployLockerDefault(
+            deploy_path=self.config['path'] + self.DEPLOY_DIR,
+            target=self.config['target'],
+            user=self.config['user.name'],
+            key_path=self.config['deploy.key_path'],
+            lock_handle=self.LOCK_FILE_HANDLE
+        )
 
     def __new__(cls, *args, **kwargs):
         """ This class is Singleton, return only one instance """
