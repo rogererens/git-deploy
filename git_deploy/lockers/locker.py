@@ -129,7 +129,7 @@ class DeployLockerDefault(DeployLocker):
                 __name__, ))
             return False
 
-    def _remove_lock(self):
+    def remove_lock(self):
         """ Remove the lock file """
         log.info('{0} :: SSH Lock destroy.'.format(__name__))
 
