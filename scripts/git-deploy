@@ -71,9 +71,8 @@ def parseargs():
     parser.add_argument("-a", "--auto_sync",
                         default='', action="store_true",
                         help="Auto sync flag.")
-    parser.add_argument("-y", "--sync",
-                        default='', type=str,
-                        help="Specify sync script.")
+    parser.add_argument("-D", "--default", default='store_true',
+                        help="Flag to override with default sync.")
     parser.add_argument("-e", "--env",
                         default='', type=str,
                         help="Environment to deploy to.")
