@@ -117,7 +117,8 @@ class DeployDriverCustom(object):
 
                     # Flag a failed hook
                     if proc.returncode:
-                        raise DeployDriverError(exit_code=17, message=exit_codes[17])
+                        raise DeployDriverError(exit_code=17,
+                                                message=exit_codes[17])
 
         else:
             log.error(__name__ + ' :: CANNOT FIND HOOK PATH \'{0}\''.format(
@@ -146,3 +147,42 @@ class DeployDriverCustom(object):
         self._call_hooks(app_path , args.env)
         self._call_hooks(app_path , 'post-sync')
         self._call_hooks(args['deploy_apps_common'] , 'post-sync')
+
+
+class DeployDriverDryRun(object):
+    """
+    Dryrun Driver class
+    """
+
+    # class instance
+    __instance = None
+
+    def __init__(self, *args, **kwargs):
+        """ Initialize class instance """
+        self.__class__.__instance = self
+
+    def __new__(cls, *args, **kwargs):
+        """ This class is Singleton, return only one instance """
+        if not cls.__instance:
+            cls.__instance = super(DeployDriverDryRun, cls).__new__(cls,
+                                                                     *args,
+                                                                     **kwargs)
+        return cls.__instance
+
+    def sync(self, args):
+
+        log.info('{0} :: DRYRUN SYNC'.format(__name__))
+        log.info('--> TAG \'{0}\''.format(args['tag']))
+        log.info('--> AUTHOR \'{0}\''.format(args['author']))
+        log.info('--> REMOTE \'{0}\''.format(args['remote']))
+        log.info('--> BRANCH \'{0}\''.format(args['branch']))
+
+        if args['hook_script']:
+            log.info('--> You\'ve specified a CUSTOM HOOK.')
+            # TODO - emit all scripts and content to be run in order
+        else:
+            log.info('--> You are using the DEFAULT SYNC.')
+            # TODO - emit all scripts and content to be run in order
+
+
+
