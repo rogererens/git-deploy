@@ -137,18 +137,13 @@ class GitDeploy(object):
         if not self._locker.check_lock():
             raise GitDeployError(message=exit_codes[30], exit_code=30)
 
-        tag = GitMethods()._make_tag('sync')
-
-        log.info('{0} :: SYNC - tag local'.format(__name__))
-        GitMethods()._dulwich_tag(tag, GitMethods()._make_author())
-
         remote, branch = self._parse_remote(args)
 
         kwargs = {
             'author': GitMethods()._make_author(),
+            'tag': GitMethods()._make_tag('sync'),
             'remote': remote,
             'branch': branch,
-            'tag': tag,
             'hook_script': args.sync,
             'force': args.force,
             'env': args.env,
