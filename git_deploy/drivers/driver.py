@@ -59,6 +59,16 @@ def _call_hooks(path, phase):
             path))
         raise DeployDriverError(exit_code=17, message=exit_codes[17])
 
+
+def _make_release_tag(tag, author):
+    """ Generates a release tag for the deploy """
+    try:
+        GitMethods()._dulwich_tag(tag, author)
+    except Exception as e:
+        log.error(str(e))
+        raise DeployDriverError(message=exit_codes[12], exit_code=12)
+
+
 class DeployDriverDefault(object):
     """
     Default Driver class
@@ -87,11 +97,8 @@ class DeployDriverDefault(object):
         #   {% PATH %}/.git/deploy/hooks/default-client-push origin master
         #
 
-        try:
-            GitMethods()._dulwich_tag(args['tag'], args['author'])
-        except Exception as e:
-            log.error(str(e))
-            raise DeployDriverError(message=exit_codes[12], exit_code=12)
+        if args['release']:
+            _make_release_tag(args['tag'], args['author'])
 
         sync_file = '{0}/{1}'.format(args['deploy_sync'], DEFAULT_HOOK)
 
@@ -136,14 +143,18 @@ class DeployDriverCustom(object):
 
         """
 
-        # CALL deploy/apps/common
+        # 1. CALL deploy/apps/common
         _call_hooks(args['deploy_apps_common'], 'pre-sync')
 
-        # CALL deploy/apps/$env
+        # 2. Apply optional release tag here
+        if args['release']:
+            _make_release_tag(args['tag'], args['author'])
+
+        # 3. CALL deploy/apps/$env
         app_path = '{0}/{1}'.format(args['deploy_apps'], args.env)
         _call_hooks(app_path , 'pre-sync')
 
-        # CALL sync, deploy/apps/sync/$env.sync
+        # 4. CALL sync, deploy/apps/sync/$env.sync
         _call_hooks(app_path , args.env)
         _call_hooks(app_path , 'post-sync')
         _call_hooks(args['deploy_apps_common'] , 'post-sync')
