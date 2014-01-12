@@ -12,12 +12,9 @@ are the following:
 
 """
 
-import os
 import sys
-import subprocess
 import logging
 
-from git_deploy.config import GIT_CALL
 from git_deploy.git_deploy import GitMethods
 from git_deploy.utils import ssh_command_target
 
