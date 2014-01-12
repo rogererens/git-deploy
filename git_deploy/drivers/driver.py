@@ -70,52 +70,6 @@ def _make_release_tag(tag, author):
 
 
 class DeployDriverDefault(object):
-    """
-    Default Driver class
-    """
-
-    # class instance
-    __instance = None
-
-    def __init__(self, *args, **kwargs):
-        """ Initialize class instance """
-        self.__class__.__instance = self
-
-    def __new__(cls, *args, **kwargs):
-        """ This class is Singleton, return only one instance """
-        if not cls.__instance:
-            cls.__instance = super(DeployDriverDefault, cls).__new__(cls,
-                                                                     *args,
-                                                                     **kwargs)
-        return cls.__instance
-
-    def sync(self, args):
-
-        #
-        # Call deploy hook on client
-        #
-        #   {% PATH %}/.git/deploy/hooks/default-client-push origin master
-        #
-
-        if args['release']:
-            _make_release_tag(args['tag'], args['author'])
-
-        sync_file = '{0}/{1}'.format(args['deploy_sync'], DEFAULT_HOOK)
-
-        log.info('{0} :: Calling default sync \'{1}\' ... '.
-            format(__name__, sync_file))
-
-        proc = subprocess.Popen([sync_file,
-            args['remote'],
-            args['branch']],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE)
-
-        log.info('SYNC OUT -> ' + '; '.join(
-            filter(lambda x: x, proc.communicate())))
-
-
-class DeployDriverCustom(object):
     """ Driver class for custom hooks """
 
     # class instance
@@ -128,7 +82,7 @@ class DeployDriverCustom(object):
     def __new__(cls, *args, **kwargs):
         """ This class is Singleton, return only one instance """
         if not cls.__instance:
-            cls.__instance = super(DeployDriverCustom, cls).__new__(cls, *args,
+            cls.__instance = super(DeployDriverDefault, cls).__new__(cls, *args,
                                                                     **kwargs)
         return cls.__instance
 
@@ -147,19 +101,31 @@ class DeployDriverCustom(object):
 
         # 1. CALL deploy/apps/common
         _call_hooks(args['deploy_apps_common'], 'pre-sync')
+
+        # 1. CALL deploy/apps/common
         _call_hooks(app_path, 'pre-sync')
 
-        # 2. Apply optional release tag here
+        # 3. CALL deploy/apps/$env
+        if not args['default']:
+            _call_hooks(app_path, 'pre-sync')
+
+        # 3. Apply optional release tag here
         if args['release']:
             _make_release_tag(args['tag'], args['author'])
 
-        # 3. CALL deploy/apps/$env
-        _call_hooks(app_path , 'pre-sync')
 
         # 4. CALL sync, deploy/apps/sync/$env.sync
-        _call_hooks(app_path, args.env)
-        _call_hooks(app_path, 'post-sync')
-        _call_hooks(args['deploy_apps_common'] , 'post-sync')
+        if args['default']:
+            _call_hooks(args['deploy_sync'], 'default')
+        else:
+            _call_hooks(args['deploy_sync'], args.env)
+
+        # 4. CALL app post sync, deploy/apps/$env
+        if not args['default']:
+            _call_hooks(app_path, 'post-sync')
+
+        # 4. CALL common post sync, deploy/apps/common
+        _call_hooks(args['deploy_apps_common'], 'post-sync')
 
 
 class DeployDriverDryRun(object):
