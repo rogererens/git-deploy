@@ -143,20 +143,22 @@ class DeployDriverCustom(object):
 
         """
 
+        app_path = '{0}/{1}'.format(args['deploy_apps'], args.env)
+
         # 1. CALL deploy/apps/common
         _call_hooks(args['deploy_apps_common'], 'pre-sync')
+        _call_hooks(app_path, 'pre-sync')
 
         # 2. Apply optional release tag here
         if args['release']:
             _make_release_tag(args['tag'], args['author'])
 
         # 3. CALL deploy/apps/$env
-        app_path = '{0}/{1}'.format(args['deploy_apps'], args.env)
         _call_hooks(app_path , 'pre-sync')
 
         # 4. CALL sync, deploy/apps/sync/$env.sync
-        _call_hooks(app_path , args.env)
-        _call_hooks(app_path , 'post-sync')
+        _call_hooks(app_path, args.env)
+        _call_hooks(app_path, 'post-sync')
         _call_hooks(args['deploy_apps_common'] , 'post-sync')
 
 
