@@ -15,7 +15,8 @@ import os
 
 from lockers.locker import DeployLockerDefault
 from git_methods import GitMethods
-from drivers.driver import DeployDriverDefault, DeployDriverCustom
+from drivers.driver import DeployDriverDefault, DeployDriverCustom, \
+    DeployDriverDryRun
 from config import log, configure, exit_codes, \
     DEFAULT_BRANCH, DEFAULT_REMOTE, \
     DEFAULT_REMOTE_ARG_IDX, DEFAULT_BRANCH_ARG_IDX
@@ -151,6 +152,7 @@ class GitDeploy(object):
             'hook_script': args.sync,
             'force': args.force,
             'env': args.env,
+            'dryrun': args.dryrun,
         }
 
         for key, value in self.config.iteritems():
@@ -166,17 +168,23 @@ class GitDeploy(object):
             * default sync if one is not specified
         """
 
-        if kwargs['hook_script']:
+        if kwargs['dryrun']:
             log.info('{0} :: SYNC - calling sync hook: {0}.'.format(
-                __name__, kwargs['hook_script']))
-            DeployDriverCustom().sync(kwargs)
-        else:
-            log.info('{0} :: SYNC - calling default sync.'.format(__name__))
-            DeployDriverDefault().sync(kwargs)
+                    __name__, kwargs['hook_script']))
+            DeployDriverDryRun().sync(kwargs)
 
-        # Clean-up
-        if self._locker.check_lock():
-            self._locker.remove_lock()
+        else:
+            if kwargs['hook_script']:
+                log.info('{0} :: SYNC - calling sync hook: {0}.'.format(
+                    __name__, kwargs['hook_script']))
+                DeployDriverCustom().sync(kwargs)
+            else:
+                log.info('{0} :: SYNC - calling default sync.'.format(__name__))
+                DeployDriverDefault().sync(kwargs)
+
+            # Clean-up
+            if self._locker.check_lock():
+                self._locker.remove_lock()
 
         return 0
 
