@@ -80,9 +80,9 @@ def parseargs():
     parser.add_argument("-d", "--dryrun",
                         action='store_true',
                         help="Execute as a dryrun.")
-    parser.add_argument("-n", "--norelease",
+    parser.add_argument("-r", "--release",
                         action='store_true',
-                        help="Suppresses release tag in sync.")
+                        help="Add release tag in sync.")
 
     args = parser.parse_args()
     return args
