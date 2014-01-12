@@ -24,6 +24,41 @@ class DeployDriverError(Exception):
         return self._exit_code
 
 
+def _call_hooks(path, phase):
+    """Performs calls on path/phase dependent hooks
+
+    :param path: hooks path
+    :param phase: deploy phase
+
+    """
+    if os.path.exists(path):
+        sorted_path = sorted(os.listdir(path))
+        for item in sorted_path:
+            item_phase = item.split('.')[0]
+
+            # CALL hook and log
+            if phase == item_phase:
+                cmd = path + '/' + item
+                log_msg = 'CALLING \'{0}\' ON PHASE \'{1}\''.format(
+                  cmd, phase
+                )
+                log.info(__name__ + ' :: {0}'.format(log_msg))
+                proc = subprocess.Popen(path + '/' + item,
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE)
+                log.info(cmd + ' OUT -> ' + '; '.join(
+                    filter(lambda x: x, proc.communicate())))
+
+                # Flag a failed hook
+                if proc.returncode:
+                    raise DeployDriverError(exit_code=17,
+                                            message=exit_codes[17])
+
+    else:
+        log.error(__name__ + ' :: CANNOT FIND HOOK PATH \'{0}\''.format(
+            path))
+        raise DeployDriverError(exit_code=17, message=exit_codes[17])
+
 class DeployDriverDefault(object):
     """
     Default Driver class
@@ -90,41 +125,6 @@ class DeployDriverCustom(object):
                                                                     **kwargs)
         return cls.__instance
 
-    def _call_hooks(self, path, phase):
-        """Performs calls on path/phase dependent hooks
-
-        :param path: hooks path
-        :param phase: deploy phase
-
-        """
-        if os.path.exists(path):
-            sorted_path = sorted(os.listdir(path))
-            for item in sorted_path:
-                item_phase = item.split('.')[0]
-
-                # CALL hook and log
-                if phase == item_phase:
-                    cmd = path + '/' + item
-                    log_msg = 'CALLING \'{0}\' ON PHASE \'{1}\''.format(
-                      cmd, phase
-                    )
-                    log.info(__name__ + ' :: {0}'.format(log_msg))
-                    proc = subprocess.Popen(path + '/' + item,
-                                     stdout=subprocess.PIPE,
-                                     stderr=subprocess.PIPE)
-                    log.info(cmd + ' OUT -> ' + '; '.join(
-                        filter(lambda x: x, proc.communicate())))
-
-                    # Flag a failed hook
-                    if proc.returncode:
-                        raise DeployDriverError(exit_code=17,
-                                                message=exit_codes[17])
-
-        else:
-            log.error(__name__ + ' :: CANNOT FIND HOOK PATH \'{0}\''.format(
-                path))
-            raise DeployDriverError(exit_code=17, message=exit_codes[17])
-
     def sync(self, args):
         """Call custom syncing behaviour.
 
@@ -137,16 +137,16 @@ class DeployDriverCustom(object):
         """
 
         # CALL deploy/apps/common
-        self._call_hooks(args['deploy_apps_common'], 'pre-sync')
+        _call_hooks(args['deploy_apps_common'], 'pre-sync')
 
         # CALL deploy/apps/$env
         app_path = '{0}/{1}'.format(args['deploy_apps'], args.env)
-        self._call_hooks(app_path , 'pre-sync')
+        _call_hooks(app_path , 'pre-sync')
 
         # CALL sync, deploy/apps/sync/$env.sync
-        self._call_hooks(app_path , args.env)
-        self._call_hooks(app_path , 'post-sync')
-        self._call_hooks(args['deploy_apps_common'] , 'post-sync')
+        _call_hooks(app_path , args.env)
+        _call_hooks(app_path , 'post-sync')
+        _call_hooks(args['deploy_apps_common'] , 'post-sync')
 
 
 class DeployDriverDryRun(object):
