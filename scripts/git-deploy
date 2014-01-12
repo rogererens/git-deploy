@@ -78,7 +78,7 @@ def parseargs():
                         default='', type=str,
                         help="Environment to deploy to.")
     parser.add_argument("-d", "--dryrun",
-                        default='', type=str,
+                        action='store_true',
                         help="Execute as a dryrun.")
 
     args = parser.parse_args()
