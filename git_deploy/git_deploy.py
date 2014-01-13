@@ -260,7 +260,7 @@ class GitDeploy(object):
         except NameError:
             raise GitDeployError(message=exit_codes[10], exit_code=10)
 
-        tags = self._get_deploy_tags()
+        tags = GitMethods()._get_deploy_tags()
 
         if num_tags <= len(tags):
             tags = tags[:num_tags]
