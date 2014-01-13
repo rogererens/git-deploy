@@ -97,7 +97,7 @@ class DeployDriverDefault(object):
 
         """
 
-        app_path = '{0}/{1}'.format(args['deploy_apps'], args.env)
+        app_path = '{0}/{1}'.format(args['deploy_apps'], args['env'])
 
         # 1. CALL deploy/apps/common
         _call_hooks(args['deploy_apps_common'], 'pre-sync')
@@ -118,7 +118,7 @@ class DeployDriverDefault(object):
         if args['default']:
             _call_hooks(args['deploy_sync'], 'default')
         else:
-            _call_hooks(args['deploy_sync'], args.env)
+            _call_hooks(args['deploy_sync'], args['env'])
 
         # 4. CALL app post sync, deploy/apps/$env
         if not args['default']:
