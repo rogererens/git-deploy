@@ -89,8 +89,11 @@ class DeployLockerDefault(DeployLocker):
 
         cmd = "touch {0}/{1}".format(self.deploy_path,
                                      self.get_lock_name())
+
+        log.info('{0} :: Creating lock file at {1}:{2}/{3}.'.format(
+            __name__, self.target, self.deploy_path, self.get_lock_name()))
         try:
-            ret = ssh_command_target(cmd, self.target, self.user,
+            ssh_command_target(cmd, self.target, self.user,
                                      self.key_path)
         except Exception as e:
             log.error(__name__ + ' :: ' + e.message)
@@ -135,6 +138,8 @@ class DeployLockerDefault(DeployLocker):
 
         cmd = "rm {0}/{1}".format(self.deploy_path, self.get_lock_name())
 
+        log.info('{0} :: Removing lock file at {1}:{2}/{3}.'.format(
+            __name__, self.target, self.deploy_path, self.get_lock_name()))
         try:
             ssh_command_target(cmd, self.target, self.user, self.key_path)
         except Exception as e:
