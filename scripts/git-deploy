@@ -128,11 +128,11 @@ def main(out=None, err=None):
 
             log.error(__name__ + ' :: GIT DEPLOY FAILED -> ' + e.message)
 
-            if GitDeploy()._check_lock():
+            if GitDeploy().locker.check_lock():
                 log.info(__name__ + ' :: ABORTING DEPLOY -> Removing lock.')
 
                 try:
-                    GitDeploy()._remove_lock()
+                    GitDeploy().locker.remove_lock()
                 except Exception as e:
                     log.error(__name__ + ' :: Could not remove lock '
                                          '-> "{0}".'.format(e.message))

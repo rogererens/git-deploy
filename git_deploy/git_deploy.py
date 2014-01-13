@@ -97,6 +97,10 @@ class GitDeploy(object):
 
         return remote, branch
 
+    @property
+    def locker(self):
+        return self._locker
+
     def start(self, _):
         """
             * write a lock file
