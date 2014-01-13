@@ -146,6 +146,8 @@ class GitDeploy(object):
             'force': args.force,
             'env': args.env,
             'dryrun': args.dryrun,
+            'default': args.default,
+            'release': args.release,
         }
 
         for key, value in self.config.iteritems():
