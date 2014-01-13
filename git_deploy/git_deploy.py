@@ -118,10 +118,6 @@ class GitDeploy(object):
 
         log.info('{0} :: ABORTING git deploy'.format(__name__))
 
-        # Reset to last tag (or head)
-        tag = GitMethods()._get_latest_deploy_tag()
-        GitMethods()._dulwich_reset_to_tag(tag)
-
         # Remove lock file
         self._locker.remove_lock()
         return 0
