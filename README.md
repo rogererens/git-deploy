@@ -349,3 +349,12 @@ Finally, note the new sync tag for the rollback:
     sartoris-sync-20131220-012354
     sartoris-sync-20131220-013503
     sartoris-sync-20131220-015351
+
+
+Development
+-----------
+
+Pull requests welcome!  If you love Python and git this may be the perfect project for you.  All source is PEP8
+compliant Python 2.7 compatible.  Please drop in tests where possible for new additions.
+
+Patrick Reilly (patrick.reilly at gmail dot com) and Ryan Faulkner (bobs.ur.uncle at gmail dot com).
