@@ -77,8 +77,8 @@ class GitDeploy(object):
             # Call config
             cls.__instance._configure(**kwargs)
 
-            log.info('{0} :: Config - {1}'.format(__name__,
-                     str(cls.__instance.config)))
+            log.debug('{0} :: Config - {1}'.format(__name__,
+                      str(cls.__instance.config)))
         return cls.__instance
 
     def _configure(self, **kwargs):
