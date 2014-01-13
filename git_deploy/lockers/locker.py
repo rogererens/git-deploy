@@ -87,7 +87,7 @@ class DeployLockerDefault(DeployLocker):
     def add_lock(self):
         """ Write the lock file """
 
-        cmd = "touch {0}/{2}".format(self.deploy_path,
+        cmd = "touch {0}/{1}".format(self.deploy_path,
                                      self.get_lock_name())
         try:
             ret = ssh_command_target(cmd, self.target, self.user,
