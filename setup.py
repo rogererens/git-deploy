@@ -4,7 +4,7 @@
 import sys
 from setuptools import setup
 
-__version__ = '0.3'
+__version__ = '0.3.0'
 
 meta = dict(
     name='git_deploy',
@@ -26,7 +26,7 @@ meta = dict(
     ],
     keywords=['git', 'deploy', 'scripts', 'cli'],
     classifiers=[
-        "Development Status :: 2 - Pre-Alpha",
+        "Development Status :: 4 - Beta",
         "Environment :: Console",
         "Intended Audience :: Developers",
         "Topic :: Utilities",
