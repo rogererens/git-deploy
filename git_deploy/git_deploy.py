@@ -164,8 +164,7 @@ class GitDeploy(object):
         """
 
         if kwargs['dryrun']:
-            log.info('{0} :: SYNC - calling sync hook: {0}.'.format(
-                    __name__, kwargs['hook_script']))
+            log.info('{0} :: SYNC -> dryrun.'.format(__name__))
             DeployDriverDryRun().sync(kwargs)
 
         else:
