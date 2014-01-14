@@ -111,13 +111,14 @@ class DeployDriverDefault(object):
         app_path = '{0}/{1}'.format(args['deploy_apps'], args['env'])
 
         # 1. CALL deploy/apps/common
+        log.info('{0} :: Calling pre-sync common: "{1}" ...'.
+            format(__name__, args['deploy_apps_common']))
         _call_hooks(args['deploy_apps_common'], 'pre-sync', args['dryrun'])
 
-        # 1. CALL deploy/apps/common
-        _call_hooks(app_path, 'pre-sync', args['dryrun'])
-
-        # 3. CALL deploy/apps/$env
+        # 2. CALL deploy/apps/$env
         if not args['default']:
+            log.info('{0} :: Calling pre-sync app: "{1}" ...'.
+                format(__name__, app_path))
             _call_hooks(app_path, 'pre-sync', args['dryrun'])
 
         # 3. Apply optional release tag here
@@ -125,6 +126,8 @@ class DeployDriverDefault(object):
             _make_release_tag(args['tag'], args['author'])
 
         # 4. CALL sync, deploy/apps/sync/$env.sync
+        log.info('{0} :: Calling pre-sync app: "{1}" ...'.
+            format(__name__, args['deploy_sync']))
         if args['default'] or not args['env']:
             _call_hooks(args['deploy_sync'], 'default', args['dryrun'])
         else:
@@ -132,9 +135,13 @@ class DeployDriverDefault(object):
 
         # 4. CALL app post sync, deploy/apps/$env
         if not args['default']:
+            log.info('{0} :: Calling post-sync app: "{1}" ...'.
+                format(__name__, app_path))
             _call_hooks(app_path, 'post-sync', args['dryrun'])
 
         # 4. CALL common post sync, deploy/apps/common
+        log.info('{0} :: Calling post-sync app: "{1}" ...'.
+            format(__name__, args['deploy_apps_common']))
         _call_hooks(args['deploy_apps_common'], 'post-sync', args['dryrun'])
 
 
