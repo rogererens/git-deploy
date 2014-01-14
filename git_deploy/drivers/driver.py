@@ -24,7 +24,7 @@ class DeployDriverError(Exception):
         return self._exit_code
 
 
-def _call_hooks(path, phase):
+def _call_hooks(path, phase, dryrun=False):
     """Performs calls on path/phase dependent hooks
 
     :param path: hooks path
@@ -43,16 +43,27 @@ def _call_hooks(path, phase):
                   cmd, phase
                 )
                 log.info(__name__ + ' :: {0}'.format(log_msg))
-                proc = subprocess.Popen(path + '/' + item,
-                                 stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE)
-                log.info(cmd + ' OUT -> ' + '; '.join(
-                    filter(lambda x: x, proc.communicate())))
+                if dryrun:
+                    print ''
+                    with open(cmd) as f:
+                        for line in f.readlines():
+                            if not line[-1] == '\n':
+                                print '\t' + line[:-1]
+                            else:
+                                print '\t' + line[:-1]
+                    print ''
 
-                # Flag a failed hook
-                if proc.returncode:
-                    raise DeployDriverError(exit_code=17,
-                                            message=exit_codes[17])
+                else:
+                    proc = subprocess.Popen(path + '/' + item,
+                                     stdout=subprocess.PIPE,
+                                     stderr=subprocess.PIPE)
+                    log.info(cmd + ' OUT -> ' + '; '.join(
+                        filter(lambda x: x, proc.communicate())))
+
+                    # Flag a failed hook
+                    if proc.returncode:
+                        raise DeployDriverError(exit_code=17,
+                                                message=exit_codes[17])
 
     else:
         log.error(__name__ + ' :: CANNOT FIND HOOK PATH \'{0}\''.format(
@@ -100,37 +111,36 @@ class DeployDriverDefault(object):
         app_path = '{0}/{1}'.format(args['deploy_apps'], args['env'])
 
         # 1. CALL deploy/apps/common
-        _call_hooks(args['deploy_apps_common'], 'pre-sync')
+        _call_hooks(args['deploy_apps_common'], 'pre-sync', args['dryrun'])
 
         # 1. CALL deploy/apps/common
-        _call_hooks(app_path, 'pre-sync')
+        _call_hooks(app_path, 'pre-sync', args['dryrun'])
 
         # 3. CALL deploy/apps/$env
         if not args['default']:
-            _call_hooks(app_path, 'pre-sync')
+            _call_hooks(app_path, 'pre-sync', args['dryrun'])
 
         # 3. Apply optional release tag here
-        if args['release']:
+        if args['release'] and not args['dryrun']:
             _make_release_tag(args['tag'], args['author'])
 
-
         # 4. CALL sync, deploy/apps/sync/$env.sync
-        if args['default']:
-            _call_hooks(args['deploy_sync'], 'default')
+        if args['default'] or not args['env']:
+            _call_hooks(args['deploy_sync'], 'default', args['dryrun'])
         else:
-            _call_hooks(args['deploy_sync'], args['env'])
+            _call_hooks(args['deploy_sync'], args['env'], args['dryrun'])
 
         # 4. CALL app post sync, deploy/apps/$env
         if not args['default']:
-            _call_hooks(app_path, 'post-sync')
+            _call_hooks(app_path, 'post-sync', args['dryrun'])
 
         # 4. CALL common post sync, deploy/apps/common
-        _call_hooks(args['deploy_apps_common'], 'post-sync')
+        _call_hooks(args['deploy_apps_common'], 'post-sync', args['dryrun'])
 
 
 class DeployDriverDryRun(object):
     """
-    Dryrun Driver class
+    Dryrun Driver class.  This is a wrrapper over DeployDriverDefault.
     """
 
     # class instance
@@ -151,17 +161,17 @@ class DeployDriverDryRun(object):
     def sync(self, args):
 
         log.info('{0} :: DRYRUN SYNC'.format(__name__))
+
         log.info('--> TAG \'{0}\''.format(args['tag']))
         log.info('--> AUTHOR \'{0}\''.format(args['author']))
         log.info('--> REMOTE \'{0}\''.format(args['remote']))
         log.info('--> BRANCH \'{0}\''.format(args['branch']))
 
-        if args['hook_script']:
-            log.info('--> You\'ve specified a CUSTOM HOOK.')
-            # TODO - emit all scripts and content to be run in order
-        else:
-            log.info('--> You are using the DEFAULT SYNC.')
-            # TODO - emit all scripts and content to be run in order
+        log.info('DUMPING DEPLOY SCRIPTS IN ORDER OF EXECUTION.')
+        DeployDriverDefault().sync(args)
+
+        log.info('{0} :: DRYRUN SYNC COMPLETE'.format(__name__))
+
 
 
 
