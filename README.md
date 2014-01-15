@@ -239,7 +239,7 @@ During these phases git-deploy will glob in all the deploy/apps/{common,$app}/$p
 the common hooks and then the $app specific hooks. Note that the hooks MUST have their executable bit set.
 
 
-** Calling Environments **
+**Calling Environments**
 
 To call an environment based deploy use the -e option:
 
@@ -249,7 +249,7 @@ To call an environment based deploy use the -e option:
 Examples
 --------
 
-** Reverting to a tag **
+**Reverting to a tag**
 
 This example illustrates how to rollback a deploy to an earlier tag.
 
@@ -362,7 +362,7 @@ Finally, note the new sync tag for the rollback:
     sartoris-sync-20131220-015351
 
 
-** Dryrun of the default **
+**Dryrun of the default**
 
 
 In this example we have the following deploy tree:
@@ -472,7 +472,7 @@ To execute the dryrun on the default note that any app specific hooks are ignore
     Jan-14 23:19:34 INFO     git_deploy.drivers.driver :: DRYRUN SYNC COMPLETE
 
 
-** Dryrun and sync to an environment **
+**Dryrun and sync to an environment**
 
 
 In this example we have a set of dummy hooks:
