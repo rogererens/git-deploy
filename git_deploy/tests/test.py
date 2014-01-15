@@ -9,9 +9,12 @@
 """
 
 import unittest
+import tempfile
+
 from collections import namedtuple
 from git_deploy.config import log
-from git_deploy.git_deploy import GitDeploy, GitDeployError, exit_codes
+from git_deploy.git_deploy import GitDeploy, GitMethods, GitDeployError, \
+    exit_codes
 from dulwich.repo import Repo
 from os import mkdir, chdir
 from os.path import exists
@@ -222,7 +225,7 @@ class TestGitDeployDulwichDeps(unittest.TestCase):
             1. Call _dulwich_tag
             2. Check most recent tag to verify tag exists
         """
-        s = GitDeploy()
+        s = GitMethods()
         tag = 'test_tag'
         s._dulwich_tag(tag, s._make_author())
         tags = s._dulwich_get_tags()
