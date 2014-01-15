@@ -351,6 +351,127 @@ Finally, note the new sync tag for the rollback:
     sartoris-sync-20131220-015351
 
 
+** Dryrun and sync to an environment **
+
+In this example we have a set of dummy hooks:
+
+    $ tree deploy/apps/{prod,common}/ deploy/sync/
+    deploy/apps/prod/
+    |-- post-sync.010_test.sh
+    |-- post-sync.020_test.sh
+    |-- pre-sync.010_test.sh
+    |-- pre-sync.020_test.sh
+    deploy/apps/common/
+    |-- pre-sync.010_test.sh
+    |-- post-sync.010_test.sh
+    deploy/sync/
+    |-- prod.sync
+    |-- default.sync
+
+These hooks just do some simple echoing, a dryrun will illustrate how the hooking system executes through the phases of
+deploy.  In fact, if you like, you can setup separate environments to serve as different phases themselves.  Note,
+that as we're specifiying environment the default.sync is ignored.  Without further ado:
+
+    $ git deploy start
+
+    Jan-14 00:11:17 INFO     git_deploy.lockers.locker :: Checking for lock file at stat1.wikimedia.org.
+    Jan-14 00:11:18 INFO     git_deploy.lockers.locker :: No lock file exists.
+    Jan-14 00:11:18 INFO     git_deploy.lockers.locker :: Creating lock file at stat1.wikimedia.org:/home/rfaulk/test_sartoris/.git/deploy//lock-rfaulk.lock.
+
+Do the dryrun:
+
+    $ git deploy sync -d -e prod
+
+    Jan-14 23:06:31 INFO     git_deploy.lockers.locker :: Checking for lock file at stat1.wikimedia.org.
+    Jan-14 23:06:32 INFO     git_deploy.lockers.locker :: rfaulk has lock.
+    Jan-14 23:06:32 INFO     git_deploy.git_deploy :: SYNC -> dryrun.
+    Jan-14 23:06:32 INFO     git_deploy.drivers.driver :: DRYRUN SYNC
+    Jan-14 23:06:32 INFO     --> TAG 'sartoris-sync-20140114-230632'
+    Jan-14 23:06:32 INFO     --> AUTHOR 'rfaulk <rfaulk@yahoo-inc.com>'
+    Jan-14 23:06:32 INFO     --> REMOTE 'origin'
+    Jan-14 23:06:32 INFO     --> BRANCH 'master'
+    Jan-14 23:06:32 INFO     DUMPING DEPLOY SCRIPTS IN ORDER OF EXECUTION.
+    Jan-14 23:06:32 INFO     git_deploy.drivers.driver :: Calling pre-sync common: "/Users/rfaulk/Projects/test_sartoris//.git/deploy/apps/common" ...
+    Jan-14 23:06:32 INFO     git_deploy.drivers.driver :: CALLING '/Users/rfaulk/Projects/test_sartoris//.git/deploy/apps/common/pre-sync.010_test.sh' ON PHASE 'pre-sync'
+
+        #!/bin/bash
+        echo "common pre-sync"
+
+    Jan-14 23:06:32 INFO     git_deploy.drivers.driver :: Calling pre-sync app: "/Users/rfaulk/Projects/test_sartoris//.git/deploy/apps/prod" ...
+    Jan-14 23:06:32 INFO     git_deploy.drivers.driver :: CALLING '/Users/rfaulk/Projects/test_sartoris//.git/deploy/apps/prod/pre-sync.010_test.sh' ON PHASE 'pre-sync'
+
+        #!/bin/bash
+        echo "prod pre-sync 1"
+
+    Jan-14 23:06:32 INFO     git_deploy.drivers.driver :: CALLING '/Users/rfaulk/Projects/test_sartoris//.git/deploy/apps/prod/pre-sync.020_test.sh' ON PHASE 'pre-sync'
+
+        #!/bin/bash
+        echo "prodn pre-sync 2"
+
+    Jan-14 23:06:32 INFO     git_deploy.drivers.driver :: Calling pre-sync app: "/Users/rfaulk/Projects/test_sartoris//.git/deploy/sync" ...
+    Jan-14 23:06:32 INFO     git_deploy.drivers.driver :: CALLING '/Users/rfaulk/Projects/test_sartoris//.git/deploy/sync/prod.sync' ON PHASE 'prod'
+
+        #!/bin/bash
+        echo prod.sync
+
+    Jan-14 23:06:32 INFO     git_deploy.drivers.driver :: Calling post-sync app: "/Users/rfaulk/Projects/test_sartoris//.git/deploy/apps/prod" ...
+    Jan-14 23:06:32 INFO     git_deploy.drivers.driver :: CALLING '/Users/rfaulk/Projects/test_sartoris//.git/deploy/apps/prod/post-sync.010_test.sh' ON PHASE 'post-sync'
+
+        #!/bin/bash
+        echo "prod post-sync 1"
+
+    Jan-14 23:06:32 INFO     git_deploy.drivers.driver :: CALLING '/Users/rfaulk/Projects/test_sartoris//.git/deploy/apps/prod/post-sync.020_test.sh' ON PHASE 'post-sync'
+
+        #!/bin/bash
+        echo "prod post-sync 2"
+
+    Jan-14 23:06:32 INFO     git_deploy.drivers.driver :: Calling post-sync app: "/Users/rfaulk/Projects/test_sartoris//.git/deploy/apps/common" ...
+    Jan-14 23:06:32 INFO     git_deploy.drivers.driver :: CALLING '/Users/rfaulk/Projects/test_sartoris//.git/deploy/apps/common/post-sync.010_test.sh' ON PHASE 'post-sync'
+
+        #!/bin/bash
+        echo "common post-sync"
+
+    Jan-14 23:06:32 INFO     git_deploy.drivers.driver :: DRYRUN SYNC COMPLETE
+
+Finally, let's execute the dummy sync:
+
+    $ git deploy sync -e prod
+
+    Jan-14 23:07:38 INFO     git_deploy.lockers.locker :: Checking for lock file at stat1.wikimedia.org.
+    Jan-14 23:07:40 INFO     git_deploy.lockers.locker :: rfaulk has lock.
+    Jan-14 23:07:40 INFO     git_deploy.git_deploy :: SYNC - calling default sync.
+    Jan-14 23:07:40 INFO     git_deploy.drivers.driver :: Calling pre-sync common: "/Users/rfaulk/Projects/test_sartoris//.git/deploy/apps/common" ...
+    Jan-14 23:07:40 INFO     git_deploy.drivers.driver :: CALLING '/Users/rfaulk/Projects/test_sartoris//.git/deploy/apps/common/pre-sync.010_test.sh' ON PHASE 'pre-sync'
+    Jan-14 23:07:40 INFO     /Users/rfaulk/Projects/test_sartoris//.git/deploy/apps/common/pre-sync.010_test.sh OUT -> common pre-sync
+
+    Jan-14 23:07:40 INFO     git_deploy.drivers.driver :: Calling pre-sync app: "/Users/rfaulk/Projects/test_sartoris//.git/deploy/apps/prod" ...
+    Jan-14 23:07:40 INFO     git_deploy.drivers.driver :: CALLING '/Users/rfaulk/Projects/test_sartoris//.git/deploy/apps/prod/pre-sync.010_test.sh' ON PHASE 'pre-sync'
+    Jan-14 23:07:40 INFO     /Users/rfaulk/Projects/test_sartoris//.git/deploy/apps/prod/pre-sync.010_test.sh OUT -> prod pre-sync 1
+
+    Jan-14 23:07:40 INFO     git_deploy.drivers.driver :: CALLING '/Users/rfaulk/Projects/test_sartoris//.git/deploy/apps/prod/pre-sync.020_test.sh' ON PHASE 'pre-sync'
+    Jan-14 23:07:40 INFO     /Users/rfaulk/Projects/test_sartoris//.git/deploy/apps/prod/pre-sync.020_test.sh OUT -> prodn pre-sync 2
+
+    Jan-14 23:07:40 INFO     git_deploy.drivers.driver :: Calling pre-sync app: "/Users/rfaulk/Projects/test_sartoris//.git/deploy/sync" ...
+    Jan-14 23:07:40 INFO     git_deploy.drivers.driver :: CALLING '/Users/rfaulk/Projects/test_sartoris//.git/deploy/sync/prod.sync' ON PHASE 'prod'
+    Jan-14 23:07:40 INFO     /Users/rfaulk/Projects/test_sartoris//.git/deploy/sync/prod.sync OUT -> prod.sync
+
+    Jan-14 23:07:40 INFO     git_deploy.drivers.driver :: Calling post-sync app: "/Users/rfaulk/Projects/test_sartoris//.git/deploy/apps/prod" ...
+    Jan-14 23:07:40 INFO     git_deploy.drivers.driver :: CALLING '/Users/rfaulk/Projects/test_sartoris//.git/deploy/apps/prod/post-sync.010_test.sh' ON PHASE 'post-sync'
+    Jan-14 23:07:40 INFO     /Users/rfaulk/Projects/test_sartoris//.git/deploy/apps/prod/post-sync.010_test.sh OUT -> prod post-sync 1
+
+    Jan-14 23:07:40 INFO     git_deploy.drivers.driver :: CALLING '/Users/rfaulk/Projects/test_sartoris//.git/deploy/apps/prod/post-sync.020_test.sh' ON PHASE 'post-sync'
+    Jan-14 23:07:40 INFO     /Users/rfaulk/Projects/test_sartoris//.git/deploy/apps/prod/post-sync.020_test.sh OUT -> prod post-sync 2
+
+    Jan-14 23:07:40 INFO     git_deploy.drivers.driver :: Calling post-sync app: "/Users/rfaulk/Projects/test_sartoris//.git/deploy/apps/common" ...
+    Jan-14 23:07:40 INFO     git_deploy.drivers.driver :: CALLING '/Users/rfaulk/Projects/test_sartoris//.git/deploy/apps/common/post-sync.010_test.sh' ON PHASE 'post-sync'
+    Jan-14 23:07:40 INFO     /Users/rfaulk/Projects/test_sartoris//.git/deploy/apps/common/post-sync.010_test.sh OUT -> common post-sync
+
+    Jan-14 23:07:40 INFO     git_deploy.lockers.locker :: Checking for lock file at stat1.wikimedia.org.
+    Jan-14 23:07:41 INFO     git_deploy.lockers.locker :: rfaulk has lock.
+    Jan-14 23:07:41 INFO     git_deploy.lockers.locker :: SSH Lock destroy.
+    Jan-14 23:07:41 INFO     git_deploy.lockers.locker :: Removing lock file at stat1.wikimedia.org:/home/rfaulk/test_sartoris/.git/deploy//lock-rfaulk.lock.
+
+
 Development
 -----------
 
