@@ -153,6 +153,9 @@ repository on the latest commit of the deploy. If the default push and pull hook
 push its changes to the remote and the target will pull in the new changes.  Deployment tags have the form
 *<repo>-sync-<date>-<time>*.
 
+Finally, you can also do a dryrun on the sync:
+
+    client.realm.org:me.com me$ git deploy sync -d
 
 *Abort*
 
