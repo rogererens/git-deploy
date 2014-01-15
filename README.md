@@ -196,6 +196,7 @@ https://github.com/git-deploy/git-deploy#writing-deploy-hooks.
 
 The hooking system can be used to execute user defined actions in the deploy process.
 
+
 **Writing Hooks**
 
 This system is based around a sync model where a sync is the process by which the deploy target is made consistent with
@@ -235,10 +236,17 @@ During these phases git-deploy will glob in all the deploy/apps/{common,$app}/$p
 the common hooks and then the $app specific hooks. Note that the hooks MUST have their executable bit set.
 
 
+** Calling Environments **
+
+To call an environment based deploy use the -e option:
+
+    $ git deploy sync -e $ENV
+
+
 Examples
 --------
 
-**Reverting to a tag**
+** Reverting to a tag **
 
 This example illustrates how to rollback a deploy to an earlier tag.
 
