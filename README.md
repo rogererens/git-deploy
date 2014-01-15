@@ -351,7 +351,118 @@ Finally, note the new sync tag for the rollback:
     sartoris-sync-20131220-015351
 
 
+** Dryrun of the default **
+
+
+In this example we have the following deploy tree:
+
+    $ tree deploy/apps/{prod,common}/ deploy/sync/
+    deploy/apps/prod/
+    |-- post-sync.010_test.sh
+    |-- post-sync.020_test.sh
+    |-- pre-sync.010_test.sh
+    |-- pre-sync.020_test.sh
+    deploy/apps/common/
+    |-- pre-sync.010_test.sh
+    |-- post-sync.010_test.sh
+    deploy/sync/
+    |-- prod.sync
+    |-- default.sync
+
+To execute the dryrun on the default note that any app specific hooks are ignored:
+
+    $ git deploy start
+
+    Jan-14 23:19:26 INFO     git_deploy.lockers.locker :: Checking for lock file at stat1.wikimedia.org.
+    Jan-14 23:19:27 INFO     git_deploy.lockers.locker :: No lock file exists.
+    Jan-14 23:19:27 INFO     git_deploy.lockers.locker :: Creating lock file at stat1.wikimedia.org:/home/rfaulk/test_sartoris/.git/deploy//lock-rfaulk.lock.
+
+    $ git deploy sync -d
+
+    Jan-14 23:19:32 INFO     git_deploy.lockers.locker :: Checking for lock file at stat1.wikimedia.org.
+    Jan-14 23:19:34 INFO     git_deploy.lockers.locker :: rfaulk has lock.
+    Jan-14 23:19:34 INFO     git_deploy.git_deploy :: SYNC -> dryrun.
+    Jan-14 23:19:34 INFO     git_deploy.drivers.driver :: DRYRUN SYNC
+    Jan-14 23:19:34 INFO     --> TAG 'sartoris-sync-20140114-231934'
+    Jan-14 23:19:34 INFO     --> AUTHOR 'rfaulk <rfaulk@yahoo-inc.com>'
+    Jan-14 23:19:34 INFO     --> REMOTE 'origin'
+    Jan-14 23:19:34 INFO     --> BRANCH 'master'
+    Jan-14 23:19:34 INFO     DUMPING DEPLOY SCRIPTS IN ORDER OF EXECUTION.
+    Jan-14 23:19:34 INFO     git_deploy.drivers.driver :: Calling pre-sync common: "/Users/rfaulk/Projects/test_sartoris//.git/deploy/apps/common" ...
+    Jan-14 23:19:34 INFO     git_deploy.drivers.driver :: CALLING '/Users/rfaulk/Projects/test_sartoris//.git/deploy/apps/common/pre-sync.010_test.sh' ON PHASE 'pre-sync'
+
+        #!/bin/bash
+        echo "common pre-sync"
+
+    Jan-14 23:19:34 INFO     git_deploy.drivers.driver :: Calling pre-sync app: "/Users/rfaulk/Projects/test_sartoris//.git/deploy/apps/" ...
+    Jan-14 23:19:34 INFO     git_deploy.drivers.driver :: Calling pre-sync app: "/Users/rfaulk/Projects/test_sartoris//.git/deploy/sync" ...
+    Jan-14 23:19:34 INFO     git_deploy.drivers.driver :: CALLING '/Users/rfaulk/Projects/test_sartoris//.git/deploy/sync/default.sync' ON PHASE 'default'
+
+        #!/usr/bin/python
+        # -*- coding: utf-8 -*-
+
+        """
+
+        Default sync script that performs push from client.  The expected ops
+        are the following:
+
+            cd $GIT_DEPLOY_HOME
+            /usr/bin/git push origin master
+            /usr/bin/git push --tags
+
+        """
+
+        import sys
+        import logging
+
+        from git_deploy.git_deploy import GitMethods
+        from git_deploy.utils import ssh_command_target
+
+        log_format = "%(asctime)s %(levelname)-8s %(message)s"
+        handler = logging.StreamHandler(sys.stderr)
+        handler.setFormatter(logging.Formatter(fmt=log_format,
+                             datefmt='%b-%d %H:%M:%S'))
+
+
+        def main():
+
+            # Dulwich push
+            remote = GitMethods().config['deploy.remote_url']
+            logging.info(__name__ + ' :: Default sync, pushing to \'{0}\''.format(
+                remote))
+            GitMethods()._dulwich_push(remote, 'master')
+
+            # git pull on remote
+            target_path = GitMethods().config['path']
+            cmd = "git --git-dir={0}/.git --work-tree={0} pull origin master".format(
+                target_path)
+            target = GitMethods().config['target']
+            user = GitMethods().config['user.name']
+            key_path = GitMethods().config['deploy.key_path']
+
+            logging.info(__name__ + ' :: Default sync, pulling '
+                                    'changes to \'{0}\''.format(target))
+            ssh_command_target(cmd, target, user, key_path)
+
+
+        def cli():
+            sys.exit(main())
+
+        if __name__ == "__main__":  # pragma: nocover
+            cli()
+
+    Jan-14 23:19:34 INFO     git_deploy.drivers.driver :: Calling post-sync app: "/Users/rfaulk/Projects/test_sartoris//.git/deploy/apps/" ...
+    Jan-14 23:19:34 INFO     git_deploy.drivers.driver :: Calling post-sync app: "/Users/rfaulk/Projects/test_sartoris//.git/deploy/apps/common" ...
+    Jan-14 23:19:34 INFO     git_deploy.drivers.driver :: CALLING '/Users/rfaulk/Projects/test_sartoris//.git/deploy/apps/common/post-sync.010_test.sh' ON PHASE 'post-sync'
+
+        #!/bin/bash
+        echo "common post-sync"
+
+    Jan-14 23:19:34 INFO     git_deploy.drivers.driver :: DRYRUN SYNC COMPLETE
+
+
 ** Dryrun and sync to an environment **
+
 
 In this example we have a set of dummy hooks:
 
