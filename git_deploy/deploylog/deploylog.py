@@ -5,6 +5,8 @@ Handles logging related functionality for deployments
 __date__ = '2014-01-14'
 __license__ = 'GPL v2.0 (or later)'
 
+import re
+
 from git_deploy.utils import ssh_command_target
 from git_deploy.config import log
 
@@ -60,8 +62,10 @@ class DeployLogDefault(object):
         Returns True on successful logging, false otherwise.
         """
 
-        # TODO - escape logline
-        cmd = "echo '{0}' >> {1}/{2}".format(line, self.path, self.LOGNAME_ACTIVE)
+        # escape logline
+        re.escape(line)
+        cmd = "echo '{0}' >> {1}/{2}".format(line, self.path,
+                                             self.LOGNAME_ACTIVE)
 
         # Write remote log line
         try:
