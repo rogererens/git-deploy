@@ -18,20 +18,26 @@ class DeployLogError(Exception):
 
 
 class DeployLogDefault(object):
-    """ Driver class for custom hooks """
+    """ Default Logging for deploy """
+
+    LOGNAME = 'git-deploy.log'
 
     # class instance
     __instance = None
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, target, path, user, local_key_path):
         """ Initialize class instance """
         self.__class__.__instance = self
+
+        self.target = target
+        self.path = path
+        self.user = user
+        self.key_path = local_key_path
 
     def __new__(cls, *args, **kwargs):
         """ This class is Singleton, return only one instance """
         if not cls.__instance:
-            cls.__instance = super(DeployLogDefault, cls).__new__(cls, *args,
-                                                                  **kwargs)
+            cls.__instance = super(DeployLogDefault, cls).__new__(cls)
         return cls.__instance
 
     def log(self, args):
