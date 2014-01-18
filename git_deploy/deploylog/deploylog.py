@@ -5,6 +5,9 @@ Handles logging related functionality for deployments
 __date__ = '2014-01-14'
 __license__ = 'GPL v2.0 (or later)'
 
+from git_deploy.utils import ssh_command_target
+from git_deploy.config import log
+
 
 class DeployLogError(Exception):
     """ Basic exception class for DeployDriver types """
@@ -40,5 +43,21 @@ class DeployLogDefault(object):
             cls.__instance = super(DeployLogDefault, cls).__new__(cls)
         return cls.__instance
 
-    def log(self, args):
-        raise NotImplementedError()
+    def log(self, line):
+        """
+        Handles log writing to remote file
+
+        :param line: string; the line to be logged
+        """
+
+        # TODO - escape logline
+        cmd = "echo '{0}' >> {1}/{2}".format(line, self.path, self.LOGNAME)
+
+        # Write remote log line
+        try:
+            ssh_command_target(cmd, self.target, self.user, self.key_path)
+        except:
+            log.error("Failed to log '{0}'".format(line))
+            return False
+
+        return True
