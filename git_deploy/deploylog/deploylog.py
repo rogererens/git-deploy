@@ -43,7 +43,7 @@ class DeployLogDefault(object):
         self.__class__.__instance = self
 
         self.target = target
-        self.path = path
+        self.path = path + '/logs'
         self.user = user
         self.key_path = local_key_path
 
