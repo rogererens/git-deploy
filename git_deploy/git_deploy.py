@@ -14,6 +14,7 @@ __license__ = 'GPL v2.0 (or later)'
 import os
 
 from lockers.locker import DeployLockerDefault
+from deploylog.deploylog import DeployLogDefault
 from git_methods import GitMethods
 from drivers.driver import DeployDriverDefault, DeployDriverDryRun
 from config import log, configure, exit_codes, \
@@ -66,6 +67,14 @@ class GitDeploy(object):
             user=self.config['user.name'],
             key_path=self.config['deploy.key_path'],
             lock_handle=self.LOCK_FILE_HANDLE
+        )
+
+        # Deploy Logger
+        self.deploy_log = DeployLogDefault(
+            self.config['target'],
+            self.config['path'] + self.DEPLOY_DIR,
+            self.config['user.name'],
+            self.config['deploy.key_path'],
         )
 
     def __new__(cls, *args, **kwargs):
