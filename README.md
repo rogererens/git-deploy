@@ -246,6 +246,19 @@ To call an environment based deploy use the -e option:
     $ git deploy sync -e $ENV
 
 
+Deploy Logging
+--------------
+
+Git deploy maintains a deploy log on the target's deploy root path.  The logs can be found under:
+
+    ${DEPLOY_ROOT}/logs/git-deploy.log (archive)
+    ${DEPLOY_ROOT}/logs/git-deploy-active.log (active)
+
+The active log stores logging from any currently active deploys and is flush-appended to the archive log on
+completion of a deploy.  There is currently no default log rotation implemented on the target in git-deploy
+so this would have to be added manually if desired.
+
+
 Examples
 --------
 
