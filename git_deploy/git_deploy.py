@@ -129,7 +129,11 @@ class GitDeploy(object):
             * remove lock file
         """
 
-        log.info('{0} :: ABORTING git deploy'.format(__name__))
+        logline = 'ABORTING git deploy'
+        log.info(__name__ + ' :: ' + logline)
+        self.deploy_log.log('user(' + self.config['user.name'] +
+                            ') ' + logline)
+        self.deploy_log.log_archive()
 
         # Remove lock file
         self._locker.remove_lock()
@@ -173,14 +177,20 @@ class GitDeploy(object):
         """
 
         if kwargs['dryrun']:
-            log.info('{0} :: SYNC -> dryrun.'.format(__name__))
+            logline = 'SYNC -> dryrun.'
+            log.info(__name__ + ' :: ' + logline)
             DeployDriverDryRun().sync(kwargs)
 
         else:
-            log.info('{0} :: SYNC - calling default sync.'.format(__name__))
+            logline = 'SYNC - calling default sync.'
+            log.info(__name__ + ' :: ' + logline)
+            self.deploy_log.log('user(' + self.config['user.name'] +
+                                ') ' + logline)
+
             DeployDriverDefault().sync(kwargs)
 
             # Clean-up
+            self.deploy_log.log_archive()
             if self._locker.check_lock():
                 self._locker.remove_lock()
 
@@ -209,8 +219,10 @@ class GitDeploy(object):
             else:
                 raise GitDeployError(message=exit_codes[36], exit_code=36)
 
-            log.info('{0} :: REVERT -> no tag specified, using: \'{1}\''.
-                format(__name__, tag))
+            logline = 'REVERT -> no tag specified, using: \'{0}\''.format(tag)
+            log.info(__name__ + ' :: ' + logline)
+            self.deploy_log.log('user(' + self.config['user.name'] +
+                                ') ' + logline)
 
         #
         # Rollback to tag:
@@ -220,8 +232,10 @@ class GitDeploy(object):
         #   3. commit
         #
 
-        log.info(__name__ + ' :: REVERT -> Attempting to revert to '
-                            'tag: \'{0}\''.format(tag))
+        logline = 'REVERT -> Attempting to revert to tag: \'{0}\''.format(tag)
+        log.info(__name__ + ' :: ' + logline)
+        self.deploy_log.log('user(' + self.config['user.name'] +
+                            ') ' + logline)
 
         tag_commit_sha = GitMethods()._get_commit_sha_for_tag(tag)
         commit_sha = None
@@ -237,8 +251,11 @@ class GitDeploy(object):
         GitMethods()._dulwich_commit(GitMethods()._make_author(),
                                      message='Rollback to {0}.'.format(tag))
 
-        log.info(__name__ + ' :: REVERT -> Reverted to tag: \'{0}\', '
-                            'call "git deploy sync" to persist'.format(tag))
+        logline = 'REVERT -> Reverted to tag: \'{0}\', call "git deploy ' \
+                  'sync" to persist'.format(tag)
+        log.info(__name__ + ' :: ' + logline)
+        self.deploy_log.log('user(' + self.config['user.name'] +
+                            ') ' + logline)
 
         if args.auto_sync:
             return self._sync(args)
