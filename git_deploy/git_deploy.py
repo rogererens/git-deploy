@@ -197,6 +197,9 @@ class GitDeploy(object):
             if self._locker.check_lock():
                 self._locker.remove_lock()
 
+        logline = 'SYNC successful!'
+        self.deploy_log.log('user(' + self.config['user.name'] +
+                            ') ' + logline)
         return 0
 
     def revert(self, args):
