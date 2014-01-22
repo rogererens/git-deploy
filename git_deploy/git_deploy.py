@@ -121,6 +121,9 @@ class GitDeploy(object):
 
         self._locker.add_lock()
 
+        logline = 'STARTING git deploy.'
+        self.deploy_log.log('user(' + self.config['user.name'] +
+                            ') ' + logline)
         return 0
 
     def abort(self, _):
