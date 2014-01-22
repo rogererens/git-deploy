@@ -53,6 +53,18 @@ class DeployLogDefault(object):
             cls.__instance = super(DeployLogDefault, cls).__new__(cls)
         return cls.__instance
 
+    def _check_and_add(self, path, filename):
+        """
+        Checks for a file and adds it if it's not there
+        """
+        cmd = 'ls {0} | grep -c {1}'.format(path, filename)
+        ret = ssh_command_target(cmd, self.target, self.user, self.key_path)
+
+        # Parse the count and add the file if it's missing
+        if int(ret.strip()) > 0:
+            cmd = 'touch {0}/{1}'.format(path, filename)
+            ssh_command_target(cmd, self.target, self.user, self.key_path)
+
     def log(self, line):
         """
         Handles log writing to remote file
@@ -62,7 +74,7 @@ class DeployLogDefault(object):
         Returns True on successful logging, false otherwise.
         """
 
-        # TODO - Create active if it doesn't exist
+        self._check_and_add(self.path, self.LOGNAME_ACTIVE)
 
         # escape logline
         re.escape(line)
@@ -82,6 +94,8 @@ class DeployLogDefault(object):
         Dumps the active log to the archive. Returns True on successful
         logging, false otherwise.
         """
+
+        self._check_and_add(self.path, self.LOGNAME_ARCHIVE)
 
         cmd = "cat {0}/{1} >> {2}/{3}".format(self.path,
                                               self.LOGNAME_ACTIVE,
