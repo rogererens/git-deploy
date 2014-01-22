@@ -61,7 +61,7 @@ class DeployLogDefault(object):
         ret = ssh_command_target(cmd, self.target, self.user, self.key_path)
 
         # Parse the count and add the file if it's missing
-        if int(ret.strip()) > 0:
+        if int(ret['stdout'][0].strip()) > 0:
             cmd = 'touch {0}/{1}'.format(path, filename)
             ssh_command_target(cmd, self.target, self.user, self.key_path)
 
