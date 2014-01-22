@@ -62,11 +62,12 @@ class DeployLogDefault(object):
         Returns True on successful logging, false otherwise.
         """
 
+        # TODO - Create active if it doesn't exist
+
         # escape logline
         re.escape(line)
         cmd = "echo '{0}' >> {1}/{2}".format(line, self.path,
                                              self.LOGNAME_ACTIVE)
-
         # Write remote log line
         try:
             ssh_command_target(cmd, self.target, self.user, self.key_path)
@@ -81,4 +82,25 @@ class DeployLogDefault(object):
         Dumps the active log to the archive. Returns True on successful
         logging, false otherwise.
         """
-        raise NotImplementedError()
+
+        cmd = "cat {0}/{1} >> {2}/{3}".format(self.path,
+                                              self.LOGNAME_ACTIVE,
+                                              self.path,
+                                              self.LOGNAME_ARCHIVE)
+        # Write remote log line
+        try:
+            ssh_command_target(cmd, self.target, self.user, self.key_path)
+        except:
+            log.error("Failed to append active log to archive.")
+            return False
+
+        cmd = "rm {0}/{1}".format(self.path, self.LOGNAME_ACTIVE)
+
+        # Write remote log line
+        try:
+            ssh_command_target(cmd, self.target, self.user, self.key_path)
+        except:
+            log.error("Failed to append active log to archive.")
+            return False
+
+        return True
