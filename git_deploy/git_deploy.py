@@ -14,10 +14,9 @@ __license__ = 'GPL v2.0 (or later)'
 import os
 
 from lockers.locker import DeployLockerDefault
-from deploylog.deploylog import DeployLogDefault
 from git_methods import GitMethods
 from drivers.driver import DeployDriverDefault, DeployDriverDryRun
-from config import log, configure, exit_codes, \
+from config import deploy_log, set_deploy_log, log, configure, exit_codes, \
     DEFAULT_BRANCH, DEFAULT_REMOTE, \
     DEFAULT_REMOTE_ARG_IDX, DEFAULT_BRANCH_ARG_IDX
 
@@ -70,12 +69,13 @@ class GitDeploy(object):
         )
 
         # Deploy Logger
-        self.deploy_log = DeployLogDefault(
+        set_deploy_log(
             self.config['target'],
             self.config['path'] + self.DEPLOY_DIR,
             self.config['user.name'],
-            self.config['deploy.key_path'],
+            self.config['deploy.key_path']
         )
+        self.deploy_log = deploy_log
 
     def __new__(cls, *args, **kwargs):
         """ This class is Singleton, return only one instance """
