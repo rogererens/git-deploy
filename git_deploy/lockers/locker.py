@@ -6,7 +6,7 @@ __date__ = '2013-12-20'
 __license__ = 'GPL v2.0 (or later)'
 
 from git_deploy.utils import ssh_command_target
-from git_deploy.config import exit_codes, log
+from git_deploy.config import exit_codes, log, deploy_log
 
 class DeployLockerError(Exception):
     """ Basic exception class for DeployLocker types """
@@ -89,15 +89,17 @@ class DeployLockerDefault(DeployLocker):
 
         cmd = "touch {0}/{1}".format(self.deploy_path,
                                      self.get_lock_name())
-
-        log.info('{0} :: Creating lock file at {1}:{2}/{3}.'.format(
-            __name__, self.target, self.deploy_path, self.get_lock_name()))
         try:
             ssh_command_target(cmd, self.target, self.user,
                                      self.key_path)
         except Exception as e:
-            log.error(__name__ + ' :: ' + e.message)
+            log.error(__name__ + ' :: Failed to create lock -> ' + e.message)
             raise DeployLockerError(message=exit_codes[16], exit_code=16)
+
+        # Logging
+        log.info('{0} :: Created lock file at {1}:{2}/{3}.'.format(
+            __name__, self.target, self.deploy_path, self.get_lock_name()))
+        deploy_log.log('Created lock.')
 
     def check_lock(self):
         """ Returns boolean flag on lock file existence """
@@ -128,8 +130,7 @@ class DeployLockerDefault(DeployLocker):
                                                    self.user))
             return True
         else:
-            log.info('{0} :: Another user has lock.'.format(
-                __name__, ))
+            log.info('{0} :: Another user has lock.'.format(__name__))
             return False
 
     def remove_lock(self):
@@ -138,10 +139,13 @@ class DeployLockerDefault(DeployLocker):
 
         cmd = "rm {0}/{1}".format(self.deploy_path, self.get_lock_name())
 
-        log.info('{0} :: Removing lock file at {1}:{2}/{3}.'.format(
-            __name__, self.target, self.deploy_path, self.get_lock_name()))
         try:
             ssh_command_target(cmd, self.target, self.user, self.key_path)
         except Exception as e:
-            log.error(__name__ + ' :: ' + e.message)
+            log.error(__name__ + ' :: Failed ot remove lock -> ' + e.message)
             raise DeployLockerError(message=exit_codes[16], exit_code=16)
+
+        # Logging
+        log.info('{0} :: Removed lock file at {1}:{2}/{3}.'.format(
+            __name__, self.target, self.deploy_path, self.get_lock_name()))
+        deploy_log.log('Removed lock.')
