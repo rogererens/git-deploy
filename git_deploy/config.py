@@ -12,7 +12,7 @@ __license__ = 'GPL v2.0 (or later)'
 
 from dulwich.repo import Repo
 import subprocess
-import sys
+from deploylog.deploylog import DeployLogDefault
 import logging
 
 # Native git call
@@ -89,6 +89,9 @@ except AttributeError:
 log = logging.getLogger(__name__)
 log.addHandler(NullHandler())
 
+global deploy_log
+deploy_log = None
+
 
 class GitDeployConfigError(Exception):
     """ Basic exception class for UserMetric types """
@@ -121,6 +124,15 @@ def set_log(args, out, err):
                          datefmt='%b-%d %H:%M:%S'))
     log.addHandler(handler)
     log.setLevel(level)
+
+
+def set_deploy_log(target, path, user, key_path):
+    """ Sets the deploy logger to the target """
+    global deploy_log
+    if not deploy_log:
+        deploy_log = DeployLogDefault(target, path, user, key_path)
+    else:
+        return deploy_log
 
 
 def configure(**kwargs):
