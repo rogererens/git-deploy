@@ -1,7 +1,13 @@
 git-deploy
 ==========
 
-It is a tool to manage using git as a deployment management tool implemented in Python and utilizing the dulwich [1] project for native git functionality in Python.
+It is a tool to manage using git as a deployment management tool implemented in Python and utilizing the dulwich [1]
+project for native git functionality in Python.
+
+Git-deploy implements the front end of the deployment system while hooks give the user flexibility in the lower level
+details of the deploy.  This client uses git to manage the state of your repository and deployment and assumes that on
+sync the hooks ensure that the target is made consistent with the client (see default.sync) however, the user is free to
+add their own deployment flow and environment options (see examples below).
 
 [1] https://github.com/jelmer/dulwich
 
@@ -57,7 +63,6 @@ install, configure settings and initialize:
     ...
 
     $ cd git-deploy
-
     $ sudo pip install -e .
 
     ...
@@ -65,30 +70,18 @@ install, configure settings and initialize:
 Next configure the client instance with git config by assigning the following settings in *scripts/git-deploy.ini*:
 
     [deploy]
-
-    target=target.realm.org
-
-    path=/home/me/project/
-
-    user=me
-
-    hook-dir=.git/deploy/hooks/
-
-    tag-prefix=sample.com
-
-    remote=origin
-
-    branch=master
-
-    client-path=/home/me/project/
-
-    key-path=/home/me/.ssh/id_rsa
-
-    test-repo-path=/tmp/test_repo/
-
+        target=target.realm.org
+        path=/home/me/project/
+        user=me
+        hook-dir=.git/deploy/hooks/
+        tag-prefix=sample.com
+        remote=origin
+        branch=master
+        client-path=/home/me/project/
+        key-path=/home/me/.ssh/id_rsa
+        test-repo-path=/tmp/test_repo/
     [system]
-
-    run_root=/usr/bin/
+        run_root=/usr/bin/
 
 Once you have defined settings in *git-deploy.ini* call *init.py* to set the got config
 
@@ -105,40 +98,26 @@ pushed from the client instance on sync.
 
 **USING GIT DEPLOY**
 
-First initialize a new repository on *client.realm.org*:
+First initialize a new repository on your client:
 
-    client.realm.org:~ me$ mkdir me.com
+    $ mkdir me.com
+    $ cd me.com
+    $ git init
+    $ git remote add origin git@github.com:wikimedia/me.com.git
+    $ git push origin master
 
-    client.realm.org:~ me$ cd me.com
-
-    client.realm.org:~ me$ git init
-
-    client.realm.org:~ me$ git remote add origin git@github.com:wikimedia/me.com.git
-
-    client.realm.org:~ me$ git push origin master
-
-Next initialize the client repo by following the client setup above.  Subsequently, initialize the deploy target
-on *target.realm.org* as indicated.
-
-    target.realm.org:~ me$ cp ~/default-client-pull.py /var/www/html/sample.com/.git/deploy/hooks/
-
-    target.realm.org:~ me$ chmod +x /var/www/html/sample.com/.git/deploy/hooks/default-client-pull.py
-
+On the target you only need to ensure that *path* in config exists and is configured as a git repo for your project.
 
 *Start* & *Sync*:
 
 Ensure that the client is correctly synced to the remote by issuing a git pull or rebase.  Then you can issue a
 a start command to write the lock file to the target to begin the deployment.
 
-    client.realm.org:~ me$ cd me.com
-
-    client.realm.org:me.com me$ touch new_file
-
-    client.realm.org:me.com me$ git add new_file
-
-    client.realm.org:me.com me$ git commit -m "add - my new file"
-
-    client.realm.org:me.com me$ git pull --rebase origin master
+    $ cd me.com
+    $ touch new_file
+    $ git add new_file
+    $ git commit -m "add - my new file"
+    $ git pull --rebase origin master
 
 At this point you are ready to enter the deployment process:
 
@@ -155,22 +134,20 @@ push its changes to the remote and the target will pull in the new changes.  Dep
 
 Finally, you can also do a dryrun on the sync:
 
-    client.realm.org:me.com me$ git deploy sync -d
+    $ git deploy sync -d
 
 *Abort*
 
 At times it is necessary to exit the deploy cycle prematurely.  For instance, consider the following:
 
-    client.realm.org:me.com me$ git deploy start
-
-    client.realm.org:me.com me$ git commit bad_change -m "add - some buggy code."
+    $ git deploy start
+    $ git commit bad_change -m "add - some buggy code."
 
 Suddenly, you realize that your change introduced a bug after entering the deloy process.  Rather than syncing the bad
 code and then rolling back (next section) we can simply abort the deploy:
 
-    client.realm.org:me.com me$ git deploy abort
-
-    client.realm.org:me.com me$ git reset --soft HEAD^
+    $ git deploy abort
+    $ git reset --soft HEAD^
 
     ... continue with your local changes ...
 
@@ -182,13 +159,12 @@ Now you have released deploy to other clients without infecting the code base wi
 If you accidentally deploy some code that needs to be rolled back the *revert* command can be very helpful here.  You
 can rollback to previous deploy states by utilizing deploy tags.  To view the old tags:
 
-    client.realm.org:me.com me$ git tag
+    $ git tag
 
 Now to rollback to a previous deploy call *git revert* with the appropriate tag:
 
-    client.realm.org:me.com me$ git deploy start
-
-    client.realm.org:me.com me$ git deploy revert <tag>
+    $ git deploy start
+    $ git deploy revert <tag>
 
 
 Deploy Hooks
