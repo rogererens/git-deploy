@@ -1,6 +1,8 @@
 git-deploy
 ==========
 
+This project is based on the original implementation located at: https://github.com/git-deploy/git-deploy
+
 It is a tool to manage using git as a deployment management tool implemented in Python and utilizing the dulwich [1]
 project for native git functionality in Python.
 
