@@ -1,12 +1,6 @@
 git-deploy
 ==========
 
-This project is based on the original implementation located at: https://github.com/git-deploy/git-deploy
-
-We would like to thank the following people for their hard work and contributions to the original work:
-@avar, @demerphq, @atomicstack, @b10m, @kristov, @mfjordvald, @rgs, @gugod, @ojacobson, @moltar, @dgryski and @guest20
-
-
 It is a tool to manage using git as a deployment management tool implemented in Python and utilizing the dulwich [1]
 project for native git functionality in Python.
 
@@ -596,3 +590,13 @@ Pull requests welcome!  If you love Python and git this may be the perfect proje
 compliant Python 2.7 compatible.  Please drop in tests where possible for new additions.
 
 Patrick Reilly (patrick.reilly at gmail dot com) and Ryan Faulkner (bobs.ur.uncle at gmail dot com).
+
+
+See Also
+--------
+
+This project is based on the original implementation located at: https://github.com/git-deploy/git-deploy
+
+We would like to thank the following people for their hard work and contributions to the original work:
+@avar, @demerphq, @atomicstack, @b10m, @kristov, @mfjordvald, @rgs, @gugod, @ojacobson, @moltar, @dgryski and @guest20.
+
