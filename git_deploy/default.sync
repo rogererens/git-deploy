@@ -30,7 +30,7 @@ def main():
     remote = GitMethods().config['deploy.remote_url']
     logging.info(__name__ + ' :: Default sync, pushing to \'{0}\''.format(
         remote))
-    GitMethods()._dulwich_push(remote, 'master')
+    GitMethods()._dulwich_push(remote, 'refs/remotes/origin/master')
 
     # git pull on remote
     target_path = GitMethods().config['path']
