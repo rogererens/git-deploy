@@ -20,8 +20,7 @@ from dulwich import porcelain
 from dulwich.repo import Repo
 from dulwich.objects import Tag, Commit, parse_timezone
 from dulwich.diff_tree import tree_changes
-from dulwich.client import get_transport_and_path
-from dulwich.errors import SendPackError, UpdateRefsError
+from dulwich.porcelain import push, pull
 
 from config import log, exit_codes, configure
 
@@ -242,60 +241,23 @@ class GitMethods(object):
                                           key=lambda t: (t[1].commit_time, t)))
         return ordered_tags
 
-    def _dulwich_push(self, remote_location, refs_path,
-                      outstream=sys.stdout, errstream=sys.stderr):
-        """Remote push with dulwich via dulwich.client
+    def _dulwich_push(self, remote_location, refs_path):
+        """Remote push with dulwich.porcelain
 
         :param repo : Path to repository
         :param remote_location: Location of the remote
         :param refs_path: relative path to the refs to push to remote
-        :param outstream: A stream file to write output
-        :param errstream: A stream file to write errors
         """
-
-
-        # Open the repo
-        r = Repo(self.config['top_dir'])
-
-        # Get the client and path
-        client, path = get_transport_and_path(remote_location)
-
-        def update_refs(refs):
-            new_refs = r.get_refs()
-            refs[refs_path] = new_refs['HEAD']
-            del new_refs['HEAD']
-            return refs
-
-        try:
-            client.send_pack(path, update_refs,
-                r.object_store.generate_pack_contents, progress=errstream.write)
-            outstream.write("Push to %s successful.\n" % remote_location)
-        except (UpdateRefsError, SendPackError) as e:
-            outstream.write("Push to %s failed.\n" % remote_location)
-            errstream.write("Push to %s failed -> '%s'\n" % e.message)
+        push(self.config['top_dir'], remote_location, refs_path)
 
     def _dulwich_pull(self, remote_location, refs_path, errstream=sys.stderr):
-        """ Pull from remote via dulwich.client
+        """ Pull from remote via dulwich.porcelain
 
         :param repo: Path to repository
         :param remote_location: Location of the remote
         :param refs_path: relative path to the fetched refs
-        :param outstream: A stream file to write to output
-        :param errstream: A stream file to write to errors
         """
-
-
-        # Open the repo
-        r = Repo(self.config['top_dir'])
-
-        client, path = get_transport_and_path(remote_location)
-        remote_refs = client.fetch(path, r, progress=errstream.write)
-        r['HEAD'] = remote_refs[refs_path]
-
-        # Perform 'git checkout .' - syncs staged changes
-        indexfile = r.index_path()
-        tree = r["HEAD"].tree
-        index.build_index_from_tree(r.path, indexfile, r.object_store, tree)
+        pull(self.config['top_dir'], remote_location, refs_path)
 
     def _dulwich_checkout(self, _repo):
         """ Perform 'git checkout .' - syncs staged changes """
