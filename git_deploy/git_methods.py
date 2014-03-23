@@ -11,16 +11,14 @@ import subprocess
 from datetime import datetime
 
 from re import search
-from time import time
 from collections import OrderedDict
 
 from dulwich import walk
 from dulwich import index
 from dulwich import porcelain
 from dulwich.repo import Repo
-from dulwich.objects import Tag, Commit, parse_timezone
 from dulwich.diff_tree import tree_changes
-from dulwich.porcelain import push, pull
+from dulwich.porcelain import push, pull, commit, tag
 
 from config import log, exit_codes, configure
 
@@ -149,30 +147,15 @@ class GitMethods(object):
 
         raise GitMethodsError(message=exit_codes[8], exit_code=8)
 
-    def _dulwich_tag(self, tag, author, message=DEFAULT_TAG_MSG):
+    def _dulwich_tag(self, tag_text, author, message=DEFAULT_TAG_MSG):
         """
         Creates a tag in git via dulwich calls:
 
-        Parameters:
-            tag - string :: "<project>-[start|sync]-<timestamp>"
-            author - string :: "Your Name <your.email@example.com>"
+        :param tag_text:    tag string
+        :param author:      author string
+        :param message:     message string
         """
-
-        # Open the repo
-        _repo = Repo(self.config['top_dir'])
-
-        # Create the tag object
-        tag_obj = Tag()
-        tag_obj.tagger = author
-        tag_obj.message = message
-        tag_obj.name = tag
-        tag_obj.object = (Commit, _repo.refs['HEAD'])
-        tag_obj.tag_time = int(time())
-        tag_obj.tag_timezone = parse_timezone('-0200')[0]
-
-        # Add tag to the object store
-        _repo.object_store.add_object(tag_obj)
-        _repo['refs/tags/' + tag] = tag_obj.id
+        tag(self.config['top_dir'], tag_text, author, message)
 
     def _dulwich_reset_to_tag(self, tag=None):
         """
@@ -209,11 +192,7 @@ class GitMethods(object):
         """
         Commit staged files in the repo
         """
-        _repo = Repo(self.config['top_dir'])
-        commit_id = _repo.do_commit(message, committer=author)
-
-        if not _repo.head() == commit_id:
-            raise GitMethodsError(message=exit_codes[14], exit_code=14)
+        commit(self.config['top_dir'], message=message, author=author)
 
     def _dulwich_status(self):
         """
