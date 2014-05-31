@@ -192,6 +192,11 @@ class TestGitDeployFunctionality(unittest.TestCase):
             assert False
 
     @setup_deco
+    def test_sync_with_hooks(self):
+        # TODO - implement
+        assert False
+
+    @setup_deco
     def test_deploy_in_progress(self):
         """
         deploy_in_progress - test to ensure that when the ``start`` method
