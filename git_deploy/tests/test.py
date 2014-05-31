@@ -206,7 +206,7 @@ class TestGitDeployFunctionality(unittest.TestCase):
             git_deploy_obj.start(None)
             git_deploy_obj.start(None)
         except GitDeployError as e:
-            if not e.msg == exit_codes[2]:
+            if not e.message == exit_codes[2]:
                 assert False
             return
         assert False
