@@ -63,9 +63,7 @@ def teardown_tmp_repo():
     """
     Remove the test repo
     """
-
     log.info(__name__ + ':: Tearing down test repo.')
-
     chdir(config['deploy.test_repo'])
     rmtree(config['deploy.test_repo'])
 
@@ -74,24 +72,24 @@ class TestGitDeployInit(unittest.TestCase):
     """ Test cases for GitDeploy initialization and config """
     def test_conf_hook_dir(self):
         s = GitDeploy()
-        assert 'top_dir' in s.config
+        self.assertIn('top_dir', s.config)
 
     def test_conf_top_dir(self):
         s = GitDeploy()
-        assert 'hook_dir' in s.config
+        self.assertIn('hook_dir', s.config)
 
     def test_conf_repo_name(self):
         s = GitDeploy()
-        assert 'repo_name' in s.config
+        self.assertIn('repo_name', s.config)
 
     def test_conf_deploy_root(self):
         s = GitDeploy()
-        assert 'deploy_root' in s.config
+        self.assertIn('deploy_root', s.config)
 
     def test_singleton(self):
         s1 = GitDeploy()
         s2 = GitDeploy()
-        assert s1 == s2
+        self.assertEquals(s1, s2)
 
 
 class TestGitDeployFunctionality(unittest.TestCase):
@@ -111,7 +109,7 @@ class TestGitDeployFunctionality(unittest.TestCase):
             # TODO - check lock file & commit
 
         except GitDeployError:
-            assert False
+            self.assertTrue(False)
 
     @setup_deco
     def test_diff(self):
@@ -123,7 +121,7 @@ class TestGitDeployFunctionality(unittest.TestCase):
         try:
             git_deploy_obj.diff(None)
         except GitDeployError:
-            assert False
+            self.assertTrue(False)
 
     @setup_deco
     def test_log_deploys(self):
@@ -135,7 +133,7 @@ class TestGitDeployFunctionality(unittest.TestCase):
         try:
             git_deploy_obj.log_deploys(namedtuple('o', 'count')(1))
         except GitDeployError:
-            assert False
+            self.assertTrue(False)
 
     @setup_deco
     def test_revert(self):
@@ -147,7 +145,7 @@ class TestGitDeployFunctionality(unittest.TestCase):
         try:
             git_deploy_obj.revert(namedtuple('o', 'force')(False))
         except GitDeployError:
-            assert False
+            self.assertTrue(False)
 
     @setup_deco
     def test_show_tag(self):
@@ -162,7 +160,7 @@ class TestGitDeployFunctionality(unittest.TestCase):
             git_deploy_obj.show_tag(None)
 
         except GitDeployError:
-            assert False
+            self.assertTrue(False)
 
     @setup_deco
     def test_start(self):
@@ -174,7 +172,7 @@ class TestGitDeployFunctionality(unittest.TestCase):
         try:
             git_deploy_obj.start(None)
         except GitDeployError:
-            assert False
+            self.assertTrue(False)
 
     @setup_deco
     def test_sync(self):
@@ -189,12 +187,12 @@ class TestGitDeployFunctionality(unittest.TestCase):
 
             # TODO - check tag and deploy file
         except GitDeployError:
-            assert False
+            self.assertTrue(False)
 
     @setup_deco
     def test_sync_with_hooks(self):
         # TODO - implement
-        assert False
+        self.assertTrue(False)
 
     @setup_deco
     def test_deploy_in_progress(self):
@@ -212,9 +210,9 @@ class TestGitDeployFunctionality(unittest.TestCase):
             git_deploy_obj.start(None)
         except GitDeployError as e:
             if not e.message == exit_codes[2]:
-                assert False
+                self.assertTrue(False)
             return
-        assert False
+        self.assertTrue(False)
 
 
 class TestGitDeployDulwichDeps(unittest.TestCase):
@@ -234,40 +232,34 @@ class TestGitDeployDulwichDeps(unittest.TestCase):
         tag = 'test_tag'
         s._dulwich_tag(tag, s._make_author())
         tags = s._dulwich_get_tags()
-        assert tags.keys()[0] == tag
+        self.assertEquals(tags.keys()[0], tag)
 
     @setup_deco
     def test_dulwich_reset_to_tag(self):
         """
         Tests method GitDeploy::_dulwich_reset_to_tag
         """
-
         #   1. Create two dummy tags and commits
         #   2. Call _dulwich_reset_to_tag
         #   3. Ensure _repo['HEAD'] matches _repo['refs/tags/' + tag]
-
-        assert False
+        self.assertTrue(False)
 
     @setup_deco
     def test_dulwich_stage(self):
         """
         Tests method GitDeploy::_dulwich_stage
         """
-
         #   1. Create a dummy file - use object store
         #   2. Call _dulwich_stage
         #   3. Use dulwich.diff_tree.tree_changes to ensure changes are staged
-
-        assert False
+        self.assertTrue(False)
 
     @setup_deco
     def test_dulwich_commit(self):
         """
         Tests method GitDeploy::_dulwich_commit
         """
-
         #   1. Follow steps in test_dulwich_stage
         #   2. Perform commit
         #   3. Ensure that _repo['HEAD'] matches the commit.id
-
-        assert False
+        self.assertTrue(False)
