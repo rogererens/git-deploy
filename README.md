@@ -143,7 +143,7 @@ At times it is necessary to exit the deploy cycle prematurely.  For instance, co
     $ git deploy start
     $ git commit bad_change -m "add - some buggy code."
 
-Suddenly, you realize that your change introduced a bug after entering the deloy process.  Rather than syncing the bad
+Suddenly, you realize that your change introduced a bug after entering the deploy process.  Rather than syncing the bad
 code and then rolling back (next section) we can simply abort the deploy:
 
     $ git deploy abort
